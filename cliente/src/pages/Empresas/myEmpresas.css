@@ -1,0 +1,28 @@
+.image-container {
+    position: relative;
+    display: inline-block;
+  }
+  
+  .image {
+    width: 200px;
+    height: auto;
+  }
+  
+  .hover-icon {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 24px;
+    color: white;
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 50%;
+    padding: 5px;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  
+  .image-container:hover .hover-icon {
+    opacity: 1;
+  }

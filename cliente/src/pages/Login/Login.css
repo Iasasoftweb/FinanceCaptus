@@ -1,0 +1,80 @@
+/* @import url("https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Lobster&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Raleway:ital,wght@0,100..900;1,100..900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Raleway:ital,wght@0,100..900;1,100..900&display=swap");
+
+.font-dm-sans {
+    font-family: "DM Sans", sans-serif;
+    font-optical-sizing: auto;
+}
+.font-raleway {
+  font-family: "Raleway", sans-serif;
+}
+.font-monserrat {
+  font-family: "Montserrat", sans-serif;
+}
+
+.font-roboto {
+  font-family: "Roboto", sans-serif;
+}
+
+.font-lobster {
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
+}
+
+.text-shadow-custom {
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 1);
+}
+
+.ibienvenido {
+  background-color: #0097b2;
+}
+.espaciosx{
+    margin-top: 0.5rem !important;
+    margin-left: 6%;
+}
+
+.haltura {
+    min-height :5em;
+}
+
+.btn-sistem {
+    background-color: #0097b2 !important;
+    color: white !important;
+    font-size:small !important;
+     
+} */
+
+.btn{
+  background-color: #0097b2 !important;
+  color: white !important;
+  
+};
+
+.backbg {
+  background-image: url('../../assets/img/bg.jpg');
+  background-size: cover; /* Ajusta la imagen para que cubra toda la pantalla */
+  background-position: center; /* Centra la imagen */
+  background-repeat: no-repeat; /* Evita que la imagen se repita */
+  height: 100vh; /* Ocupa toda la altura de la ventana */
+  width: 100vw; /* Ocupa toda la anchura de la ventana */
+}
+
+.footer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  text-align: center;
+  padding: 0px;
+ /* background-color: white; */
+}
+.container {
+  position: relative;
+  width: 300px;
+  height: 200px;
+  border: 1px solid #ddd;
+  padding: 20px;
+  background-color: #f9f9f9;
+}

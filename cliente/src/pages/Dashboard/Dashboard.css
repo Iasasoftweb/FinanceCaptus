@@ -1,0 +1,120 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;700&display=swap");
+
+
+:root {
+  scroll-behavior: smooth;
+  --primary :  #0097b2;
+  --second: #066f8a;
+  --bgColor : #f6f9ff;
+
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  font-family: "Poppins", sans-serif;
+ 
+}
+
+
+a {
+  text-decoration: none;
+}
+
+.header {
+  transition: all 0.5;
+  z-index: 997;
+  height: 60px;
+  box-shadow: 0px 3px 20px rgba(1, 42, 70, 0.5);
+  background: var(--primary);
+  padding-left: 20px;
+  
+}
+
+.grid-container {
+  display: flex;
+  grid-template-columns: 260px 1fr 1fr 1fr;
+  grid-template-rows: 0.2fr 3fr;
+  grid-template-areas: 'sidebar header header header' 'sidebar main main main';
+  height: 100vh;
+}
+
+.header .toggle-sidebar-btn{
+  font-size: 20px;
+  padding-left: 10px;
+  cursor: pointer;
+  color: white;
+}
+
+.layout-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  margin: 0;
+}
+
+.layout-content-wrapper {
+  display: flex;
+  flex-grow: 1;
+}
+
+.layout-sidebar {
+  width: 300px;
+  /* background-color: #0097b2; */
+}
+
+.layout-content {
+  flex-grow: 1;
+  padding: 1rem;
+}
+
+.app {
+  display: flex;
+}
+
+.content {
+  padding: 30px;
+  flex: 1;
+  background-color:whitesmoke;
+}
+
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+
+}
+
+.bgSystem {
+   background-color:var(--primary); 
+}
+
+.custom-panelmenu .p-panelmenu {
+  background-color :  var(--primary) !important; 
+}
+
+.sidebar {
+  background-color: var(--primary) !important;
+  color: white;
+  height: 100vh;
+  width: 200px;
+}
+
+.link {
+  display: flex;
+  gap: 10px;
+  padding: 15px 10px;
+  font-size: 0.9em !important;
+}
+
+.linkicon {
+  font-size: 1em !important;
+}
+
+.link:hover {
+  background-color: var(--second);
+  border-radius: 15px;
+  transition: 0.4s;
+}
+
+

@@ -1,0 +1,84 @@
+.Toastify__toast {
+    font-family: 'Arial', sans-serif; /* Cambia la fuente */
+    font-size: 0.8rem; /* Cambia el tamaño de letra */
+    font-weight:lighter; /* Cambia el peso de la fuente */
+    color: #333333; /* Cambia el color de texto */
+  }
+
+  .BottonExport_XLS {
+    background-color: #157394;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    display: inline-flex;
+    color: white;
+    padding: 9px;
+    margin: 4px;
+    border: #157394;
+    border-radius: 10px;
+    font-size: 0.9em;
+  }
+
+ .BottonExport_XLS:hover {
+   background-color:#066486
+   
+ } 
+
+
+ .BottonExport_XLS {
+  background-color: #157394;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  display: inline-flex;
+  color: white;
+  padding: 9px;
+  margin: 4px;
+  border: #157394;
+  border-radius: 10px;
+  font-size: 0.9em;
+}
+
+.BottonExport_XLS:hover {
+ background-color:#066486
+ 
+} 
+
+.BtnImprimir {
+  background-color: #589cb4;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  display: inline-flex;
+  color: white;
+  padding: 9px;
+  margin: 4px;
+  border: #157394;
+  border-radius: 10px;
+  font-size: 0.9em;
+}
+
+.BtnImprimir:hover {
+ background-color:#427385
+ 
+} 
+
+
+ .btnRefrescar {
+  background-color: #e17070;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  display: inline-flex;
+  color: white;
+  padding: 9px;
+  margin: 4px;
+  border: #157394;
+  border-radius: 10px;
+  font-size: 0.9em;
+}
+
+.btnRefrescar:hover {
+ background-color:#dc4c4c
+ 
+}  

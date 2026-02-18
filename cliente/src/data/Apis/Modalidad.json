@@ -1,0 +1,22 @@
+[
+  {
+    "id": 1,
+    "tipo": "DIARIO"
+  },
+  {
+    "id": 2,
+    "tipo": "SEMANAL"
+  },
+  {
+    "id": 3,
+    "tipo": "QUINCENAL"
+  },
+  {
+    "id": 4,
+    "tipo": "MENSUAL"
+  },
+  {
+    "id": 5,
+    "tipo": "BI-SEMANAL"
+  }
+]

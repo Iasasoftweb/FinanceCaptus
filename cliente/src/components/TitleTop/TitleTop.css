@@ -1,0 +1,38 @@
+.title1 {
+  font-size: 12px !important;
+  line-height: 0;
+  color: darkgray;
+}
+
+.title2 {
+  font-size: 19px !important;
+  line-height: 0;
+  
+  
+}
+
+.bt {
+  width: 130px;
+  border-radius: 15px;
+  background-color: #0097b2;
+}
+
+.card {
+  box-shadow: 0 6px 7px -3px rgba(0, 0, 0, 0.10);
+}
+
+@media screen and (max-width: 576px) {
+  .hedaer-left {
+    display: none;
+  }
+
+  .bt {
+    font-size: 13px;
+    border-radius: 10px;
+    width: 100px;
+    background-color: #0097b2;
+    
+  }
+
+
+}

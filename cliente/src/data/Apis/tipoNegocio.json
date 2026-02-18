@@ -1,0 +1,11 @@
+[
+  {
+    "id": 1,
+    "tipo": "PRESTAMOS"
+  },
+
+  {
+    "id": 2,
+    "tipo": "VENTAS"
+  }
+]

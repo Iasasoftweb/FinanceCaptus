@@ -1,0 +1,26 @@
+.logo {
+    line-height: 1;
+}
+
+@media (min-width:120px) {
+    .logo {
+        width: 280;
+    }
+}
+
+.logo img {
+    max-height: 26px;
+    margin-right: 6px;
+}
+
+.logo span {
+    font-size: 18px;
+    margin-right: 6px;
+    color: white;
+    
+}
+
+.sindecoracion {
+    text-decoration: none;
+
+}

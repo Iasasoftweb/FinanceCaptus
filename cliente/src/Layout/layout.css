@@ -1,0 +1,18 @@
+
+
+.sidebar1 {
+
+    color: #fff;
+    background-color:rgb(56, 55, 55);
+    
+
+}
+
+.ant-menu-item:hover, .ant-menu-submenu-title:hover {
+    background-color: #0097b2 !important; /* Cambia a tu color deseado */
+    color: white !important;               /* Cambia el color del texto en hover, si es necesario */
+  }
+  .ant-menu-item-selected {
+    background-color: #0097b2 !important; /* Cambia el fondo del item seleccionado */
+    color: white !important;             /* Cambia el color del texto */
+  }

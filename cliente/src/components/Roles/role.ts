@@ -1,0 +1,11 @@
+
+const ROLES = {
+    ADMINISTRADOR : 'administrador',
+    SUPERVISOR : 'SUPERVISOR',
+    OPERADOR : 'OPERADOR',
+    COBRADOS : 'COBRADOR'
+};
+
+const PERMISSIONS = {
+    [ROLES.ADMINISTRADOR]: []
+}

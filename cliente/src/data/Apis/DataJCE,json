@@ -1,0 +1,22 @@
+[
+  {
+    "cedula": "00100000017",
+    "nombres": "ALTAGRACIA",
+    "apellido1": "ABREU",
+    "appelido2": "GUZMAN",
+    "FechaNacimiento": "1952-11-11 00:00:00",
+    "idNacionalidad": 1,
+    "idSexo": "F",
+    "IdEstadoCivil": "S"
+  },
+  {
+    "cedula": "00100000033",
+    "nombres": "DISNALDA ALTAGRACIA",
+    "apellido1": "ACOSTA",
+    "appelido2": "MINAYA",
+    "FechaNacimiento": "1949-05-14 00:00:00",
+    "idNacionalidad": 1,
+    "idSexo": "F",
+    "IdEstadoCivil": "S"
+  }
+]

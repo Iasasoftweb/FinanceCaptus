@@ -1,0 +1,18 @@
+[
+  {
+    "id": 1,
+    "tipo": "Cuota Fija"
+  },
+  {
+    "id": 2,
+    "tipo": "Compuesto o Insoluto"
+  },
+  {
+    "id": 3,
+    "tipo": "Interes Fijo"
+  },
+  {
+    "id": 4,
+    "tipo": "A Vencimiento"
+  }
+]

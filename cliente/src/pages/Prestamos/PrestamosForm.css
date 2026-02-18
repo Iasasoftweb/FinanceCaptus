@@ -1,0 +1,7 @@
+.no-background {
+    background-color: transparent;
+  }
+  
+  .no-background .MuiOutlinedInput-root {
+    background-color: transparent;
+  }
