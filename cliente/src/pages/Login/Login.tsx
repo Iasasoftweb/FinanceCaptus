@@ -41,7 +41,7 @@ const Login = () => {
     // const data = { usuario: usuario, pass: pass };
     // console.log(data);
 
-    
+     
     
     axios
       .post("http://localhost:8000/usuarios/login/", { usuario, pass })
@@ -125,7 +125,7 @@ const Login = () => {
               <form onSubmit={validarCredencial} className="p-5">
                 
                 <TextField
-                  label="Usuarios"
+                  label="Usuarios del Sistema"
                   fullWidth
                   margin="normal"
                   name="usuario"
