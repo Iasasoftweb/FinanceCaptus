@@ -1,0 +1,52 @@
+services:
+  backend:
+    build: ./Server
+    container_name: backend_app
+    restart: always
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./Server:/app
+      - /app/node_modules
+    environment:
+      NODE_ENV: development
+      DB_HOST: docker-mysql-main # nombre del contenedor MySQL ya existente
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASS: dockerpass
+      DB_NAME: financedb
+    networks:
+      - dev-network
+
+  frontend:
+    build: ./Cliente
+    container_name: frontend_app
+    # restart: always
+    ports:
+      - "5174:5174"
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4  
+    volumes:
+      - ./Cliente:/app
+      - /app/node_modules
+      # - /app/.vite
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+      # - WATCHPACK_POLLING=true
+      # - VITE_WATCH_USE_POLLING=true
+    deploy:
+      resources:
+        limits:
+          # LEAFLET EN DESARROLLO ES EXIGENTE: Sube un poco el margen si puedes.
+          cpus: "2.0"
+          memory: 2G
+    command: pnpm dev --host 0.0.0.0 --port 5174 --strictPort
+    depends_on:
+      - backend
+    networks:
+      - dev-network
+
+networks:
+  dev-network:
+    driver: bridge

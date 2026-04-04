@@ -15,9 +15,9 @@ import getCliente from "../../../data/clientes/Getclientes";
 const ListadoClientes = () => {
   //const ref = {ref};
 
-  const UriEmpresa = "http://localhost:8000/empresas/estado";
-  const UriImg = "http://localhost:8000/uploadEmpresa/";
-  const URIs = "http://localhost:8000/clientes/estado/";
+  const UriEmpresa = "http://localhost:5000/empresas/estado";
+  const UriImg = "http://localhost:5000/uploadEmpresa/";
+  const URIs = "http://localhost:5000/clientes/estado/";
 
   const [empresasData, setEmpresasData] = useState([]);
   const [selectedFileId, setSelectedFileId] = useState(null);

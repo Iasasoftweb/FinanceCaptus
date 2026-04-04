@@ -7,7 +7,7 @@ const useCompany = () => {
 
   const CompanyData = async () => {
     try {
-      const respuesta = await axios.get(`http://localhost:8000/Company/`)
+      const respuesta = await axios.get(`http://localhost:5000/Company/`)
        const Data = respuesta?.data.data || respuesta.data|| [];
         setDataCompany(Data);
         console.log(Data)

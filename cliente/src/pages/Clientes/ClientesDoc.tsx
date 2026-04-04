@@ -81,9 +81,9 @@ const ClienteDo = ({ Id, open, handleClose, dataInitial }) => {
     width: 1,
   });
 
-  const URI = "http://localhost:8000/clienteDoc/";
-  const UrisImgDelete = "http://localhost:8000/clienteDoc/deleteimagen/";
-  const UriImg = "http://localhost:8000/uploadDocs/";
+  const URI = "http://localhost:5000/clienteDoc/";
+  const UrisImgDelete = "http://localhost:5000/clienteDoc/deleteimagen/";
+  const UriImg = "http://localhost:5000/uploadDocs/";
   const [selectedFileId, setSelectedFileId] = useState(null);
 
   const clearField = () => {

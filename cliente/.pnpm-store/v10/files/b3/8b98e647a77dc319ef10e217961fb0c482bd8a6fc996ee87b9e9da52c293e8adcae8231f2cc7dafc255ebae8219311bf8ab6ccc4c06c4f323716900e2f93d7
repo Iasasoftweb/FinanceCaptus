@@ -1,0 +1,15 @@
+# Installation
+> `npm install --save @types/mui-datatables`
+
+# Summary
+This package contains type definitions for mui-datatables (https://github.com/gregnb/mui-datatables).
+
+# Details
+Files were exported from https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/mui-datatables.
+
+### Additional Details
+ * Last updated: Fri, 08 Dec 2023 06:08:17 GMT
+ * Dependencies: [@emotion/react](https://npmjs.com/package/@emotion/react), [@emotion/styled](https://npmjs.com/package/@emotion/styled), [@mui/material](https://npmjs.com/package/@mui/material), [@types/react](https://npmjs.com/package/@types/react), [csstype](https://npmjs.com/package/csstype)
+
+# Credits
+These definitions were written by [Jeroen "Favna" Claassens](https://github.com/favna), [Ankith Konda](https://github.com/ankithkonda), [Herman "Von" Waters IV](https://github.com/hwatersiv), [souppower](https://github.com/souppower), [Byron "Byrekt" Mitchell](https://github.com/byrekt), [Bohdan Yavorskyi](https://github.com/BohdanYavorskyi), and [Patrick Erichsen](https://github.com/Patrick-Erichsen).

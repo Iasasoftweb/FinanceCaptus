@@ -4,7 +4,7 @@ interface props {
   id?: number;
 }
 const useDataPrestamos = (id) => {
-  const UrisPrestamos = "http://localhost:8000/prestamos/";
+  const UrisPrestamos = "http://localhost:5000/prestamos/";
   const [DataPrestamos, setDataPrestamos] = useState([]);
   
   const getPrestamos = async () => {

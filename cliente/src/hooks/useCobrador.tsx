@@ -7,7 +7,7 @@ const useCobrador = () => {
   const GetCobrador = async () => {
     const id = 2;
     try {
-      const respuesta = await axios.get(`http://localhost:8000/usuarios/roles/${id}`);
+      const respuesta = await axios.get(`http://localhost:5000/usuarios/roles/${id}`);
         const Data = respuesta?.data.data || respuesta.data || []
           setDataCobrador(Data);
           console.log(Data);

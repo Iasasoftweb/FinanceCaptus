@@ -56,8 +56,8 @@ const ShowClientes = () => {
     _DATA.jump(p);
   };
 
-  const URIs = "http://localhost:8000/clientes/";
-  const UrisImg = "http://localhost:8000/uploads/";
+  const URIs = "http://localhost:5000/clientes/";
+  const UrisImg = "http://localhost:5000/uploads/";
 
   useEffect(() => {
     setModoEdicion(modoEdicion);

@@ -54,11 +54,11 @@ const ClienteForm = ({ ModoEdicion, idCliente, open, handleClose }) => {
   const [imgFilename, setImgFileName] = useState(null);
   const [Rutas, setGetRutas] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(open);
-  const URIs = "http://localhost:8000/tipodocs/";
-  const URIs2 = "http://localhost:8000/clientes/";
-  const UrisImg = "http://localhost:8000/uploads/";
-  const UrisImgDelete = "http://localhost:8000/clientes/deleteimagen/imagen/";
-  const URIrutas = "http://localhost:8000/zonas/";
+  const URIs = "http://localhost:5000/tipodocs/";
+  const URIs2 = "http://localhost:5000/clientes/";
+  const UrisImg = "http://localhost:5000/uploads/";
+  const UrisImgDelete = "http://localhost:5000/clientes/deleteimagen/imagen/";
+  const URIrutas = "http://localhost:5000/zonas/";
   const [isLoading, setIsLoading] = useState(false);
   const [dni, setDni] = useState("");
   const [tipodoc, setTipoDoc] = useState("");
@@ -328,7 +328,7 @@ const ClienteForm = ({ ModoEdicion, idCliente, open, handleClose }) => {
   useEffect(() => {
     if (ModoEdicion) {
       axios
-        .get(`http://localhost:8000/clientes/${idCliente}`)
+        .get(`http://localhost:5000/clientes/${idCliente}`)
         .then((response) => {
           setNewNombre(response.data.nombres);
           setNewApellidos(response.data.apellidos);
@@ -355,7 +355,7 @@ const ClienteForm = ({ ModoEdicion, idCliente, open, handleClose }) => {
 
   const onSubmit = async (data: FieldValues) => {
     if (ModoEdicion) {
-      await axios.put(`http://localhost:8000/clientes/${idCliente}`, data);
+      await axios.put(`http://localhost:5000/clientes/${idCliente}`, data);
 
       Swal.fire({
         position: "center",
@@ -367,7 +367,7 @@ const ClienteForm = ({ ModoEdicion, idCliente, open, handleClose }) => {
       reset();
     } else {
       const findDni = await axios.get(
-        `http://localhost:8000/clientes/buscar-dni/${data.dni}`
+        `http://localhost:5000/clientes/buscar-dni/${data.dni}`
       );
 
       if (findDni.data) {

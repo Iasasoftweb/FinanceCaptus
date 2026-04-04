@@ -2,6 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App.tsx";
 import MainHome from "./MainHome.tsx";
+import "leaflet/dist/leaflet.css";
 // import './index.css'
 
 import { AuthProvider } from "./components/Roles/AuthProvider.tsx";
@@ -19,7 +20,8 @@ import Dashboard from "./pages/Dashboard/Dashboard.tsx";
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <AuthProvider>
     <BrowserRouter>
-     <MainHome />
+      <MainHome />
     </BrowserRouter>
-  </AuthProvider>
+  </AuthProvider>,
+  
 );

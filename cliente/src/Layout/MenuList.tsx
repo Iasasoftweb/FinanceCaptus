@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Menu } from "antd";
+import { Layout, Menu, Breadcrumb, theme } from "antd";
 import { VscDashboard } from "react-icons/vsc";
 import "./layout.css";
 import { MdOutlineCategory } from "react-icons/md";
@@ -21,6 +21,37 @@ import TablaAmortiza from "../pages/Prestamos/TablaAmortiza.tsx";
 import CuotasList from "../pages/Prestamos/CuotasList.tsx";
 import FindEmpresas from "../components/general/FindEmpresas.tsx";
 
+const { Header, Content, Sider } = Layout;
+
+const menuItems = [
+  
+  
+  {
+    key: "1",
+    icon: <VscDashboard />,
+    label: "Usuarios",
+    disabled: false,
+    children: [
+      // Submenú
+      { key: "u1", label: "Lista de Usuarios" },
+      { key: "u2", label: "Roles" },
+    ],
+   
+    
+  },
+
+
+  // {
+  //   key: '2',
+  //   icon: <LaptopOutlined />,
+  //   label: 'Préstamos',
+  // },
+  // {
+  //   key: '3',
+  //   icon: <NotificationOutlined />,
+  //   label: 'Notificaciones',
+  // },
+];
 
 const MenuList = () => {
   const [collapsed, setCollapsed] = useState(false);
@@ -38,7 +69,7 @@ const MenuList = () => {
   };
 
   return (
-    <div >
+    <div>
       {isCalculadora && (
         <CuotasList
           idPrestamos={0}
@@ -65,8 +96,16 @@ const MenuList = () => {
           marginTop: 1,
         }}
       />
+      <Sider width={200} style={{ background: "#0097b2"}}>
+        <Menu
+          mode="inline"
+          defaultSelectedKeys={["1"]}
+          style={{ height: "100%", borderRight: 0 }}
+          items={menuItems}
+        ></Menu>
+      </Sider>
 
-      <Menu
+      {/* <Menu
         defaultSelectedKeys={["1"]}
         defaultOpenKeys={["sub1"]}
         mode="inline"
@@ -323,7 +362,7 @@ const MenuList = () => {
             )}
           </Menu.Item>
         </Menu.SubMenu>
-      </Menu>
+      </Menu> */}
     </div>
   );
 };

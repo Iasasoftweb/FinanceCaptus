@@ -22,16 +22,15 @@ function NavAvatar() {
     window.location.replace("/login");
   };
 
-  const userURI = "http://localhost:8000/usuarios/";
-  const UriImg = "http://localhost:8000/uploadusers/";
+  const userURI = "http://localhost:5000/usuarios/";
+  const UriImg = "http://localhost:5000/uploadusers/";
 
   const isMobile = useMediaQuery("(max-width:600px)");
 
   const [nomUsuario, setNomUsuario] = useState(null);
   const [tipoRol, setTipoRol] = useState(null);
   const [userData, setUserData] = useState([]);
-  const [mAvata, setMavata] = useState("");
-
+  
   const getNombreUsuario = (items) => {
     setNomUsuario(items);
   };
@@ -42,7 +41,7 @@ function NavAvatar() {
   const getUser = async () => {
     try {
       const id = localStorage.getItem("userID");
-      console.log(id);
+     
       await axios.get(`${userURI}${id}`).then((response) => {
         const dataUser = response.data;
         const avata = dataUser.avata
@@ -91,7 +90,8 @@ function NavAvatar() {
             <li className="dropdown-header  text-black">
               {userData.map((item) => (
                
-                 <div className="d-flex justify-content-end">
+                 <div className="d-flex justify-content-end"  key={item.id}>
+                  
                  <Avatar
                     src={`${UriImg}${item.avata ? item.avata : <RxAvatar />}`}
                     sx={{ width: 40, height: 40 }}

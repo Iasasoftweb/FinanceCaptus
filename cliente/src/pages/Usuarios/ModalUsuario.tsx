@@ -57,12 +57,12 @@ function ModalUsuario({ Id, open, dataInitial, handleClose, edit, onSave }) {
   const [vRole, setVRole] = useState("");
 
   const myData = edit ? dataInitial : "";
-  const UriUser = "http://localhost:8000/usuarios/";
-  const UriRol = "http://localhost:8000/roles/";
-  const UriRutas = "http://localhost:8000/zonas/";
-  const UriTipo = "http://localhost:8000/usuarios/tipo/";
-  const UriImg = "http://localhost:8000/uploadusers/";
-  const UrisImgDelete = "http://localhost:8000/usuarios/deleteimg/";
+  const UriUser = "http://localhost:5000/usuarios/";
+  const UriRol = "http://localhost:5000/roles/";
+  const UriRutas = "http://localhost:5000/zonas/";
+  const UriTipo = "http://localhost:5000/usuarios/tipo/";
+  const UriImg = "http://localhost:5000/uploadusers/";
+  const UrisImgDelete = "http://localhost:5000/usuarios/deleteimg/";
 
   const VisuallyHiddenInput = styled("input")({
     clip: "rect(0 0 0 0)",
@@ -113,7 +113,7 @@ function ModalUsuario({ Id, open, dataInitial, handleClose, edit, onSave }) {
     console.log(fileOriginal);
     try {
       const res = await axios.post(
-        "http://localhost:8000/uploaduser/",
+        "http://localhost:5000/uploaduser/",
         formatdata
       );
       console.log(res.data.fileName);
@@ -188,6 +188,7 @@ function ModalUsuario({ Id, open, dataInitial, handleClose, edit, onSave }) {
     }
   };
 
+  
   const getZonas = async () => {
     try {
       await axios.get(`${UriRutas}`).then((data) => {
@@ -501,11 +502,11 @@ function ModalUsuario({ Id, open, dataInitial, handleClose, edit, onSave }) {
                       value={vSupervisor}
                       onChange={handleSupervisor}
                     >
-                      {dataTipo.map((option) => (
+                      {/* {dataTipo.map((option) => (
                         <MenuItem key={option.id} value={option.id}>
                           {option.nombreusuario}
                         </MenuItem>
-                      ))}
+                      ))} */}
                     </TextField>
                   </div>
                   <div className="col-md-6 col-sm-12">

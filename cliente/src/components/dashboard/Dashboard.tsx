@@ -29,17 +29,22 @@ import BeatLoader from "react-spinners/BeatLoader";
 import { LuUserRoundCheck } from "react-icons/lu";
 import { TbUserX } from "react-icons/tb";
 import dayjs from "dayjs";
+import getCliente from "../../data/clientes/Getclientes";
+import  MapFront from "../Maps/MapFront";
 
-function Dashboard() {
+const Dashboard=()=> {
   const [totalCliente, setTotalCliente] = useState(0);
   const hasFetched = useRef(false);
   const [dataCliente, setDataCliente] = useState([]);
   const [dataPrestamosActivos, setDataPrestamosActivos] = useState([]);
   const [dataPrestamosActivosporcent, setDataPrestamosActivosporcent] =useState(0);
 
-  const UriCliente = "http://localhost:8000/clientes/";
-  const UriPrestamos = "http://localhost:8000/prestamos/";
-  const UriCuotas = "http://localhost:8000/cuotas/"
+  const UriCliente = "http://localhost:5000/clientes/";
+  const UriPrestamos = "http://localhost:5000/prestamos/";
+  const UriCuotas = "http://localhost:5000/cuotas/"
+   
+ 
+
   const getInf = async () => {
     try {
       const [clientesRes, prestamosRes, cuotasRes] = await Promise.all([
@@ -52,7 +57,9 @@ function Dashboard() {
       const getPrestamos = prestamosRes?.data.data || prestamosRes.data;
       const getCuotas = cuotasRes?.data.data || cuotasRes.data;
       
-
+      
+  
+       
       const hoy = dayjs();
 
       
@@ -83,7 +90,7 @@ function Dashboard() {
 
     console.log(`Préstamos con cuotas vencidas: ${cantidadPrestamosVencidos}`);
 
-      console.log(getClientes);
+  
 
       const prestamosAct = getPrestamos.filter(
         (prestamos) => prestamos.modo === "activo"
@@ -303,6 +310,9 @@ function Dashboard() {
           </div> */}
       </div>
 
+<div className="row">
+     <MapFront clientes={[]}/>
+</div>
       <div className="row p-2 mx-1">
         <div
           className="col-md-6 border shadow-lg overflow-x-scroll d-flex justify-content-center align-items-center"

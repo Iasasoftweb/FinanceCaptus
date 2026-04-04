@@ -1,0 +1,25 @@
+FROM node:20-alpine
+
+# 1. Instalamos dependencias solo una vez. 
+# libc6-compat es vital para evitar errores de librerías nativas en Alpine.
+RUN apk add --no-cache libc6-compat
+
+WORKDIR /app
+
+# 2. Usamos Corepack (es mucho más rápido que npm install -g pnpm)
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
+# 3. Aprovechamos la caché de capas de Docker para las dependencias
+COPY package.json pnpm-lock.yaml* ./
+
+# 4. TRUCO DE VELOCIDAD: Usar el store de pnpm fuera del contenedor
+# Esto evita que pnpm descargue todo de internet si ya existe en caché.
+RUN pnpm install --frozen-lockfile
+
+# 5. Copiamos el resto del código
+COPY . .
+
+EXPOSE 5173
+
+# Usamos el puerto por defecto de Vite
+CMD ["pnpm", "dev", "--host", "0.0.0.0"]

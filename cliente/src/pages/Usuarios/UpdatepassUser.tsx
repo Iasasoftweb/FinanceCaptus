@@ -30,8 +30,8 @@ function Updatepass({ Id, open, dataInitial, handleClose }) {
   const handleClickShowPassword = () => setShowPassword(!showPassword);
   const handleMouseDownPassword = (event) => event.preventDefault();
 
-  const UriUser = "http://localhost:8000/usuarios/";
-  const UriUpdate = "http://localhost:8000/usuarios/credential/";
+  const UriUser = "http://localhost:5000/usuarios/";
+  const UriUpdate = "http://localhost:5000/usuarios/credential/";
   const getUser = async () => {
     try {
       await axios.get(`${UriUser}${Id}`).then((response) => {

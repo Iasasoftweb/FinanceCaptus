@@ -36,7 +36,7 @@ function App() {
 
   const GetEmpresa = async () => {
     try {
-      const respuesta = await axios.get(`http://localhost:8000/empresas/`);
+      const respuesta = await axios.get(`http://localhost:5000/empresas/`);
        
         const getEmpresas = respuesta?.data.data || respuesta.data;
         console.log(getEmpresas[0].interesdefecto)

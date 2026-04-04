@@ -5,7 +5,7 @@ const useTotalPrestamo = (idCliente: number) => {
   const [DataPrestamos, setDataPrestamos] = useState([]);
   const [TotalPrestamos, setTotalPrestamos] = useState(0);
 
-  const uriPrestamos = "http://localhost:8000/prestamos/";
+  const uriPrestamos = "http://localhost:5000/prestamos/";
 
   const getPrestamos = async (id) => {
     try {
