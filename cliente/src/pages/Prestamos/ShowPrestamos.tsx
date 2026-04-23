@@ -37,7 +37,6 @@ import { SlPrinter } from "react-icons/sl";
 import { PDFViewer, PDFDownloadLink } from "@react-pdf/renderer";
 import PrnPrestamos from "./Pdfs/prnPrestamos.tsx";
 
-
 const ShowPrestamos = () => {
   const [PrestamoData, setPrestamoData] = useState([]);
   const [DataPrestamo, setDataPrestamo] = useState([]);
@@ -53,10 +52,10 @@ const ShowPrestamos = () => {
   const [idPrestamo, setIdPrestamos] = useState(0);
   const [verPDF, setVerPDF] = useState(false);
 
-  const UriData = "http://localhost:8000/prestamos/";
-  const uriCuotas = "http://localhost:8000/cuotas/";
-  const uriRutas = "http://localhost:8000/zonas/";
-  const UrisImg = "http://localhost:8000/uploads/";
+  const UriData = "http://localhost:5000/prestamos/";
+  const uriCuotas = "http://localhost:5000/cuotas/";
+  const uriRutas = "http://localhost:5000/zonas/";
+  const UrisImg = "http://localhost:5000/uploads/";
   const Navigate = useNavigate();
   const PER_PAGE = 8;
   const countpage = Math.ceil(PrestamoData.length / PER_PAGE);
@@ -112,27 +111,25 @@ const ShowPrestamos = () => {
 
     const atrasadas = pendientes.filter((item) => {
       const fechaVencimiento = new Date(item.fechavencimiento);
-      return  fechaVencimiento < hoy;
+      return fechaVencimiento < hoy;
     });
-     
-
 
     const BalancePendiente = atrasadas.reduce(
       (sum, cuotas) => sum + parseFloat(cuotas.montocuota || 0),
-      0
+      0,
     );
     const BalancePagado = atrasadas.reduce(
       (sum, cuota) =>
         sum +
         parseFloat(
-          cuota.capitalpagado + cuota.interespagado + cuota.morapago || 0
+          cuota.capitalpagado + cuota.interespagado + cuota.morapago || 0,
         ),
-      0
+      0,
     );
 
     const BalanceMora = atrasadas.reduce(
       (sum, cuota) => sum + parseFloat(cuota.montomora || 0),
-      0
+      0,
     );
 
     return {
@@ -444,7 +441,6 @@ const ShowPrestamos = () => {
                     Balancemora,
                   } = getCuotasInfo(items.id);
 
-                 
                   return (
                     <tr key={items.id}>
                       <td width={50}>

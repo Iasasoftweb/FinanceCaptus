@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Modal from "@mui/material/Modal";
+import "../../App.css";
 import {
   Box,
   InputAdornment,
@@ -7,48 +8,56 @@ import {
   TextField,
   Tooltip,
 } from "@mui/material";
-import { AiOutlineCalculator } from "react-icons/ai";
+
 import { useForm, Controller, useWatch } from "react-hook-form";
 import type { FieldValues } from "react-hook-form";
-import { SiMeteor } from "react-icons/si";
-import Logo from "../../components/Brand/Brand.tsx";
-import { RiUserLine } from "react-icons/ri";
 import axios from "axios";
 import FechaCorta from "../../components/stuff/fechaCorta.tsx";
-import { CiCalendarDate } from "react-icons/ci";
-import {
-  PiIdentificationCardThin,
-  PiMapPinLineThin,
-  PiPercentLight,
-} from "react-icons/pi";
 import TipoAmortizacion from "../../data/Apis/TipoAmortizacion.json";
 import Frecuencias from "../../data/Apis/Modalidad.json";
 import { NumericFormat } from "react-number-format";
 import "./PrestamosForm.css";
-import { DatePicker } from "@mui/x-date-pickers";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs from "dayjs";
-import { LuMessageSquareMore, LuUserRoundCheck } from "react-icons/lu";
 import limpiarMonto from "../../components/stuff/LimpiarMonto.tsx";
 import Swal from "sweetalert2";
 import CalcularInteres from "./CalculoInteres.tsx";
-import { LiaMapMarkedAltSolid } from "react-icons/lia";
-import {
-  MdOutlineCancel,
-  MdOutlinePhoneInTalk,
-  MdOutlineSaveAlt,
-} from "react-icons/md";
 import CuotasList from "./CuotasList.tsx";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import MButton from "../../components/stuff/MButton.tsx";
 import getAmortizaData from "./getAmortizaCuotaFija.tsx";
 import useDataUsuario from "../../hooks/useDataUsuario.tsx";
 import useCompany from "../../hooks/useCompany.tsx";
 import useCobrador from "../../hooks/useCobrador.tsx";
-import { GrDeploy } from "react-icons/gr";
-
+import {
+  User,
+  Calendar,
+  DollarSign,
+  Percent,
+  MapPin,
+  Phone,
+  ShieldCheck,
+  Briefcase,
+  Info,
+  X,
+  Save,
+  Rocket,
+  ChevronDown,
+  CreditCard,
+  Plus,
+  RefreshCcw,
+  List,
+  Map,
+  Home,
+  HandCoins,
+  Users,
+} from "lucide-react";
+import { SectionTitle } from "../../components/stuff/SectionTitle.tsx";
+import { InputField } from "../../components/stuff/InputField.tsx";
+// import { FieldBinaryOutlined } from "@ant-design/icons";
+import { calcularTasaNewtonRaphson } from "../../components/Prestamos/CalculoTasaEfectiva.tsx";
+import { MisColores } from "../../components/stuff/MisColores.tsx";
 
 interface PrestamosFormProps {
   ModoEdicion: boolean;
@@ -95,8 +104,17 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
   const { dataCompany, IdDataCompany } = useCompany();
   const { dataCobrador } = useCobrador();
 
-  const URI = "http://localhost:8000/prestamos/";
-  const URICuotas = "http://localhost:8000/cuotas/";
+  const colors = {
+    headerBlue: "#4A7BB7",
+    teal: "#008B8B",
+    actionRed: "#E5534B",
+    bgGray: "#F8F9FA",
+    borderGray: "#E2E8F0",
+  };
+
+  console.log(dataCobrador);
+  const URI = "http://localhost:5000/prestamos/";
+  const URICuotas = "http://localhost:5000/cuotas/";
   const {
     register,
     handleSubmit,
@@ -109,6 +127,7 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
       idclientes: idCliente,
       tipoamortizacion: amortiza,
       referencia: Referencia,
+      fecha: new Date().toISOString().split("T")[0],
       interes: localStorage.getItem("interesDefault"),
       capital: 0.0,
       frecuencia: "SEMANAL",
@@ -116,8 +135,7 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
       cuotaspagadas: 0,
       capitalpendiente: 0.0,
       balancependiente: 0.0,
-      fecha: new Date(),
-      fechaprimer: new Date(),
+      fechaprimer: new Date().toISOString().split("T")[0],
       fechaultimopago: new Date(),
       mora: 0.0,
       gastoslegal: gastosLegales,
@@ -149,7 +167,7 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
           TCuotas,
           Mcuota,
           amortiza,
-          Frecuencia
+          Frecuencia,
         );
 
         setValue("interes", resultado.toFixed(2));
@@ -163,21 +181,6 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
     }
   };
 
- 
-
-  const handleCalculoInteres = () => {
-  // console.log( Taza );
-  };
-
-  const CalcularMontoCuota = () => {
-    if (capitalValue) {
-      let cc = limpiarMonto(capitalValue) * (MMInteres / 100);
-      setValue("mcuota", cc);
-    } else {
-      toast.error("No has introducido el Monto Capital");
-    }
-  };
-
   const HandleCobrador = (e) => {
     setCobrador(e.target.value);
   };
@@ -185,13 +188,13 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
   const ClienteData = async () => {
     try {
       await axios
-        .get(`http://localhost:8000/clientes/${idCliente}`)
+        .get(`http://localhost:5000/clientes/${idCliente}`)
         .then((respuesta) => {
           setClienteData(respuesta.data);
           setCedulaCliente(respuesta.data.dni);
 
           setNombreCliente(
-            respuesta.data.nombres + " " + respuesta.data.apellidos
+            respuesta.data.nombres + " " + respuesta.data.apellidos,
           );
           setRuta(respuesta.data.tbzona.nombrerutas);
         });
@@ -214,7 +217,7 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
     const cleanedValue = value.replace(/\D/g, "");
     const formatedValue = cleanedValue.replace(
       /(\d{3})(\d{7})(\d{1})/,
-      "$1-$2-$3"
+      "$1-$2-$3",
     );
 
     return formatedValue;
@@ -233,6 +236,7 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
 
   const HandleFechaPrimer = (date) => {
     setFechaPrimerPato(date);
+    console.log(date);
   };
 
   const HandleReferencia = (e) => {
@@ -257,6 +261,7 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
     setcoDeudorDireccion(upperCaseValue);
     setValue("codeudordireccion", upperCaseValue, { shouldValidate: true });
   };
+
   const HandleCoDedudorTelefono = (e) => {
     const upperCaseValue = e.target.value;
     setcoDeudorTelefono(upperCaseValue);
@@ -283,23 +288,37 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
   };
 
   const HandleCapital = (e) => {
-    //     const mm = e.target.value;
-    //     console.log(TCuotas, MMInteres);
-    //
-    //     if (amortiza === "Cuota Fija") {
-    //       const mmCuota = limpiarMonto(mm) * (MMInteres / 100);
-    //       console.log(mmCuota);
-    //       setValue("mcuota", mmCuota);
-    //     }
     setCapital(e.target.value);
   };
 
   useEffect(() => {
     const fechaActual = FechaCorta(new Date());
+
     ClienteData();
-    setValue("fecha", fechaActual);
+
     setValue("capital", 0.0);
+    setValue("interes", "0.0000");
   }, [idCliente]);
+
+  useEffect(() => {
+    const capital1 = parseFloat(capital.toString().replace(/[^0-9.-]/g, ""));
+    const n = parseFloat(TCuotas);
+    const p = parseFloat(Mcuota.toString().replace(/[^0-9.-]/g, ""));
+
+    if (amortiza === "Cuota Fija" && capital1 > 0 && n > 0 && p > 0) {
+      if (p * n > capital1) {
+        // El cálculo de Newton-Raphson devuelve la tasa del PERIODO.
+        // Si el usuario cambia la frecuencia, la tasa del periodo se mantiene
+        // matemáticamente correcta para esa estructura de pagos.
+        const tasaResultante = calcularTasaNewtonRaphson(capital1, n, p);
+        const tasaPorcentaje = tasaResultante * 100;
+
+        setValue("interes", tasaPorcentaje.toFixed(5));
+      } else {
+        setValue("interes", "0.0000");
+      }
+    }
+  }, [capital, TCuotas, Mcuota, amortiza, Frecuencia]);
 
   const handleModalCuotas = () => {
     setIsModalCuotas(false);
@@ -389,17 +408,14 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
 
         if (tablaAmortizacion.length > 0) {
           await axios.post(
-            "http://localhost:8000/cuotas/",
+            "http://localhost:5000/cuotas/",
             tablaAmortizacion.map((cuota) => ({
               idprestamo: nuevoPrestamoID,
               ...cuota,
-            }))
+            })),
           );
         }
       }
-
-      // console.log(tablaAmortizacion);
-      // console.log(totales);
 
       reset();
       handleClose();
@@ -418,7 +434,13 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
   };
 
   return (
-    <div>
+    <div
+      className="container-fluid min-vh-100 p-4"
+      style={{
+        backgroundColor: colors.bgGray,
+        fontFamily: "Segoe UI, Roboto, Helvetica, Arial, sans-serif",
+      }}
+    >
       {isModalCuotas && (
         <CuotasList
           idPrestamos={idPresta}
@@ -457,10 +479,10 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
             },
 
             maxHeight: {
-              xs: "650px",
-              sm: "600px",
-              md: "800px",
-              lg: "820px",
+              xs: "690px",
+              sm: "645px",
+              md: "845px",
+              lg: "865px",
             },
             transform: "translate(-50%, -50%)",
             width: {
@@ -473,960 +495,447 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
             boxShadow: 24,
           }}
         >
-          <div className="  bg-secondary p-2 d-flex justify-content-between align-content-center">
-            <div className="d-flex">
-              <SiMeteor className="fs-1 text-white me-2" /> <Logo fs={20} />
-            </div>
-
-            <div>
-              <div className="p-1 rounded-circle border" onClick={handleClose}>
-                <span
-                  className="p-2 text-white fs-6"
-                  style={{ cursor: "pointer" }}
+          <div
+            className="card border-0 shadow-sm rounded-3 overflow-hidden mx-auto w-100"
+            style={{ maxWidth: "1100px" }}
+          >
+            <div className="card-header border-bottom bg-white p-4 d-flex justify-content-between align-items-center">
+              <div className="d-flex align-items-center gap-3">
+                <div
+                  className="p-2 rounded-3 text-white d-flex align-items-center justify-content-center shadow-sm"
+                  style={{
+                    backgroundColor: colors.headerBlue,
+                    width: "45px",
+                    height: "45px",
+                  }}
                 >
-                  X
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <form
-              onSubmit={handleSubmit(onSubmit)}
-              className="border-1 border-light-subtle "
-              onKeyDown={handleKeyDown}
-            >
-              <div className="row mx-1 mt-2 text-center">
-                {!ModoEdicion ? (
-                  <span className="clFont text-secundary fs-5">
+                  <HandCoins size={20} />
+                </div>
+                <div>
+                  <h2
+                    className="fw-bold mb-0"
+                    style={{ color: "#2c3e50", fontSize: "1.5rem" }}
+                  >
                     Nuevo Préstamo
-                  </span>
-                ) : (
-                  <span className="clFont text-secundary fs-5">
-                    Editando Préstamo
-                  </span>
-                )}
+                  </h2>
+                  <p className="text-muted mb-0 small">
+                    Finance Cactus - Gestión de Cartera
+                  </p>
+                </div>
               </div>
+              <button
+                className="btn btn-light rounded-circle p-2 text-secondary hover:bg-danger hover:text-white transition-all"
+                onClick={handleClose}
+              >
+                <X size={20} />
+              </button>
+            </div>
 
-              <div className="row mx-2">
-                <div className="bg-success bg-opacity-10 rounded-2">
-                  <span className="fs-6 fw-medium text-info">
-                    Datos del Préstamo
-                  </span>
-                </div>
-                <div className="col-sm-6 col-md-2 p-2 ">
-                  <TextField
-                    label="Numero de Cédula *"
-                    fullWidth
+            <div className="card-body p-2">
+              <SectionTitle title="Datos del Préstamo" />
+            </div>
+            <LocalizationProvider dateAdapter={AdapterDayjs}>
+              <form
+                onSubmit={handleSubmit(onSubmit)}
+                className="row g-3 mx-2"
+                onKeyDown={handleKeyDown}
+              >
+                <InputField
+                  label="Número de Cédula"
+                  icon={CreditCard}
+                  readOnly
+                  required
+                  col="col-md-3"
+                >
+                  <input
+                    type="text"
                     value={cedulaCliente}
-                    disabled={true}
+                    readOnly
+                    className="form-control border-0 shadow-none bg-info-subtle"
                     onChange={handleDNIChange}
-                    InputLabelProps={{ style: { fontSize: "1em" } }}
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <span>
-                            <PiIdentificationCardThin className="fs-5 text-info" />
-                          </span>
-                        </InputAdornment>
-                      ),
-                    }}
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        borderRadius: "10px",
-                        fontSize: "12px",
-                        width: "100%",
-                        color: "GrayText",
-                        backgroundColor: "honeydew",
-                      },
-                    }}
+                    style={{ fontSize: "0.8em" }}
                   />
-                </div>
-                <div className="col-sm-6 col-md-4 p-2 ">
-                  <TextField
-                    label="Nombre del Cliente"
-                    fullWidth
-                    disabled={true}
+                </InputField>
+
+                <InputField
+                  label="Nombre del Cliente"
+                  icon={User}
+                  readOnly
+                  required
+                  col="col-md-3"
+                >
+                  <input
+                    type="text"
                     value={nombreCliente}
-                    InputLabelProps={{ style: { fontSize: "1em" } }}
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <span>
-                            <RiUserLine className="fs-5 text-info" />
-                          </span>
-                        </InputAdornment>
-                      ),
-                    }}
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        borderRadius: "10px",
-                        fontSize: "12px", // Controla el radio de borde
-                        width: "100%",
-                        color: "GrayText",
-                        backgroundColor: "honeydew",
-                      },
-                    }}
+                    readOnly
+                    className="form-control border-0 shadow-none bg-info-subtle"
+                    onChange={handleDNIChange}
+                    style={{ fontSize: "0.8em" }}
                   />
-                </div>
-                <div className="col-sm-6 col-md-3 p-2 ">
-                  <TextField
-                    label="Fecha"
-                    fullWidth
-                    disabled={true}
+                </InputField>
+
+                <InputField label="Fecha" icon={Calendar} required col="col-md-3">
+                  <input
+                    type="date"
+                    className="form-control border-0 shadow-none"
+                    style={{ fontSize: "0.8em" }}
                     {...register("fecha")}
-                    InputLabelProps={{ style: { fontSize: "1em" } }}
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <span>
-                            <CiCalendarDate className="fs-5 text-info" />
-                          </span>
-                        </InputAdornment>
-                      ),
-                    }}
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        borderRadius: "10px",
-                        fontSize: "12px", // Controla el radio de borde
-                        width: "100%",
-                        backgroundColor: "honeydew",
-                      },
-                    }}
                   />
-                </div>
-                <div className="col-sm-6 col-md-3 p-2 ">
-                  <TextField
+                </InputField>
+
+                <InputField label="Amortización" icon={Info} required col="col-md-3">
+                  <select
+                    className="form-select border-0 shadow-none"
+                    style={{ fontSize: "0.8em" }}
                     {...register("tipoamortizacion")}
-                    label="Amortización *"
-                    select
-                    value={amortiza}
-                    fullWidth
                     onChange={HandleAmortiza}
-                    InputLabelProps={{ style: { fontSize: "0.9em" } }}
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        borderRadius: "10px",
-                        fontSize: "12px", // Controla el radio de borde
-                        width: "100%",
-                        color: "GrayText",
-                      },
-                    }}
                   >
-                    {TipoAmortizacion.map((items) => (
-                      <MenuItem key={items.id} value={items.tipo}>
-                        <span className="clFont">{items.tipo}</span>
-                      </MenuItem>
+                    <option value="">Seleccione un tipo...</option>
+                    {TipoAmortizacion.map((item) => (
+                      <option key={item.id} value={item.tipo}>
+                        {item.tipo}
+                      </option>
                     ))}
-                  </TextField>
-                </div>
-              </div>
-              <div className="row mx-2">
-                <div className="col-sm-6 col-md-3 p-2 ">
-                  <TextField
+                  </select>
+                </InputField>
+
+                <InputField label="Frecuencia" icon={Info} required col="col-md-3">
+                  <select
+                    className="form-select border-0 shadow-none"
+                    style={{ fontSize: "0.8em" }}
                     {...register("frecuencia")}
-                    label="Frecuencia *"
-                    select
-                    value={Frecuencia}
-                    fullWidth
                     onChange={HandleFrecuencia}
-                    InputLabelProps={{ style: { fontSize: "0.9em" } }}
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        borderRadius: "10px",
-                        fontSize: "12px", // Controla el radio de borde
-                        width: "100%",
-                        color: "GrayText",
-                      },
-                    }}
                   >
+                    <option value="">Seleccione un tipo...</option>
                     {Frecuencias.map((items) => (
-                      <MenuItem key={items.id} value={items.tipo}>
-                        <span className="clFont">{items.tipo}</span>
-                      </MenuItem>
+                      <option key={items.id} value={items.tipo}>
+                        {items.tipo}
+                      </option>
                     ))}
-                  </TextField>
-                  {errors.frecuencia && (
-                    <p className="errorColor"> {errors.frecuencia.message} </p>
-                  )}
-                </div>
-                <div className="col-sm-6 col-md-2 p-2 ">
+                  </select>
+                </InputField>
+
+                <InputField label="Monto a Prestar" icon={DollarSign} required col="col-md-3">
                   <Controller
                     name="capital"
                     control={control}
-                    rules={{
-                      required: "Este campo es obligatorio",
-                      min: 0,
-                    }}
-                    render={({ field }) => (
+                    defaultValue=""
+                    render={({ field: { onChange, value, name, ref } }) => (
                       <NumericFormat
-                        {...field}
-                        customInput={TextField} // Usa TextField de Material-UI
-                        label="Monto a Prestar"
-                        variant="outlined"
-                        fullWidth
-                        thousandSeparator=","
-                        decimalSeparator="."
-                        prefix="DOP "
-                        fixedDecimalScale
-                        value={capital}
-                        onChange={HandleCapital}
+                        name={name}
+                        getInputRef={ref}
+                        value={value}
+                        thousandSeparator={true}
+                        prefix={"DOP "}
                         decimalScale={2}
-                        allowNegative={false}
-                        error={!!errors.capital}
-                        helperText={errors.capital?.message}
+                        fixedDecimalScale={true}
+                        className="form-control border-0 shadow-none fw-bold"
+                        placeholder="DOP 0.00"
+                        onChange={HandleCapital}
                         onValueChange={(values) => {
-                          field.onChange(values.floatValue || 0.0); // Actualiza el valor en react-hook-form
+                          // Actualiza el formulario (esto es ligero y no pierde el foco)
+                          onChange(values.floatValue || 0);
                         }}
-                        InputLabelProps={{ style: { fontSize: "0.9rem" } }}
-                        InputProps={{
-                          style: {
-                            fontSize: "0.8rem",
-                            borderRadius: "10px",
-                            color: "GrayText",
-                          },
-                        }}
-                        sx={{
-                          "& input::placeholde": {
-                            fontSize: "0.8rem", // Cambia el tamaño de letra del placeholder
-                            color: "GrayText", // Opcional: color del placeholder
-                          },
-                        }}
-                        className="clFont"
+                        style={{ fontSize: "0.8em" }}
                       />
                     )}
                   />
-                </div>
-                <div className="col-sm-6 col-md-2 p-2 ">
-                  <TextField
-                    label="Cuotas"
-                    variant="outlined"
+                </InputField>
+
+                <InputField label="Cuotas" icon={List} required col="col-md-3">
+                  <input
+                    type="number"
+                    placeholder="0"
                     {...register("tcuota")}
-                    fullWidth
-                    InputLabelProps={{ style: { fontSize: "0.9em" } }}
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        borderRadius: "10px",
-                        fontSize: "12px", // Controla el radio de borde
-                        width: "100%",
-                        color: "GrayText",
-                      },
-                    }}
-                  ></TextField>
-                </div>
-                <div className="col-sm-6 col-md-2 p-2 ">
+                    className="form-control border-0 shadow-none"
+                    style={{ fontSize: "0.8em" }}
+                  />
+                </InputField>
+
+                <InputField label="Monto de Cuota" icon={DollarSign} required col="col-md-3">
                   <Controller
                     name="mcuota"
                     control={control}
-                    render={({ field }) => (
+                    defaultValue=""
+                    render={({ field: { onChange, value, name, ref } }) => (
                       <NumericFormat
-                        {...field}
-                        customInput={TextField} // Usa TextField de Material-UI
-                        label="Monto Cuota"
-                        variant="outlined"
-                        fullWidth
-                        thousandSeparator=","
-                        decimalSeparator="."
-                        prefix="DOP "
-                        fixedDecimalScale
+                        name={name}
+                        getInputRef={ref}
+                        value={value}
+                        thousandSeparator={true}
+                        prefix={"DOP "}
                         decimalScale={2}
-                        allowNegative={false}
-                        disabled={!capitalValue}
+                        fixedDecimalScale={true}
+                        className="form-control border-0 shadow-none fw-bold"
+                        placeholder="DOP 0.00"
                         onValueChange={(values) => {
-                          field.onChange(values.floatValue || 0.0); // Actualiza el valor en react-hook-form
+                          // Actualiza el formulario (esto es ligero y no pierde el foco)
+                          onChange(values.floatValue || 0);
                         }}
-                        InputLabelProps={{ style: { fontSize: "0.9rem" } }}
-                        InputProps={{
-                          style: capitalValue
-                            ? {
-                                fontSize: "0.8rem",
-                                borderRadius: "10px",
-                                color: "GrayText",
-                                backgroundColor: "white",
-                              } // Cambia el tamaño de letra
-                            : {
-                                fontSize: "0.8rem",
-                                borderRadius: "10px",
-                                color: "GrayText",
-                                backgroundColor: "honeydew",
-                              },
-
-                          endAdornment: capitalValue ? (
-                            <InputAdornment position="end">
-                              <button
-                                style={{
-                                  background: "none",
-                                  border: "none",
-                                  cursor: "pointer",
-                                }}
-                                type="button"
-                                onClick={() => calculadoraInteres()}
-                              >
-                                <AiOutlineCalculator className="fs-5 text-info" />
-                              </button>
-                            </InputAdornment>
-                          ) : null,
-                        }}
-                        sx={{
-                          "& input::placeholde": {
-                            fontSize: "0.8rem", // Cambia el tamaño de letra del placeholder
-                            color: "GrayText", // Opcional: color del placeholder
-                          },
-                        }}
-                        className="clFont"
+                        style={{ fontSize: "0.8em" }}
                       />
                     )}
                   />
-                </div>
-                <div className="col-sm-6 col-md-1 p-2 ">
-                  <Tooltip title="Calculo de Interes  " arrow>
-                    <div
-                      className="text-center rounded-4 p-2 mt-1"
-                      style={{ background: "#187bcd", cursor: "pointer" }}
-                      onClick={handleCalculoInteres}
-                    >
-                      <span
-                        className="text-center text-white"
-                        style={{ fontSize: "0.9em" }}
-                      >
-                        <GrDeploy />
-                      </span>
-                    </div>
-                  </Tooltip>
-                </div>
-                <div className="col-sm-6 col-md-2 p-2 ">
-                  <Controller
-                    name="interes"
-                    control={control}
-                    render={({ field }) => (
-                      <NumericFormat
-                        {...field}
-                        customInput={TextField} // Usa TextField de Material-UI
-                        label="Taza Interes"
-                        variant="outlined"
-                        fullWidth
-                        thousandSeparator=","
-                        decimalSeparator="."
-                        prefix=""
-                        fixedDecimalScale
-                        decimalScale={2}
-                        allowNegative={false}
-                        className="no-background"
-                        onValueChange={(values) => {
-                          field.onChange(values.floatValue || 0.0); // Actualiza el valor en react-hook-form
-                        }}
-                        InputLabelProps={{
-                          style: {
-                            fontSize: "0.9rem",
-                            backgroundColor: "white",
-                          },
-                        }}
-                        InputProps={{
-                          style: {
-                            fontSize: "0.8rem",
-                            borderRadius: "10px",
-                            color: "GrayText",
-                          },
+                </InputField>
 
-                          startAdornment: (
-                            <InputAdornment position="start">
-                              <span>
-                                <PiPercentLight className="fs-5 text-info" />
-                              </span>
-                            </InputAdornment>
-                          ),
-
-                          endAdornment: capitalValue ? (
-                            <InputAdornment position="end">
-                              <button
-                                style={{
-                                  background: "none",
-                                  border: "none",
-                                  cursor: "pointer",
-                                }}
-                                type="button"
-                                onClick={() => CalcularMontoCuota()}
-                              >
-                                <AiOutlineCalculator className="fs-5 text-info" />
-                              </button>
-                            </InputAdornment>
-                          ) : null,
-                        }}
-                        sx={{
-                          "& .MuiOutlinedInput-root": {
-                            borderRadius: "10px",
-                            fontSize: "12px",
-                            width: "100%",
-                          },
-                        }}
-
-                        //   className="clFont"
-                      />
-                    )}
+                <InputField
+                  label="Taza Interes (%)"
+                  icon={Percent}
+                  readOnly
+                  required
+                  col="col-md-3"
+                >
+                  <input
+                    type="text"
+                    value={MMInteres}
+                    {...register("interes")}
+                    className="form-control border-0 shadow-none bg-warning-subtle fw-bold text-dark"
                   />
-                </div>
-              </div>
-              <div className="row mx-2">
-                <div className="col-sm-6 col-md-3 p-2 ">
-                  <DatePicker
-                    label="Fecha Primer Pago"
+                </InputField>
+
+                <InputField label="Fecha Primer Pago" icon={Calendar} required col="col-md-3">
+                  <input
+                    type="date"
+                    className="form-control border-0 shadow-none"
+                    style={{ fontSize: "0.8em" }}
                     {...register("fechaprimer")}
-                    value={fechaPrimerPago}
-                    onChange={HandleFechaPrimer}
-                    format="DD/MM/YYYY"
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        borderRadius: "10px",
-                        fontSize: "12px", // Controla el radio de borde
-                        width: "100%",
-                        color: "GrayText",
-                      },
-                    }}
                   />
-                </div>
-                <div className="col-sm-6 col-md-6 p-2 ">
-                  <TextField
-                    {...register("idcompany", {
-                      required: "Este campo es obligatorio",
-                    })}
-                    label="Nombre de la Compañia *"
-                    select
-                    value={idCompany}
-                    fullWidth
+                </InputField>
+
+                <InputField label="Compañía" icon={Briefcase} required col="col-md-3">
+                  <select
+                    name="compania"
                     onChange={HandleCompany}
-                    InputLabelProps={{ style: { fontSize: "0.9em" } }}
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        borderRadius: "10px",
-                        fontSize: "12px", // Controla el radio de borde
-                        width: "100%",
-                        color: "GrayText",
-                      },
-                    }}
+                    className="form-select border-0 shadow-none"
+                    style={{ fontSize: "0.8em" }}
                   >
                     {dataCompany.map((items) => (
-                      <MenuItem key={items.id} value={items.id}>
-                        <span className="clFont">{items.company}</span>
-                      </MenuItem>
+                      <option value="Finance Cactus Azua" key={items.id}>
+                        {items.company}
+                      </option>
                     ))}
-                  </TextField>
-                  {errors.idcompany && (
-                    <p className="errorColor"> {errors.idcompany.message} </p>
-                  )}
-                </div>
-                <div className="col-sm-6 col-md-3 p-2 ">
-                  <TextField
-                    label="Nombre de la Ruta"
-                    fullWidth
+                  </select>
+                </InputField>
+
+                <InputField label="Nombre de Ruta" icon={Map} readOnly col="col-md-3">
+                  <input
+                    type="text"
                     value={ruta}
-                    disabled={true}
-                    InputLabelProps={{ style: { fontSize: "1em" } }}
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <span>
-                            <PiMapPinLineThin className="fs-5 text-info" />
-                          </span>
-                        </InputAdornment>
-                      ),
-                    }}
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        borderRadius: "10px",
-                        fontSize: "12px",
-                        width: "100%",
-                        color: "GrayText",
-                        backgroundColor: "honeydew",
-                      },
-                    }}
+                    readOnly
+                    className="form-control border-0 shadow-none bg-info-subtle fw-bold text-primary"
+                    style={{ fontSize: "0.8em" }}
                   />
-                </div>
-              </div>
-              <div className="row mx-2">
-                <div className="bg-success bg-opacity-10 rounded-2">
-                  <span className="fs-6 fw-medium text-info ">Otros</span>
-                </div>
-                <div className="col-sm-6 col-md-3 p-2 ">
+                </InputField>
+
+                <SectionTitle title="Otros" />
+
+                <InputField label="Mora" icon={Percent} required col="col-md-3">
                   <Controller
                     name="mora"
                     control={control}
-                    render={({ field }) => (
+                    render={({ field: { onChange, value, name, ref } }) => (
                       <NumericFormat
-                        {...field}
-                        customInput={TextField} // Usa TextField de Material-UI
-                        label="Mora"
-                        variant="outlined"
-                        fullWidth
-                        thousandSeparator=","
-                        decimalSeparator="."
-                        prefix=""
-                        fixedDecimalScale
+                        name={name}
+                        getInputRef={ref}
+                        value={value}
+                        thousandSeparator={true}
+                        prefix={"DOP "}
                         decimalScale={2}
-                        allowNegative={false}
-                        className="no-background"
+                        fixedDecimalScale={true}
+                        className="form-control border-0 shadow-none fw-bold"
+                        placeholder="DOP 0.00"
                         onValueChange={(values) => {
-                          field.onChange(values.floatValue || 0.0); // Actualiza el valor en react-hook-form
+                          // Actualiza el formulario (esto es ligero y no pierde el foco)
+                          onChange(values.floatValue || 0);
                         }}
-                        InputLabelProps={{
-                          style: {
-                            fontSize: "0.9rem",
-                            backgroundColor: "white",
-                          },
-                        }}
-                        InputProps={{
-                          style: {
-                            fontSize: "0.8rem",
-                            borderRadius: "10px",
-                            color: "GrayText",
-                          },
-
-                          startAdornment: (
-                            <InputAdornment position="start">
-                              <span>
-                                <PiPercentLight className="fs-5 text-info" />
-                              </span>
-                            </InputAdornment>
-                          ),
-                        }}
-                        sx={{
-                          "& .MuiOutlinedInput-root": {
-                            borderRadius: "10px",
-                            fontSize: "12px",
-                            width: "100%",
-                          },
-                        }}
+                        style={{ fontSize: "0.8em" }}
                       />
                     )}
                   />
-                </div>
-                <div className="col-sm-6 col-md-3 p-2 ">
+                </InputField>
+
+                <InputField label="Gastos Legales" icon={Percent} required col="col-md-3">
                   <Controller
                     name="gastoslegal"
                     control={control}
-                    render={({ field }) => (
+                    render={({ field: { onChange, value, name, ref } }) => (
                       <NumericFormat
-                        {...field}
-                        customInput={TextField} // Usa TextField de Material-UI
-                        label="Gastos Legales"
-                        variant="outlined"
-                        fullWidth
-                        thousandSeparator=","
-                        decimalSeparator="."
-                        prefix="DOP "
-                        value={gastosLegales}
-                        onChange={HanledGastosLegales}
-                        fixedDecimalScale
+                        name={name}
+                        getInputRef={ref}
+                        value={value}
+                        thousandSeparator={true}
+                        prefix={"DOP "}
                         decimalScale={2}
-                        allowNegative={false}
+                        fixedDecimalScale={true}
+                        className="form-control border-0 shadow-none fw-bold"
+                        placeholder="DOP 0.00"
                         onValueChange={(values) => {
-                          field.onChange(values.floatValue || 0.0); // Actualiza el valor en react-hook-form
+                          // Actualiza el formulario (esto es ligero y no pierde el foco)
+                          onChange(values.floatValue || 0);
                         }}
-                        InputLabelProps={{ style: { fontSize: "1rem" } }}
-                        InputProps={{
-                          style: {
-                            fontSize: "0.8rem",
-                            borderRadius: "10px",
-                            color: "GrayText",
-                          }, // Cambia el tamaño de letra
-                        }}
-                        sx={{
-                          "& input::placeholde": {
-                            fontSize: "0.8rem", // Cambia el tamaño de letra del placeholder
-                            color: "GrayText", // Opcional: color del placeholder
-                          },
-                        }}
-                        className="clFont"
+                        style={{ fontSize: "0.8em" }}
                       />
                     )}
                   />
-                </div>
-                <div className="col-sm-6 col-md-3 p-2 ">
+                </InputField>
+
+                <InputField label="Seguro" icon={Percent} required col="col-md-3">
                   <Controller
                     name="seguro"
                     control={control}
-                    render={({ field }) => (
+                    render={({ field: { onChange, value, name, ref } }) => (
                       <NumericFormat
-                        {...field}
-                        customInput={TextField} // Usa TextField de Material-UI
-                        label="Seguro"
-                        variant="outlined"
-                        fullWidth
-                        thousandSeparator=","
-                        decimalSeparator="."
-                        prefix="DOP "
-                        fixedDecimalScale
+                        name={name}
+                        getInputRef={ref}
+                        value={value}
+                        thousandSeparator={true}
+                        prefix={"DOP "}
                         decimalScale={2}
-                        value={Seguro}
-                        onChange={handleSeguro}
-                        allowNegative={false}
+                        fixedDecimalScale={true}
+                        className="form-control border-0 shadow-none fw-bold"
+                        placeholder="DOP 0.00"
                         onValueChange={(values) => {
-                          field.onChange(values.floatValue || 0.0); // Actualiza el valor en react-hook-form
+                          // Actualiza el formulario (esto es ligero y no pierde el foco)
+                          onChange(values.floatValue || 0);
                         }}
-                        InputLabelProps={{ style: { fontSize: "1rem" } }}
-                        InputProps={{
-                          style: {
-                            fontSize: "0.8rem",
-                            borderRadius: "10px",
-                            color: "GrayText",
-                          }, // Cambia el tamaño de letra
-                        }}
-                        sx={{
-                          "& input::placeholde": {
-                            fontSize: "0.8rem", // Cambia el tamaño de letra del placeholder
-                            color: "GrayText", // Opcional: color del placeholder
-                          },
-                        }}
-                        className="clFont"
+                        style={{ fontSize: "0.8em" }}
                       />
                     )}
                   />
-                </div>
-                <div className="col-sm-6 col-md-3 p-2 ">
+                </InputField>
+
+                <InputField label="Comisión" icon={Percent} required col="col-md-3">
                   <Controller
                     name="comision"
                     control={control}
-                    render={({ field }) => (
+                    render={({ field: { onChange, value, name, ref } }) => (
                       <NumericFormat
-                        {...field}
-                        customInput={TextField} // Usa TextField de Material-UI
-                        label="Comisión"
-                        variant="outlined"
-                        fullWidth
-                        thousandSeparator=","
-                        decimalSeparator="."
-                        prefix=""
-                        fixedDecimalScale
+                        name={name}
+                        getInputRef={ref}
+                        value={value}
+                        thousandSeparator={true}
+                        prefix={"DOP "}
                         decimalScale={2}
-                        allowNegative={false}
-                        className="no-background"
-                        value={comision}
-                        onChange={HandleComision}
+                        fixedDecimalScale={true}
+                        className="form-control border-0 shadow-none fw-bold"
+                        placeholder="DOP 0.00"
                         onValueChange={(values) => {
-                          field.onChange(values.floatValue || 0.0); // Actualiza el valor en react-hook-form
+                          // Actualiza el formulario (esto es ligero y no pierde el foco)
+                          onChange(values.floatValue || 0);
                         }}
-                        InputLabelProps={{
-                          style: {
-                            fontSize: "0.9rem",
-                            backgroundColor: "white",
-                          },
-                        }}
-                        InputProps={{
-                          style: {
-                            fontSize: "0.8rem",
-                            borderRadius: "10px",
-                            color: "GrayText",
-                          },
-                          startAdornment: (
-                            <InputAdornment position="start">
-                              <span>
-                                <PiPercentLight className="fs-5 text-info" />
-                              </span>
-                            </InputAdornment>
-                          ),
-                        }}
-                        sx={{
-                          "& .MuiOutlinedInput-root": {
-                            borderRadius: "10px",
-                            fontSize: "12px",
-                            width: "100%",
-                          },
-                        }}
-                        //   className="clFont"
+                        style={{ fontSize: "0.8em" }}
                       />
                     )}
                   />
-                </div>
-              </div>
-              <div className="row mx-2">
-                <div className="col-sm-6 col-md-4 p-2 ">
-                  <TextField
-                    {...register("idgestor", {
-                      required: "Este campo es obligatorio",
-                    })}
-                    label="Gestor *"
-                    select
-                    value={Gestor}
-                    fullWidth
+                </InputField>
+
+                <InputField label="Gestor" icon={Briefcase} required col="col-md-3">
+                  <select
+                    name="idgestor"
                     onChange={HandleGestor}
-                    InputLabelProps={{ style: { fontSize: "0.9em" } }}
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        borderRadius: "10px",
-                        fontSize: "12px", // Controla el radio de borde
-                        width: "100%",
-                        color: "GrayText",
-                      },
-                    }}
+                    className="form-select border-0 shadow-none"
+                    style={{ fontSize: "0.8em" }}
                   >
                     {dataUser.map((items) => (
-                      <MenuItem key={items.id} value={items.id}>
-                        <span className="clFont">{items.nombreusuario}</span>
-                      </MenuItem>
+                      <option value="Finance Cactus Azua" key={items.id}>
+                        {items.nombreusuario}
+                      </option>
                     ))}
-                  </TextField>
-                  {errors.idgestor && (
-                    <p className="errorColor"> {errors.idgestor.message} </p>
-                  )}
-                </div>
+                  </select>
+                </InputField>
 
-                <div className="col-sm-6 col-md-4 p-2 ">
-                  <TextField
-                    {...register("idcobrador", {
-                      required: "Este campo es obligatorio",
-                    })}
-                    label="Cobrador *"
-                    select
-                    value={Cobrador}
-                    fullWidth
+                <InputField label="Cobrador" icon={Briefcase} required col="col-md-3">
+                  <select
+                    name="idcobrador"
                     onChange={HandleCobrador}
-                    InputLabelProps={{ style: { fontSize: "0.9em" } }}
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        borderRadius: "10px",
-                        fontSize: "12px", // Controla el radio de borde
-                        width: "100%",
-                        color: "GrayText",
-                      },
-                    }}
+                    className="form-select border-0 shadow-none"
+                    style={{ fontSize: "0.8em" }}
                   >
                     {dataCobrador.map((items) => (
-                      <MenuItem key={items.id} value={items.id}>
-                        <span className="clFont">{items.nombreusuario}</span>
-                      </MenuItem>
+                      <option value="Finance Cactus Azua" key={items.id}>
+                        {items.nombreusuario}
+                      </option>
                     ))}
-                  </TextField>
-                  {errors.idcobrador && (
-                    <p className="errorColor"> {errors.idcobrador.message} </p>
-                  )}
-                </div>
+                  </select>
+                </InputField>
 
-                <div className="col-sm-6 col-md-4 p-2 ">
-                  <TextField
-                    label="Referencia"
-                    fullWidth
+                <InputField label="Referencia" icon={User} col="col-md-3">
+                  <input
+                    type="text"
                     {...register("referencia")}
                     onChange={HandleReferencia}
-                    InputLabelProps={{ style: { fontSize: "1em" } }}
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <span>
-                            <LuMessageSquareMore className="fs-5 text-info" />
-                          </span>
-                        </InputAdornment>
-                      ),
-                    }}
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        borderRadius: "10px",
-                        fontSize: "12px", // Controla el radio de borde
-                        width: "100%",
-                        color: "GrayText",
-                        // backgroundColor: "honeydew",
-                      },
-                    }}
+                    className="form-control border-0 shadow-none"
+                    style={{ fontSize: "0.8em" }}
                   />
-                </div>
-              </div>
+                </InputField>
 
-              <div className="row mx-2">
-                <div className=" bg-success bg-opacity-10 rounded-2">
-                  <span className="fs-6 fw-medium text-info">Co-Deudor</span>
-                </div>
-                <div className="col-sm-6 col-md-4 p-2 ">
-                  <TextField
-                    label="Nombres"
-                    fullWidth
-                    disabled={false}
-                    {...register("codeudornombre")}
-                    onChange={HandleCoDedudorNombre}
+                <SectionTitle title="Co-Deudor" />
+                <InputField label="Nombres" icon={User} col="col-md-3">
+                  <input
+                    type="text"
                     value={coDeudorNombre}
-                    InputLabelProps={{ style: { fontSize: "0.9em" } }}
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <span>
-                            <LuUserRoundCheck className="fs-5 text-info" />
-                          </span>
-                        </InputAdornment>
-                      ),
-                    }}
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        borderRadius: "10px",
-                        fontSize: "12px", // Controla el radio de borde
-                        width: "100%",
-                        color: "GrayText",
-                      },
-                    }}
+                    onChange={HandleCoDedudorNombre}
+                    className="form-control border-0 shadow-none"
+                    {...register("codeudornombre")}
+                    style={{ fontSize: "0.8em" }}
                   />
-                </div>
-                <div className="col-sm-6 col-md-2 p-2 ">
-                  <TextField
-                    label="Numero Identificador"
-                    fullWidth
-                    disabled={false}
-                    {...register("codeudoridentificador")}
+                </InputField>
+                <InputField label="Identificación" icon={CreditCard} col="col-md-3">
+                  <input
+                    type="text"
                     value={coDeudorIdentificador}
                     onChange={HandleCoDedudorIdentificador}
-                    InputLabelProps={{ style: { fontSize: "0.9em" } }}
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <span>
-                            <PiIdentificationCardThin className="fs-5 text-info" />
-                          </span>
-                        </InputAdornment>
-                      ),
-                    }}
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        borderRadius: "10px",
-                        fontSize: "12px", // Controla el radio de borde
-                        width: "100%",
-                        color: "GrayText",
-                      },
-                    }}
+                    className="form-control border-0 shadow-none"
+                    {...register("codeudoridentificador")}
                   />
-                </div>
-                <div className="col-sm-6 col-md-2 p-2 ">
-                  <TextField
-                    label="Telefono"
-                    fullWidth
-                    disabled={false}
-                    {...register("codeudortelefono")}
+                </InputField>
+                <InputField label="Telefono" icon={Phone} col="col-md-3">
+                  <input
+                    type="text"
                     value={coDeudorTelefono}
                     onChange={HandleCoDedudorTelefono}
-                    InputLabelProps={{ style: { fontSize: "0.9em" } }}
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <span>
-                            <MdOutlinePhoneInTalk className="fs-5 text-info" />
-                          </span>
-                        </InputAdornment>
-                      ),
-                    }}
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        borderRadius: "10px",
-                        fontSize: "12px", // Controla el radio de borde
-                        width: "100%",
-                        color: "GrayText",
-                      },
-                    }}
+                    className="form-control border-0 shadow-none"
+                    {...register("codeudortelefono")}
+                   
                   />
-                </div>
-                <div className="col-sm-6 col-md-4 p-2 ">
-                  <TextField
-                    label="Direccion Co-Deudor"
-                    fullWidth
-                    disabled={false}
-                    {...register("codeudordireccion")}
+                </InputField>
+                <InputField label="Dirección" icon={MapPin} col="col-md-3">
+                  <input
+                    type="text"
+                    name="coDireccion"
+                    value={coDeudorDireccion}
                     onChange={handleInputUppercase}
-                    InputLabelProps={{ style: { fontSize: "0.9em" } }}
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <span>
-                            <LiaMapMarkedAltSolid className="fs-5 text-info" />
-                          </span>
-                        </InputAdornment>
-                      ),
-                    }}
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        borderRadius: "10px",
-                        fontSize: "12px", // Controla el radio de borde
-                        width: "100%",
-                        color: "GrayText",
-                      },
-                    }}
+                    className="form-control border-0 shadow-none"
+                    
                   />
+                </InputField>
+
+                <div className="col-12 mt-1 border-top pt-2 d-flex justify-content-end gap-3">
+                  <button
+                    type="button"
+                    className="btn btn-outline-secondary px-4 fw-bold shadow-sm"
+                    style={{ borderRadius: "8px", fontSize: "0.8em" }}
+                    disabled={!isTablas}
+                    onClick={CloseModal}
+                  >
+                    <X size={18} className="me-2" /> CANCELAR
+                  </button>
+                  <button
+                    type="submit"
+                    className="btn text-white px-5 fw-bold shadow-sm border-0 d-flex align-items-center"
+                    style={{
+                      backgroundColor: colors.teal,
+                      borderRadius: "8px",
+                      fontSize: "0.8em",
+                    }}
+                    disabled={!isTablas}
+                  >
+                    <Save size={18} className="me-2" /> INSERTAR PRÉSTAMOS
+                  </button>
                 </div>
-
-                <hr />
-                <br />
-                <div className="p-2 d-flex justify-content-between">
-                  <div>
-                    {/* <MButton
-                          color="#0097B2"
-                          text="Calculadora"
-                          variant="contained"
-                          icon={<PiTableLight />}
-                          onClick={() => viewAmortiza()}
-                        /> */}
-                  </div>
-                  <div>
-                    <MButton
-                      color="#0097B2"
-                      text="Insertar Prestamos"
-                      variant="contained"
-                      icon={<MdOutlineSaveAlt />}
-                      type="submit"
-                      disabled={!isTablas}
-                    />
-                    <MButton
-                      color="#f08080"
-                      text="Cancelar"
-                      variant="contained"
-                      icon={<MdOutlineCancel />}
-                      disabled={!isTablas}
-                      onClick={CloseModal}
-                    />
-                  </div>
-                </div>
-              </div>
-              {/* {tablaAmortizacion && (
-                    <div className="row h-75">
-                      <h2>Tabla Amortizacion</h2>
-                    </div>
-                  )} */}
-            </form>
-          </LocalizationProvider>
-
-          {/* <TabContext value={TabValue}>
-            <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
-              <TabList
-                onChange={handleChangeTab}
-                aria-label="lab API tabs example"
-
-              > 
-                <Tab label="Prestamos" value="1" className="clFont" disabled={isTabDisabled}/>
-                <Tab label="Amortizacion" value="2" className="clFont" disabled={!isTabDisabled} />
-                
-              </TabList>
-            </Box>
-            <TabPanel value="1">
-              
-            </TabPanel>
-            <TabPanel value="2">
-            <div className="bg-success bg-opacity-10 rounded-2">
-                      <span className="fs-6 fw-medium text-info">
-                        Tabla de Amortizacion
-                      </span>
-                    </div>
-                    <div  className=" overflow-x-scroll"
-                      style={{ height: "450px", overflowY: "auto" }}>
-                        <TablaAmortiza
-                            fechainicio={fechaPrimerPago}
-                            tc={TCuotas}
-                            mc={limpiarMonto(Mcuota)}
-                            loan={Number(MMInteres).toFixed(2)}
-                            ccapital={capitalValue}
-                            tipo={amortiza}
-                            fre={Frecuencia}
-                            Seguro={Seguro}
-                          />
-                    </div>
-                    <div className="p-2">
-                      <MButton text="Procesar Amortizacion" icon={<IoCheckmarkDoneOutline />} type="normal" variant="contained" color="#0097B2" onClick={HandleProcesarAmortizacion}  />
-                      
-                    </div>
-                
-            </TabPanel>
-            
-          </TabContext> */}
+              </form>
+            </LocalizationProvider>
+          </div>
         </Box>
       </Modal>
 

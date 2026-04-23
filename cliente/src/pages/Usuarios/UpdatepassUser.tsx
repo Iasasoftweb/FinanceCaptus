@@ -19,8 +19,10 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "../../index.css";
 import Swal from "sweetalert2";
+import { MisColores } from "../../components/stuff/MisColores";
+import { UserRoundX, X } from "lucide-react";
 
-function Updatepass({ Id, open, dataInitial, handleClose }) {
+function Updatepass({ Id, open, dataInitial, handleClose, onSave }) {
   const [getUsuario, setGetUser] = useState([]);
   const [pass, setPass] = useState("");
   const [confirmarPass, setConfirmarPass] = useState("");
@@ -92,6 +94,7 @@ function Updatepass({ Id, open, dataInitial, handleClose }) {
           icon: "success",
         });
         closeModal();
+        onSave();
       } catch (error) {
         console.error(error);
       }
@@ -126,33 +129,39 @@ function Updatepass({ Id, open, dataInitial, handleClose }) {
             p: 2,
           }}
         >
-          <div className="d-flex p-2  justify-content-between align-items-center">
-            <div className="p-2">
-              <div className="d-flex justify-content-between">
-                <div>
-                  <LiaUserLockSolid className="IconsTitle text-info fs-1" />
-                </div>
-                <div>
-                  <h5 className="cFont d-flex lh-2 mb-0 text-black">
-                    Cambio de Contraseña
-                  </h5>
 
-                  <p className="d-flex clFont mb-0 text-black-50">
-                    Usuario :
-                    <strong className="text-danger">
-                      {dataInitial.nombreusuario}
-                    </strong>
-                  </p>
-                </div>
-              </div>
-            </div>
-            <div>
-              <IoIosCloseCircleOutline
-                className="text-black-50 fs-3"
-                onClick={closeModal}
-              />
-            </div>
-          </div>
+          <div className="card-header border-bottom bg-white p-4 d-flex justify-content-between align-items-center">
+                      <div className="d-flex align-items-center gap-3">
+                        <div
+                          className="p-2 rounded-3 text-white d-flex align-items-center justify-content-center shadow-sm"
+                          style={{
+                            backgroundColor: MisColores.headerBlue,
+                            width: "45px",
+                            height: "45px",
+                          }}
+                        >
+                          <UserRoundX size={20} />
+                        </div>
+                        <div>
+                          <h4
+                            className="fw-bold mb-0"
+                            style={{ color: "#2c3e50", fontSize: "1rem" }}
+                          >
+                            Cambio de Contraseña
+                          </h4>
+                          <p className="text-muted mb-0 small">
+                            Usuario :
+                            <strong className="" style={{ color: MisColores.headerBlue }}>
+                              {dataInitial.nombreusuario}
+                            </strong>
+                          </p>
+                        </div>
+                      </div>
+                      <button className="btn btn-light rounded-circle p-2 text-secondary hover:bg-danger hover:text-white transition-all">
+                        <X size={20} onClick={closeModal} />
+                      </button>
+                    </div>
+        
           <hr />
 
           <form action="" onSubmit={handleSubmit(onSubmit)}>
@@ -192,7 +201,7 @@ function Updatepass({ Id, open, dataInitial, handleClose }) {
             />
 
             <div className="text-center">
-              <Button type="submit" className="clFont mt-4 w-100">
+              <Button type="submit" className="clFont mt-4 w-100 text-white" style={{backgroundColor: MisColores.headerBlue}}>
                 {" "}
                 Procesar{" "}
               </Button>

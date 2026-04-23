@@ -1,27 +1,27 @@
 import React, { useEffect, useState } from "react";
-import { Controller, FieldValues, useForm } from "react-hook-form";
+import { FieldValues, useForm } from "react-hook-form";
 import {
   Modal,
   Box,
-  Button,
   TextField,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
 } from "@mui/material";
 import axios from "axios";
 import Swal from "sweetalert2";
-import { MdOutlineCancel, MdOutlineSaveAlt } from "react-icons/md";
-import { SiReacthookform } from "react-icons/si";
+import { Briefcase, Building, HandCoins, X } from "lucide-react";
+import { MisColores } from "../../components/stuff/MisColores";
+import { InputField } from "../../components/stuff/InputField";
 
-export const FormCompany = ({
-  ModoEdicion,
-  open,
-  handleClose,
-  initialData,
-  idCompany,
-}) => {
+interface ModalProps {
+  open: boolean; // <--- AGREGAR ESTO
+  updateList: () => Promise<void>;
+  idCompany: number | null;
+  ModoEdicion: boolean;
+  handleClose: () => void;
+  initialData: any; // Cambiado de [] a any para evitar conflictos de tipo
+}
+
+export const FormCompany = ({ open,updateList, idCompany, ModoEdicion, handleClose, initialData }: ModalProps) => {
+ 
   const {
     control,
     register,
@@ -31,28 +31,24 @@ export const FormCompany = ({
     reset,
   } = useForm({ defaultValues: { estado: "S" } });
 
-  const [modo, setModo] = useState(null);
-  const [showModal, setShowModal] = useState(false);
-  const [rutadatos, setRutaData] = useState([]);
-  const [cargado, setCargado] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-
-  const URI = "http://localhost:8000/Company/";
+  
+  const [companydatos, setCompanyData] = useState<any[]>([]);
+  
+  const URI = "http://localhost:5000/Company/";
 
   useEffect(() => {
-    if (ModoEdicion ===true) {
+    if (ModoEdicion === true) {
       reset(initialData);
-      setRutaData(initialData);
-      console.log(initialData);
+      setCompanyData(initialData);
     }
   }, [initialData, reset, ModoEdicion]);
 
   useEffect(() => {
-     if (!ModoEdicion) {
-      reset()
-      console.log(ModoEdicion)      
-     }
-  }, [ModoEdicion])
+    if (!ModoEdicion) {
+      reset();
+      console.log(ModoEdicion);
+    }
+  }, [ModoEdicion]);
 
   const handleInputChange = (e) => {
     const upperCaseValue = e.target.value.toUpperCase();
@@ -60,32 +56,54 @@ export const FormCompany = ({
   };
 
   const onSubmit = async (data: FieldValues) => {
-    if (ModoEdicion) {
-      await axios.put(`http://localhost:8000/Company/${idCompany}`, data);
-      Swal.fire({
-        position: "center",
-        icon: "success",
-        html: '<p style="color: gray; font-weight: normal;">Campañia Actualizada</p>',
-        showConfirmButton: false,
-        timer: 2000,
-      });
-    } else {
-      console.log(data)
-      const respond = await axios.post(URI, data)
-      console.log(respond)
-      //await new Promise((resolve) => setTimeout(resolve, 1000));
+    try {
+      if (ModoEdicion) {
+        // 1. Enviamos la actualización al servidor
+        const response = await axios.put(
+          `http://localhost:5000/Company/${idCompany}`,
+          data,
+        );
 
-      Swal.fire({
-        position: "center",
-        icon: "success",
-        html: '<p style="color: gray; font-weight: normal;">Nueva Compañia Guardada</p>',
-        showConfirmButton: false,
-        timer: 2000,
-      });
+        // 2. ACTUALIZACIÓN DEL ESTADO (Esto es lo que falta)
+
+        if (response.status === 200) {
+          setCompanyData((prev: any[]) =>
+            prev.map((item) =>
+              item.id === idCompany
+                ? { ...item, ...data, activo: parseInt(data.activo) }
+                : item,
+            ),
+          );
+        }
+
+        Swal.fire({
+          position: "center",
+          icon: "success",
+          html: '<p style="color: gray; font-weight: normal;">Compañía Actualizada</p>',
+          showConfirmButton: false,
+          timer: 2000,
+        });
+      } else {
+        // Para el POST (Crear nueva)
+        const respond = await axios.post(URI, data);
+
+        setCompanyData((prev) => [...prev, respond.data]);
+
+        Swal.fire({
+          position: "center",
+          icon: "success",
+          html: '<p style="color: gray; font-weight: normal;">Nueva Compañía Guardada</p>',
+          showConfirmButton: false,
+          timer: 2000,
+        });
+      }
+      await  updateList();
+      reset();
+      handleClose();
+    } catch (error) {
+      console.error("Error en la petición:", error);
+      Swal.fire("Error", "No se pudo procesar la solicitud", "error");
     }
-
-    reset();
-    handleClose();
   };
 
   const handlKillModal = (event) => {
@@ -116,23 +134,44 @@ export const FormCompany = ({
           p: 2,
         }}
       >
-        <div className="d-flex mx-2 bg-dark bg-opacity-100  p-2 rounded-4">
-          <div className="p-2">
-            <SiReacthookform className="IconsTitle text-info fs-2" />
+        <div className="card-header border-bottom bg-white p-4 d-flex justify-content-between align-items-center">
+          <div className="d-flex align-items-center gap-3">
+            <div
+              className="p-2 rounded-3 text-white d-flex align-items-center justify-content-center shadow-sm"
+              style={{
+                backgroundColor: MisColores.headerBlue,
+                width: "45px",
+                height: "45px",
+              }}
+            >
+              <Building size={20} />
+            </div>
+            <div>
+              <h2
+                className="fw-bold mb-0"
+                style={{ color: "#2c3e50", fontSize: "1.5rem" }}
+              >
+                Campañias
+              </h2>
+              <p className="text-muted mb-0 small">
+                El Formulario esta en Modo :
+                <strong className="text-mute">
+                  {ModoEdicion ? "Editando" : "Insertando"}
+                </strong>
+              </p>
+            </div>
           </div>
-
-          <div>
-            <h5 className="cFont d-flex lh-1 mb-0 text-white">
-              Formulario Campañia
-            </h5>
-            <p className="d-flex lh- clFont mb-0">
-              El Formulario esta en Modo :
-              <strong className="text-success">
-                {ModoEdicion ? "Editando" : "Insertando"}
-              </strong>
-            </p>
-          </div>
+          <button
+            className="btn btn-light rounded-circle p-2 text-secondary hover:bg-danger hover:text-white transition-all"
+            onClick={handleClose}
+          >
+            <X size={20} />
+          </button>
         </div>
+
+
+        
+
         <br />
         <form onSubmit={handleSubmit(onSubmit)}>
           <TextField
@@ -151,10 +190,7 @@ export const FormCompany = ({
             className="clFont form-control"
           />
           {errors.company && (
-            <p className="text-red-500 clFont">
-              {" "}
-              {errors.company.message}{" "}
-            </p>
+            <p className="text-red-500 clFont"> {errors.company.message} </p>
           )}
           <br />
 
@@ -171,7 +207,7 @@ export const FormCompany = ({
             onChange={handleInputChange}
             className="clFont form-control"
           />
-        
+
           <br />
 
           <TextField
@@ -187,62 +223,52 @@ export const FormCompany = ({
             onChange={handleInputChange}
             className="clFont form-control"
           />
-         
+
           <br />
 
-          <FormControl fullWidth>
-            <InputLabel id="estado-label">Estado</InputLabel>
-            <Controller
-              name="estado"
-              control={control}
-              rules={{ required: true }}
-              render={({ field }) => (
-                <Select
-                  labelId="estado-label"
-                  label="Estado"
-                  {...field} // Conectar el Select con react-hook-form
-                  inputProps={{
-                    sx: {
-                      fontSize: "12px",
-                    },
-                  }}
-                >
-                  <MenuItem value="S">Activo</MenuItem>
-                  <MenuItem value="N">Inactivo</MenuItem>
-                </Select>
-              )}
-            />
-          </FormControl>
+        
+            <InputField
+              label="Estado"
+              icon={Briefcase}
+              required
+              col="col-md-12"
+            >
+              <select
+                name="activo"
+                className="form-select border-0 shadow-none"
+                style={{
+                  fontSize: "0.8em",
+                 
+                }}
+                {...register("activo")}
+              >
+                <option value="1">Activo </option>
+                <option value="0">Inactivo </option>
+              </select>
+            </InputField>
+          
 
           <br />
           <br />
-          <div className="d-flex justify-content-center">
-            <Button
+          <div className="d-flex justify-content-center ">
+            <button
               type="submit"
-              variant="contained"
-              sx={{
-                ml: 3,
-                background: "#0097B2",
-                "&:hover": { background: "#59A5B3" },
-              }}
+              className="btn"
+              style={{ backgroundColor: MisColores.headerBlue }}
             >
               <p className="clFont text-white m-auto text-capitalize">
                 {ModoEdicion ? "Guardar Cambios" : "Guardar"}
               </p>
-            </Button>
-            <Button
+            </button>
+            <button
               onClick={handlKillModal}
-              variant="contained"
-              sx={{
-                ml: 3,
-                background: "#56595C",
-                "&:hover": { background: "#3A3D3D" },
-              }}
+              style={{ backgroundColor: MisColores.bgGray }}
+              className="mx-2 btn rounded-2 border-dark-subtle"
             >
-              <p className="clFont text-white m-auto text-capitalize">
+              <p className="clFont m-auto text-capitalize text-mute p-2">
                 Cancelar
               </p>
-            </Button>
+            </button>
           </div>
         </form>
       </Box>

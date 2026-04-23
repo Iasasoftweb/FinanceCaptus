@@ -26,6 +26,7 @@ router.get("/app/", GetAll)
 router.get("/:id", getCliente);
 router.get("/buscar-dni/:dni", existeDni);
 router.post("/", CreateClientes);
+router.post('/uploaduser', upload.single('avatar'), uploadImg);
 router.put("/:id", updateCliente);
 router.get('/rutas/:rutas', ClientesRutas);
 router.get('/estado/:estado', ClientesActivos);

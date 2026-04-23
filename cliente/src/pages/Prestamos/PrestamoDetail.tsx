@@ -24,9 +24,9 @@ import {
   Tab,
   ThemeProvider,
 } from "@mui/material";
-import TabContext from "@mui/lab/TabContext";
-import TabList from "@mui/lab/TabList";
-import TabPanel from "@mui/lab/TabPanel";
+// import TabContext from "@mui/lab/TabContext";
+// import TabList from "@mui/lab/TabList";
+// import TabPanel from "@mui/lab/TabPanel";
 import NoDatos from "../../components/stuff/NoDatos";
 import PaginationItem from "../../components/Pagination/PaginatedItems.tsx";
 import { format, isBefore } from "date-fns";

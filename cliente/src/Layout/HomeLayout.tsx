@@ -30,6 +30,7 @@ import {
 import { Footer } from "antd/es/layout/layout";
 import { icon } from "leaflet";
 import { useAuth } from "../components/Roles/AuthProvider.tsx";
+import { Building2, Hotel, MapPinPlus, ToolCase } from "lucide-react";
 
 const { Header, Content, Sider } = Layout;
 
@@ -74,20 +75,31 @@ const HomeLayout: React.FC = () => {
       disabled: !(role === "ADMINISTRADOR" || role === "SUPERVISOR"),
       label:
         role === "ADMINISTRADOR" || role === "SUPERVISOR" ? (
-          <Link to="/showclientes">Clientes</Link>
+          <Link
+            to="/showclientes"
+            style={{ textDecoration: "none", color: "inherit" }}
+          >
+            Clientes
+          </Link>
         ) : (
           <span>Clientes</span>
         ),
     },
-    
+
     {
       key: "1l",
       icon: <UserOutlined />,
       label: "Usuarios",
       children: [
         // Submenú
-        { key: "u1", label: "Lista de Usuarios" },
-        { key: "u2", label: "Roles" },
+        { key: "u1", label: 
+          role === "ADMINISTRADOR" || role === "SUPERVISOR" ? ( 
+            <Link to="/usuarios"  style={{ textDecoration: "none", color: "inherit" }} > Lista de Usuarios </Link> 
+            ) : (
+              <span>Lista de Usuarios</span>    
+            ),
+          },
+        
       ],
     },
     {
@@ -99,6 +111,40 @@ const HomeLayout: React.FC = () => {
       key: "3",
       icon: <NotificationOutlined />,
       label: "Notificaciones",
+    },
+
+    {
+      key: "Util",
+      icon: <ToolCase />,
+      label:"Utilidad",
+       
+      children: [
+        
+        { key: "ut1", label: 
+            role === "ADMINISTRADOR" || role === "SUPERVISOR" ? ( 
+            <Link to="/company"  style={{ textDecoration: "none", color: "inherit" }} > Compañias </Link> 
+            ) : (
+              <span>Compañias</span>    
+            ),
+        icon: <Building2 /> },
+        { key: "ut2", label: 
+           role === "ADMINISTRADOR" || role === "SUPERVISOR" ? ( 
+         <Link to="/empresa" style={{ textDecoration: "none", color: "inherit" }}> Mi Empresa </Link>
+           ):(
+            <span>Mi Empresa</span> 
+           )
+         , icon: <Hotel /> },
+
+
+        { key: "ut3", label: 
+           role === "ADMINISTRADOR" || role === "SUPERVISOR" ? ( 
+            <Link to="/rutas"  style={{ textDecoration: "none", color: "inherit" }} > Rutas </Link> 
+            ) : (
+              <span>Rutas</span>    
+            ),
+          icon: <MapPinPlus /> },
+        
+      ],
     },
   ];
 
@@ -145,7 +191,7 @@ const HomeLayout: React.FC = () => {
           <Menu
             mode="inline"
             defaultSelectedKeys={["1"]}
-            style={{ height: "100%", borderRight: 0 }}
+            style={{ height: "100%", borderRight: 0, textDecoration: "none" }}
             items={menuItems}
             theme="dark"
           />

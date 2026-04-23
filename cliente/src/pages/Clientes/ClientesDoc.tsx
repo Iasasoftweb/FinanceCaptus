@@ -30,7 +30,10 @@ import { CiFileOff, CiImageOff, CiImageOn } from "react-icons/ci";
 import FileViewer from "../../components/general/FilePreview";
 import { Link } from "react-router-dom";
 import { TiCloudStorageOutline } from "react-icons/ti";
-import {useAuth} from "../../components/Roles/AuthProvider.tsx"
+import { useAuth } from "../../components/Roles/AuthProvider.tsx";
+import { MisColores } from "../../components/stuff/MisColores.tsx";
+import { Building, FilePlusCorner, X } from "lucide-react";
+import { EmptyState } from "../../components/stuff/EmptyState.tsx";
 
 const ClienteDo = ({ Id, open, handleClose, dataInitial }) => {
   const {
@@ -55,9 +58,9 @@ const ClienteDo = ({ Id, open, handleClose, dataInitial }) => {
   const [isDisableInsertar, setIsDisableInsertar] = useState(false);
   const [getDoc, setGetDoc] = useState([]);
   const [isPreview, setIsPreview] = useState(false);
-    
+
   const { role } = useAuth();
-  
+
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
   };
@@ -113,7 +116,7 @@ const ClienteDo = ({ Id, open, handleClose, dataInitial }) => {
 
   const Datos = async () => {
     try {
-     await axios.get(`${URI}${Id}`).then((xdata) => {
+      await axios.get(`${URI}${Id}`).then((xdata) => {
         setClienteData(xdata.data);
         console.log(xdata.data);
         setFile(xdata.data);
@@ -125,7 +128,6 @@ const ClienteDo = ({ Id, open, handleClose, dataInitial }) => {
 
   useEffect(() => {
     Datos();
-    
   }, []);
 
   const handleInputChange = (e) => {
@@ -196,10 +198,8 @@ const ClienteDo = ({ Id, open, handleClose, dataInitial }) => {
     });
   };
   const onSubmit = async (data: FieldValues) => {
-   
     try {
       if (ModoEdit) {
-        console.log(data);
         axios.put(`${URI}${idDoc}`, data);
         Swal.fire({
           position: "top-end",
@@ -244,9 +244,9 @@ const ClienteDo = ({ Id, open, handleClose, dataInitial }) => {
   const upImg = async (fileOriginal) => {
     console.log(filet);
 
-    if (filet) {
-      delImg(filet);
-    }
+    // if (filet) {
+    //   delImg(filet);
+    // }
 
     setGetDoc(fileOriginal.id);
 
@@ -255,8 +255,8 @@ const ClienteDo = ({ Id, open, handleClose, dataInitial }) => {
 
     try {
       const res = await axios.post(
-        "http://localhost:8000/uploadDoc/",
-        formatdata
+        "http://localhost:5000/uploadDoc/",
+        formatdata,
       );
       cargaNameImg(res.data.fileName);
     } catch (err) {
@@ -280,7 +280,43 @@ const ClienteDo = ({ Id, open, handleClose, dataInitial }) => {
     } else {
       setSelectedFileId(null);
     }
+  };
 
+  const handleFileValidation = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Extensiones permitidas (según tu backend)
+    const allowedExtensions = ["jpg", "jpeg", "png", "gif", "pdf"];
+    const fileExtension = file.name.split(".").pop().toLowerCase();
+    const maxSize = 10 * 1024 * 1024; // 10MB
+
+    // Validar formato
+    if (!allowedExtensions.includes(fileExtension)) {
+      Swal.fire({
+        icon: "error",
+        title: "Formato no válido",
+        text: "Solo se permiten: JPG, PNG, GIF o PDF",
+        confirmButtonColor: "#0097B2",
+      });
+      e.target.value = ""; // Resetear input
+      return;
+    }
+
+    // Validar tamaño
+    if (file.size > maxSize) {
+      Swal.fire({
+        icon: "error",
+        title: "Archivo muy grande",
+        text: "El límite máximo es de 10MB",
+        confirmButtonColor: "#0097B2",
+      });
+      e.target.value = ""; // Resetear input
+      return;
+    }
+
+    // Si todo está bien, procedemos a subir
+    upImg(file);
   };
 
   return (
@@ -308,40 +344,41 @@ const ClienteDo = ({ Id, open, handleClose, dataInitial }) => {
             p: 2,
           }}
         >
-          <div className="row">
-            <div className="d-flex p-2  justify-content-between align-items-center">
-              <div className="p-2">
-                <div className="d-flex justify-content-between">
-                  <div>
-                    <SlDocs className="IconsTitle text-success fs-2" />
-                  </div>
-                  <div>
-                    <h5 className="cFont d-flex lh-2 mb-0 text-black">
-                      Documentos Adicionales
-                    </h5>
-                    <p className="d-flex lh- clFont mb-0 text-black-50">
-                      Cliente :
-                      <strong>
-                        {dataInitial.nombres} {dataInitial.apellidos}
-                      </strong>
-                    </p>
-                    {/* <hr style={{ borderColor: 'blue', borderWidth: '3px', width: '95%' }}  className="m-auto"/> */}
-                  </div>
-                </div>
-                      
+          <div className="card-header border-bottom bg-white p-4 d-flex justify-content-between align-items-center">
+            <div className="d-flex align-items-center gap-3">
+              <div
+                className="p-2 rounded-3 text-white d-flex align-items-center justify-content-center shadow-sm"
+                style={{
+                  backgroundColor: MisColores.headerBlue,
+                  width: "45px",
+                  height: "45px",
+                }}
+              >
+                <FilePlusCorner size={20} />
               </div>
-
               <div>
-                <IoIosCloseCircleOutline
-                  className="text-black-50 fs-3"
-                  onClick={closeModal}
-                />
+                <h2
+                  className="fw-bold mb-0"
+                  style={{ color: "#2c3e50", fontSize: "1.5rem" }}
+                >
+                  Documentos Adicionales
+                </h2>
+                Cliente :
+                <strong>
+                  {dataInitial.nombres} {dataInitial.apellidos}
+                </strong>
               </div>
-              
             </div>
-            
-            <div className="col-md-6 " >
-            
+            <button
+              className="btn btn-light rounded-circle p-2 text-secondary hover:bg-danger hover:text-white transition-all"
+              onClick={closeModal}
+            >
+              <X size={20} />
+            </button>
+          </div>
+
+          <div className="row">
+            <div className="col-md-6 ">
               <br />
               <div className=" border-1 border-dark-subtle rounded-2">
                 <form
@@ -372,11 +409,11 @@ const ClienteDo = ({ Id, open, handleClose, dataInitial }) => {
                   <br />
                   <br />
                   <div className="d-flex justify-content-center">
-                    <Button
+                    {/* <Button
                       sx={{
                         ml: 3,
                         background: "#0097B2",
-                        "&:hover": { background: "#59A5B3" },
+                        "&:hover": { backgroundColor: MisColores.actionRed},
                       }}
                       component="label"
                       role={undefined}
@@ -391,12 +428,36 @@ const ClienteDo = ({ Id, open, handleClose, dataInitial }) => {
                         type="file"
                         onChange={(event) => upImg(event.target.files[0])}
                       />
-                    </Button>
+                    </Button> */}
 
                     <Button
                       sx={{
                         ml: 3,
                         background: "#0097B2",
+                        "&:hover": { backgroundColor: MisColores.actionRed },
+                      }}
+                      component="label"
+                      role={undefined}
+                      variant="contained"
+                      tabIndex={-1}
+                      startIcon={<TiCloudStorageOutline />}
+                      className="clFont text-white"
+                      disabled={isDisable}
+                    >
+                      Subir Archivo
+                      <VisuallyHiddenInput
+                        type="file"
+                        // Filtrado inicial en el explorador de archivos
+                        accept=".jpg, .jpeg, .png, .gif, .pdf"
+                        // Llamamos a la validación en lugar de subir directamente
+                        onChange={handleFileValidation}
+                      />
+                    </Button>
+
+                    <Button
+                      sx={{
+                        ml: 3,
+                        backgroundcolor: MisColores.headerBlue,
                         "&:hover": { background: "#59A5B3" },
                       }}
                       startIcon={<VscSaveAs />}
@@ -414,7 +475,7 @@ const ClienteDo = ({ Id, open, handleClose, dataInitial }) => {
                 <Button
                   sx={{
                     ml: 3,
-                    background: "#0097B2",
+                    backgroundColor: MisColores.headerBlue,
                     "&:hover": { background: "#59A5B3" },
                   }}
                   startIcon={<IoIosAddCircleOutline />}
@@ -440,16 +501,18 @@ const ClienteDo = ({ Id, open, handleClose, dataInitial }) => {
                       {clienteData
                         .slice(
                           page * rowsPerPage,
-                          page * rowsPerPage + rowsPerPage
+                          page * rowsPerPage + rowsPerPage,
                         )
                         .map((item) => (
                           <TableRow key={item.id}>
                             <TableCell>
                               {!item.img ? (
                                 <Link to="">
-                                    <CiImageOff className="fs-4 text-black-50" onClick={() => FilePrev(item.img)} />
-                                </Link> 
-                                
+                                  <CiImageOff
+                                    className="fs-4 text-black-50"
+                                    onClick={() => FilePrev(item.img)}
+                                  />
+                                </Link>
                               ) : (
                                 <Link to="">
                                   <CiImageOn
@@ -464,32 +527,36 @@ const ClienteDo = ({ Id, open, handleClose, dataInitial }) => {
                             </TableCell>
                             <TableCell>
                               {" "}
-                             {(role ==="ADMINISTRADOR" || role ==="SUPERVISOR") ?  
-                             <FaRegEdit
-                                className="fs-5  text-success"
-                                onClick={() => handleEdit(item)}
-                              />  :
-                              
-                              <FaRegEdit
-                                className="fs-5 "
-                                style={{color:"GrayText", cursor:"pointer"}}
-                              />
-                              
-                              } 
-                              {(role ==="ADMINISTRADOR" || role ==="SUPERVISOR") ? 
-                              
-                              <RiDeleteBin2Line
-                                className="fs-5 text-danger mx-2"
-                                onClick={() => deleteRow(item.id)}
-                              />
-                              : 
-                              
-                              <RiDeleteBin2Line
-                                className="fs-5 mx-2"
-                                style={{color:"GrayText", cursor:"pointer"}}
-                              />
-                              }
-                              
+                              {role === "ADMINISTRADOR" ||
+                              role === "SUPERVISOR" ? (
+                                <FaRegEdit
+                                  className="fs-5  text-success"
+                                  onClick={() => handleEdit(item)}
+                                />
+                              ) : (
+                                <FaRegEdit
+                                  className="fs-5 "
+                                  style={{
+                                    color: "GrayText",
+                                    cursor: "pointer",
+                                  }}
+                                />
+                              )}
+                              {role === "ADMINISTRADOR" ||
+                              role === "SUPERVISOR" ? (
+                                <RiDeleteBin2Line
+                                  className="fs-5 text-danger mx-2"
+                                  onClick={() => deleteRow(item.id)}
+                                />
+                              ) : (
+                                <RiDeleteBin2Line
+                                  className="fs-5 mx-2"
+                                  style={{
+                                    color: "GrayText",
+                                    cursor: "pointer",
+                                  }}
+                                />
+                              )}
                             </TableCell>
                           </TableRow>
                         ))}
@@ -517,12 +584,20 @@ const ClienteDo = ({ Id, open, handleClose, dataInitial }) => {
               </Paper>
             </div>
 
-            <div className="col-md-6 p-3">
+            <div
+              className="col-md-6 p-3 border rounded bg-light overflow-hidden"
+              style={{ minHeight: "400px" }}
+            >
               {selectedFileId ? (
-                <FileViewer fieldID={selectedFileId} Uri={UriImg} />
-              ) : (
                 <div className="d-flex justify-content-center align-items-center h-100">
-                  <CiFileOff style={{ fontSize: "300px", color: "gray" }} />
+                  <FileViewer fieldID={selectedFileId} Uri={UriImg} />
+                </div>
+              ) : (
+                <div className="d-flex flex-column justify-content-center align-items-center h-100 opacity-76">
+                  <EmptyState
+                    title="Documentos"
+                    subtitle="No existe documento para visualizar."
+                  />
                 </div>
               )}
             </div>

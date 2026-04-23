@@ -46,7 +46,7 @@ function Sidebar({ openSidebarToggle, OpenSidebar }) {
       <ul className="sidebar-list">
         <li className="sidebar-list-item ">
           <Link to="/" className="text-white">
-            <AiOutlineDashboard className="icon" /> Dashboard 
+            <AiOutlineDashboard className="icon" /> Dashboard
           </Link>
         </li>
         <li className="sidebar-list-item">

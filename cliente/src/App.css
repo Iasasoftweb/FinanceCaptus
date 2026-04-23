@@ -1,35 +1,52 @@
-/* #root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+.chase-border-container {
+  position: relative;
+  width: fit-content;
+  height: fit-content;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: 3px; /* Este es el grosor del "hilo" de luz */
+  border-radius: 8px; /* Ajusta al redondeo de tu botón */
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
-}
-
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+/* El elemento que gira */
+.chase-border-container::before {
+  content: '';
+  position: absolute;
+  width: 150%; /* Más grande que el botón para que al girar siempre cubra las esquinas */
+  height: 150%;
+  background: conic-gradient(
+    transparent, 
+    #ffffff, /* Color del "flash" */
+    transparent 30%
+  );
+  animation: rotate-border 2s linear infinite;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
-} */
+/* El fondo detrás del botón para que no se vea el centro del giro */
+.chase-border-container::after {
+  content: '';
+  position: absolute;
+  inset: 3px; /* Debe coincidir con el padding del contenedor */
+  background: white; /* Cambia al color de fondo de tu formulario */
+  border-radius: 6px;
+  z-index: 0;
+}
+
+@keyframes rotate-border {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.btn-edit-custom:hover svg {
+  color: white !important;
+  transition: all 0.3s ease; /* Para que el cambio sea suave */
+}
+
+/* También puedes hacer que el fondo del botón cambie a azul o gris oscuro 
+   para que el blanco resalte */
+.btn-edit-custom:hover {
+  background-color: #0d6efd; /* Color primario de Bootstrap */
+}
 

@@ -1,9 +1,7 @@
 import React, { useEffect, useState } from "react";
 import App from "./App.tsx";
 import Login from "./pages/Login/Login.tsx";
-import Home from "./components/dashboard/Dashboard.tsx";
-import { Navigate } from "react-router-dom";
-import ShowUsuarios from "./pages/Usuarios/ShowUsurios.tsx";
+
 
 function parseJwt(token: string | null) {
   if (!token) return null;

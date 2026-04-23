@@ -10,7 +10,7 @@ const CompanyModels = db.define("tbcompanies", {
   company: { type: DataTypes.STRING },
   nombrecontacto: { type: DataTypes.STRING },
   telefono: { type: DataTypes.STRING },
-  activo: { type: DataTypes.STRING, defaultValue: 1 },
+  activo: { type: DataTypes.INTEGER, defaultValue: 1 },
   createdAt: {
     type: DataTypes.DATE,
     timestamps: false,

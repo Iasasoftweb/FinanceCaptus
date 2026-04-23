@@ -21,6 +21,8 @@ import { TiCloudStorageOutline } from "react-icons/ti";
 import FileViewer from "../../components/general/FilePreview";
 import { CiFileOff } from "react-icons/ci";
 import { toast, ToastContainer } from "react-toastify";
+import { Building, User, User2, X } from "lucide-react";
+import { MisColores } from "../../components/stuff/MisColores";
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
@@ -84,7 +86,7 @@ function ModalUsuario({ Id, open, dataInitial, handleClose, edit, onSave }) {
     formState: { errors, isSubmitting },
     reset,
     getValues,
-  } = useForm({ defaultValues: { zonas: [], estado: "HABILITADO" } });
+  } = useForm({ defaultValues: { zonas: [], estado: "1" } });
 
   const cargaNameImg = (newName) => {
     setValue("avata", newName);
@@ -114,7 +116,7 @@ function ModalUsuario({ Id, open, dataInitial, handleClose, edit, onSave }) {
     try {
       const res = await axios.post(
         "http://localhost:5000/uploaduser/",
-        formatdata
+        formatdata,
       );
       console.log(res.data.fileName);
       cargaNameImg(res.data.fileName);
@@ -152,13 +154,12 @@ function ModalUsuario({ Id, open, dataInitial, handleClose, edit, onSave }) {
       setFile(respuesta.data[0].avata);
       setVsupervisor(respuesta.data[0].idsupervisor);
       setVRole(respuesta.data[0].idrole);
-      
 
       if ("avata" in respuesta.data) {
         console.log("Campo 'avata' encontrado:", respuesta.data.avata); // Mostrar el contenido de 'avata'
       } else {
         console.log(
-          "El campo 'avata' no existe en el primer nivel de la respuesta"
+          "El campo 'avata' no existe en el primer nivel de la respuesta",
         );
       }
     } catch (error) {
@@ -182,13 +183,13 @@ function ModalUsuario({ Id, open, dataInitial, handleClose, edit, onSave }) {
     try {
       await axios.get(`${UriTipo}${valor}`).then((datos) => {
         getDataTipo(datos.data);
+        console.log(datos.data);
       });
     } catch (error) {
       console.error(error);
     }
   };
 
-  
   const getZonas = async () => {
     try {
       await axios.get(`${UriRutas}`).then((data) => {
@@ -232,6 +233,7 @@ function ModalUsuario({ Id, open, dataInitial, handleClose, edit, onSave }) {
 
   const handleSupervisor = (e) => {
     setVsupervisor(e.target.value);
+    console.log(e.target.value);
   };
 
   const handleRole = (e) => {
@@ -265,7 +267,7 @@ function ModalUsuario({ Id, open, dataInitial, handleClose, edit, onSave }) {
 
     reset();
     closeModal();
-    onSave(); 
+    onSave();
   };
 
   const formatPhoneNumber = (value) => {
@@ -275,7 +277,7 @@ function ModalUsuario({ Id, open, dataInitial, handleClose, edit, onSave }) {
     // Formato: 809-632-0987
     const formattedPhoneNumber = digits.replace(
       /^(\d{3})(\d{3})(\d{0,4})$/,
-      (match, p1, p2, p3) => `${p1}-${p2}${p3 ? "-" + p3 : ""}`
+      (match, p1, p2, p3) => `${p1}-${p2}${p3 ? "-" + p3 : ""}`,
     );
 
     return formattedPhoneNumber;
@@ -318,40 +320,36 @@ function ModalUsuario({ Id, open, dataInitial, handleClose, edit, onSave }) {
             p: 2,
           }}
         >
-          <div className="d-flex p-2  justify-content-between align-items-center">
-            <div className="p-2">
-              <div className="d-flex justify-content-between">
-                <div>
-                  {edit ? (
-                    <LiaUserEditSolid className="IconsTitle text-info fs-1" />
-                  ) : (
-                    <PiUserPlusThin className="IconsTitle text-info fs-1" />
-                  )}
-                </div>
-                <div>
-                  <h5 className="cFont d-flex lh-2 mb-0 text-black">
-                    {edit
-                      ? "Editando Usuarios de Sistema"
-                      : "Creando Usuario de Sistema"}
-                  </h5>
-
-                  {edit && (
-                    <p className="d-flex  clFont mb-0 text-black-50">
-                      Usuario :
-                      <strong className="text-danger">
-                        {dataInitial.nombreusuario}
-                      </strong>
-                    </p>
-                  )}
-                </div>
+          <div className="card-header border-bottom bg-white p-4 d-flex justify-content-between align-items-center">
+            <div className="d-flex align-items-center gap-3">
+              <div
+                className="p-2 rounded-3 text-white d-flex align-items-center justify-content-center shadow-sm"
+                style={{
+                  backgroundColor: MisColores.headerBlue,
+                  width: "45px",
+                  height: "45px",
+                }}
+              >
+                <Building size={20} />
+              </div>
+              <div>
+                <h2
+                  className="fw-bold mb-0"
+                  style={{ color: "#2c3e50", fontSize: "1.5rem" }}
+                >
+                  Usuarios
+                </h2>
+                <p className="text-muted mb-0 small">
+                  Usuario{" "}
+                  <strong className="text-danger  text-uppercase">
+                    {dataInitial.nombreusuario}
+                  </strong>
+                </p>
               </div>
             </div>
-            <div>
-              <IoIosCloseCircleOutline
-                className="text-black-50 fs-3"
-                onClick={closeModal}
-              />
-            </div>
+            <button className="btn btn-light rounded-circle p-2 text-secondary hover:bg-danger hover:text-white transition-all">
+              <X size={20} onClick={closeModal} />
+            </button>
           </div>
 
           <div className=" border-1 border-dark-subtle rounded-2 m-3  ">
@@ -501,12 +499,15 @@ function ModalUsuario({ Id, open, dataInitial, handleClose, edit, onSave }) {
                       variant="outlined"
                       value={vSupervisor}
                       onChange={handleSupervisor}
-                    >
-                      {/* {dataTipo.map((option) => (
-                        <MenuItem key={option.id} value={option.id}>
-                          {option.nombreusuario}
-                        </MenuItem>
-                      ))} */}
+                    >{Array.isArray(dataTipo) ? (
+    dataTipo.map((option) => (
+      <MenuItem key={option.id} value={option.id}>
+        {option.nombreusuario}
+      </MenuItem>
+    ))
+  ) : (
+    <MenuItem disabled>Cargando supervisores...</MenuItem>
+  )}
                     </TextField>
                   </div>
                   <div className="col-md-6 col-sm-12">
@@ -565,9 +566,7 @@ function ModalUsuario({ Id, open, dataInitial, handleClose, edit, onSave }) {
                     ) : (
                       <div className="d-flex justify-content-center align-items-center h-100">
                         <Avatar sx={{ width: 100, height: 100 }}>
-                          <CiFileOff
-                            style={{ fontSize: "50px", color: "white" }}
-                          />
+                          <User2 size={50} />
                         </Avatar>
                       </div>
                     )}
@@ -575,7 +574,7 @@ function ModalUsuario({ Id, open, dataInitial, handleClose, edit, onSave }) {
                   <Button
                     sx={{
                       ml: 3,
-                      background: "#0097B2",
+                      background: MisColores.actionRed,
                       "&:hover": { background: "#59A5B3" },
                     }}
                     component="label"
@@ -602,6 +601,7 @@ function ModalUsuario({ Id, open, dataInitial, handleClose, edit, onSave }) {
                         variant="contained"
                         className="clFont text-white mx-3"
                         type="submit"
+                        style={{ backgroundColor: MisColores.headerBlue }}
                       >
                         {" "}
                         {edit ? "Guardar Cambios" : "Guardar"}
@@ -609,8 +609,9 @@ function ModalUsuario({ Id, open, dataInitial, handleClose, edit, onSave }) {
                       <Button
                         color="info"
                         variant="outlined"
-                        className="clFont"
                         onClick={closeModal}
+                        style={{ backgroundColor: MisColores.bgGray }}
+                        className="mx-2 btn rounded-2 border-dark-subtle text-muted clFont"
                       >
                         {" "}
                         {edit ? "Cancelar Cambios" : "Cancelar"}

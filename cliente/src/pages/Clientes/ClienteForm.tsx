@@ -34,6 +34,8 @@ import CurrencyTextField from "../../components/stuff/InputMoney.tsx";
 import { TbBorderRadius } from "react-icons/tb";
 import { IoIosSearch } from "react-icons/io";
 import BeatLoader from "react-spinners/BeatLoader";
+import { MisColores } from "../../components/stuff/MisColores.tsx";
+import { ArrowLeftFromLine, Building, User2, X } from "lucide-react";
 
 type FormValues = {
   sueldo: number;
@@ -46,7 +48,13 @@ const StyledTextField = styled(TextField)({
   },
 });
 
-const ClienteForm = ({ ModoEdicion, idCliente, open, handleClose }) => {
+const ClienteForm = ({
+  ModoEdicion,
+  idCliente,
+  open,
+  handleClose,
+  updateList,
+}) => {
   const [dataCliente, setDataCliente] = useState([]);
   const [tipoDocs, setTipoDocs] = useState([]);
   const [filet, setFile] = useState("");
@@ -77,6 +85,9 @@ const ClienteForm = ({ ModoEdicion, idCliente, open, handleClose }) => {
   const [valorApellidos, setValorApellidos] = useState("");
   const [newNombre, setNewNombre] = useState("");
   const [newApellidos, setNewApellidos] = useState("");
+  const [fileToUpload, setFileToUpload] = useState<File | null>(null);
+  const [longitud, setLongitud] = useState("18.45310764759655");
+  const [latitud, setLatitud] = useState("-70.73452937006576");
 
   const theme = createTheme({
     components: {
@@ -146,14 +157,17 @@ const ClienteForm = ({ ModoEdicion, idCliente, open, handleClose }) => {
       tipo_dni: 1,
       fecha_nac: new Date(),
       idrutas: 1,
-      estado: 1,
+      estado: 'Activo',
       sueldo: 0.0,
+      longitud: "-70.123456", // Valor por defecto inicial
+      latitud: "18.456789",
     },
   });
 
-  const changeUpFile = (v) => {
-    uploadImagen(v);
-  };
+  // const changeUpFile = (v) => {
+  //   console.log(v)
+  //   uploadImagen(v);
+  // };
 
   useEffect(() => {
     axios
@@ -193,7 +207,7 @@ const ClienteForm = ({ ModoEdicion, idCliente, open, handleClose }) => {
     const soloNumeros = valor.replace(/\D/g, "");
     const formato = soloNumeros.replace(
       /(\d{3})(\d{0,3})(\d{0,4})/,
-      "$1-$2-$3"
+      "$1-$2-$3",
     );
 
     return formato;
@@ -203,7 +217,7 @@ const ClienteForm = ({ ModoEdicion, idCliente, open, handleClose }) => {
     const cleanedValue = value.replace(/\D/g, "");
     const formatedValue = cleanedValue.replace(
       /(\d{3})(\d{7})(\d{1})/,
-      "$1-$2-$3"
+      "$1-$2-$3",
     );
 
     return formatedValue;
@@ -213,7 +227,7 @@ const ClienteForm = ({ ModoEdicion, idCliente, open, handleClose }) => {
     const cleanedValue = value.replace(/\D/g, "");
     const formatedValue = cleanedValue.replace(
       /(\{3})(\{7})(\{1})/,
-      "$1-$2-$3"
+      "$1-$2-$3",
     );
 
     return formatedValue;
@@ -223,6 +237,14 @@ const ClienteForm = ({ ModoEdicion, idCliente, open, handleClose }) => {
     const upperCaseValue = event.target.value.toUpperCase();
     setValorNombre(upperCaseValue);
     setValue(event.target.name, upperCaseValue, { shouldValidate: true });
+  };
+
+  const handleInputLongitud = (event) => {
+    setValue("Longitud", "-70.73452937006576", { shouldValidate: true });
+  };
+
+  const handleInputLatitud = (event) => {
+    setValue("Latitud", "18.45310764759655", { shouldValidate: true });
   };
 
   const handleInputChangeApellidos = (event) => {
@@ -241,11 +263,11 @@ const ClienteForm = ({ ModoEdicion, idCliente, open, handleClose }) => {
     if (formattedDNInormal.length == 11) {
       setIsLoading(true);
       axios
-        .get(`http://localhost:8000/jce/${formattedDNInormal}`)
+        .get(`http://localhost:5000/jce/${formattedDNInormal}`)
         .then((personas) => {
           setNewNombre(personas.data.nombres);
           setNewApellidos(
-            personas.data.apellido1 + " " + personas.data.appelido2
+            personas.data.apellido1 + " " + personas.data.appelido2,
           );
         })
         .catch((error) => {
@@ -304,29 +326,9 @@ const ClienteForm = ({ ModoEdicion, idCliente, open, handleClose }) => {
     setValue("telefonotrabajo", formattedTelefono);
   };
 
-  const uploadImagen = async (originalName) => {
-    console.log(filet);
-    if (filet) {
-      delImg(filet);
-    }
-
-    const formatdata = new FormData();
-    formatdata.append("imgDNI2", originalName);
-
-    try {
-      const res = await axios.post(
-        "http://localhost:8000/uploadImg/",
-        formatdata
-      );
-
-      upFoto(res.data.fileName);
-    } catch (err) {
-      console.log(err);
-    }
-  };
-
+  const UriImgContainer = "http://localhost:5000/uploads/clientes/avata/";
   useEffect(() => {
-    if (ModoEdicion) {
+    if (ModoEdicion && idCliente) {
       axios
         .get(`http://localhost:5000/clientes/${idCliente}`)
         .then((response) => {
@@ -335,7 +337,11 @@ const ClienteForm = ({ ModoEdicion, idCliente, open, handleClose }) => {
           setDataCliente(response.data);
           reset(response.data);
           setFile(response.data.imgFOTOS);
-          setPreview(response.data.imgFOTOS);
+          if (response.data.imgFOTOS && response.data.imgFOTOS !== "") {
+            setPreview(`${UriImgContainer}${response.data.imgFOTOS}`);
+          } else {
+            setPreview(null); // O una imagen por defecto
+          }
           setTipoDoc(response.data.tipo_dni);
           setEstadoCivil(response.data.estadocivil);
           setNacionalidad(response.data.nacionalidad);
@@ -346,56 +352,102 @@ const ClienteForm = ({ ModoEdicion, idCliente, open, handleClose }) => {
           setFechaTrabajo(response.data.fechaingresotrabajo);
           setIdRutas(response.data.idrutas);
           setViviendas(response.data.vivienda);
+          setLongitud(response.data.longitud);
+          setLatitud(response.data.latitud);
+          reset(response.data);
         })
         .catch((error) => {
           console.log(error);
         });
     }
-  }, [ModoEdicion]);
+  }, [ModoEdicion, idCliente, reset]);
 
   const onSubmit = async (data: FieldValues) => {
-    if (ModoEdicion) {
-      await axios.put(`http://localhost:5000/clientes/${idCliente}`, data);
+    try {
+      let finalFileName = data.imgFOTOS; // Valor por defecto (el que ya tiene o el del input)
 
-      Swal.fire({
-        position: "center",
-        icon: "success",
-        html: '<p style="color: gray; font-weight: normal;">Cliente Actualizado.</p>',
-        showConfirmButton: false,
-        timer: 2000,
-      });
-      reset();
-    } else {
-      const findDni = await axios.get(
-        `http://localhost:5000/clientes/buscar-dni/${data.dni}`
-      );
+      // --- LOGICA DE SUBIDA DE IMAGEN ---
+      // Si seleccionaste un archivo nuevo (fileToUpload es el estado que guarda el archivo binario)
+      if (fileToUpload) {
+        const formData = new FormData();
+        console.log(fileToUpload);
+        // ESTE NOMBRE "avatar" debe ser igual al del backend .single("avatar")
+        formData.append("avatar", fileToUpload);
 
-      if (findDni.data) {
+        const resImg = await axios.post(
+          "http://localhost:5000/clientes/uploaduser",
+          formData,
+          {
+            headers: { "Content-Type": "multipart/form-data" },
+          },
+        );
+
+        // Ahora resImg.data.filename tendrá el nombre real (ej: avatar171338...jpg)
+        finalFileName = resImg.data.filename;
+      }
+
+      // Actualizamos el objeto data con el nombre real de la imagen antes de enviar a la DB
+      const datosParaEnviar = { ...data, imgFOTOS: finalFileName };
+
+      if (ModoEdicion) {
+        // --- MODO EDICIÓN ---
+        await axios.put(
+          `http://localhost:5000/clientes/${idCliente}`,
+          datosParaEnviar,
+        );
+
         Swal.fire({
-          icon: "error",
-          title: "Oops...",
-          text: "Este cliente ya esta creado.",
+          position: "center",
+          icon: "success",
+          html: '<p style="color: gray; font-weight: normal;">Cliente Actualizado.</p>',
+          showConfirmButton: false,
+          timer: 2000,
         });
       } else {
-        const respond = await axios.post(URIs2, data);
-        console.log(respond);
-        //  await new Promise((resolve) => setTimeout(resolve, 1000));
+        // --- MODO CREACIÓN ---
+        // 1. Validar DNI duplicado
+
+        const findDni = await axios.get(
+          `http://localhost:5000/clientes/buscar-dni/${data.dni}`,
+        );
+
+        if (findDni.data) {
+          return Swal.fire({
+            icon: "error",
+            title: "Oops...",
+            text: "Este cliente ya está creado.",
+          });
+        }
+
+        // 2. Guardar nuevo cliente
+        await axios.post(URIs2, datosParaEnviar);
 
         Swal.fire({
           position: "top-end",
           icon: "success",
-          html: '<p style="color: gray; font-weight: normal;">Cliente Guardo.</p>',
+          html: '<p style="color: gray; font-weight: normal;">Cliente Guardado.</p>',
           showConfirmButton: false,
           timer: 2000,
         });
-
-        reset();
       }
-    }
-    //  onSave();
-    handleClose();
-  };
 
+      // --- FINALIZACIÓN ---
+      reset();
+      setPreview(null); // Limpiamos la previsualización
+      setFileToUpload(null); // Limpiamos el archivo pendiente
+
+      CloseModal();
+
+      // Cerramos el modal
+    } catch (error) {
+      console.error("Error en el registro:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Hubo un problema al procesar la solicitud.",
+      });
+    }
+  };
   const handleKeyDown = (e) => {
     if (e.key === "Enter") {
       e.preventDefault(); // Previene el comportamiento predeterminado de la tecla Enter
@@ -404,6 +456,7 @@ const ClienteForm = ({ ModoEdicion, idCliente, open, handleClose }) => {
 
   const CloseModal = () => {
     handleClose();
+    updateList();
   };
   const handleEstdoCivil = (e) => {
     setEstadoCivil(e.target.value);
@@ -444,6 +497,30 @@ const ClienteForm = ({ ModoEdicion, idCliente, open, handleClose }) => {
     setDni(e.target.value);
   };
 
+  const changeUpFile = async (file) => {
+    if (!file) return;
+
+    const formData = new FormData();
+    // "avatar" o "file" debe coincidir con lo que Multer espera en el backend
+    formData.append("avatar", file);
+
+    try {
+      const res = await axios.post(
+        "http://localhost:5000/uploaduser/",
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        },
+      );
+
+      // Si el backend te devuelve el nuevo nombre del archivo, lo guardas en el form
+      setValue("imgFOTOS", res.data.filename);
+      console.log("Subida exitosa");
+    } catch (error) {
+      console.error("Error al subir imagen:", error);
+    }
+  };
+
   return (
     <div className="row p-2">
       <Modal
@@ -468,10 +545,10 @@ const ClienteForm = ({ ModoEdicion, idCliente, open, handleClose }) => {
             },
 
             maxHeight: {
-              xs: "650px",
-              sm: "600px",
-              md: "800px",
-              lg: "820px",
+              xs: "700px",
+              sm: "650px",
+              md: "850px",
+              lg: "870px",
             },
             transform: "translate(-50%, -50%)",
             width: {
@@ -484,20 +561,38 @@ const ClienteForm = ({ ModoEdicion, idCliente, open, handleClose }) => {
             boxShadow: 24,
           }}
         >
-          <div className="  bg-secondary p-2 d-flex justify-content-between align-content-center">
-            <div className="d-flex">
-              <SiMeteor className="fs-1 text-white me-2" /> <Logo fs={20} />
-            </div>
-            <div>
-              <div className="p-1 rounded-circle border" onClick={handleClose}>
-                <span
-                  className="p-2 text-white fs-6"
-                  style={{ cursor: "pointer" }}
+          <div className="card-header border-bottom bg-white p-4 d-flex justify-content-between align-items-center">
+            <div className="d-flex align-items-center gap-3">
+              <div
+                className="p-2 rounded-3 text-white d-flex align-items-center justify-content-center shadow-sm"
+                style={{
+                  backgroundColor: MisColores.headerBlue,
+                  width: "45px",
+                  height: "45px",
+                }}
+              >
+                <User2 size={20} />
+              </div>
+              <div>
+                <h2
+                  className="fw-bold mb-0"
+                  style={{ color: "#2c3e50", fontSize: "1.5rem" }}
                 >
-                  X
-                </span>
+                  Clientes
+                </h2>
+                <p className="text-muted mb-0 small">
+                  {ModoEdicion
+                    ? "Editando Cliente"
+                    : "Insertando nuevo cliente"}
+                </p>
               </div>
             </div>
+            <button
+              className="btn btn-light rounded-circle p-2 text-secondary hover:bg-danger hover:text-white transition-all"
+              onClick={handleClose}
+            >
+              <X size={20} />
+            </button>
           </div>
 
           <form
@@ -505,57 +600,65 @@ const ClienteForm = ({ ModoEdicion, idCliente, open, handleClose }) => {
             className="border-1 border-light-subtle "
             onKeyDown={handleKeyDown}
           >
-            <div className=" bg-body-secondary d-flex justify-content-between align-items-center ">
-              <div>
-                <div className="d-flex align-items-center">
-                  <div className="d-flex justify-content-center p-1 mx-3 ">
-                    {preview ? (
-                      <Avatar
-                        src={`${UrisImg}${preview}`}
-                        sx={{ width: 75, height: 75 }}
-                      />
-                    ) : (
-                      <Avatar
-                        src={`${preview}`}
-                        sx={{ width: 75, height: 75 }}
-                      />
-                    )}
-                  </div>
+            <div className=" d-flex justify-content-between align-items-center ">
+              <div className="d-flex align-items-center">
+                <input
+                  type="file"
+                  ref={inputFileRef}
+                  style={{ display: "none" }}
+                  accept=".jpg, .jpeg, .png"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      setFileToUpload(file);
+                      setPreview(URL.createObjectURL(file));
+                    }
+                  }}
+                />
 
-                  <input
-                    type="file"
-                    className="clFont form-control"
-                    onChange={(e) => {
-                      setValue("imgDNI2", e.target.files[0].name);
-                      changeUpFile(e.target.files[0]);
-                      setImgFileName(e.target.files[0]);
-                    }}
-                    ref={inputFileRef}
-                    style={{ display: "none" }}
-                    accept=".jpg, .jpeg, .png"
-                  />
-                  <input
-                    type="text"
-                    {...register("imgFOTOS")}
-                    readOnly
-                    className="clFont form-control"
-                    style={{ display: !preview ? "none" : "none" }}
-                  />
-
-                  <div className="mx-2">
-                    <button
-                      className="btn btn-success clFont text-white"
-                      onClick={inputFile}
-                      type="button"
+                <div
+                  className="d-flex justify-content-center p-1 mx-3 "
+                  onClick={() => inputFileRef.current.click()}
+                  style={{ cursor:"pointer"}}
+                >
+                  {preview ? (
+                    <Avatar
+                      src={preview}
+                      sx={{
+                        width: 100,
+                        height: 100,
+                        objectFit: "contain",
+                        backgroundColor: MisColores.bgGray,
+                      }}
                     >
-                      Cargar Imagen
-                    </button>
-                  </div>
+                      {newNombre ? newNombre.charAt(0).toUpperCase() : "C"}
+                    </Avatar>
+                  ) : (
+                    <div
+                      className="rounded-circle bg-dark-subtle d-inline-flex align-items-center justify-content-center border border-2 border-white shadow-sm"
+                      style={{
+                        width: "75px",
+                        height: "75px",
+                        backgroundColor: MisColores.grayMute,
+                      }}
+                    >
+                      <div className="text-center">
+                        {" "}
+                        <h5 className="mb-0 text-muted fs-3 fw-semibold">
+                          {newNombre && newApellidos
+                            ? `${newNombre.charAt(0).toUpperCase()}${newApellidos.charAt(0).toUpperCase()}`
+                            : "?"}
+                        </h5>
+                      </div>
+                    </div>
+                  )}
                 </div>
+                <span className="bg-warning-subtle p-2 rounded-4 fw-semibold animar-resalte" style={{ fontSize:"0.8em"}}><ArrowLeftFromLine size={18} className="mx-1" />Click para seleccionar Imagen</span>
               </div>
-              <span className=" fw-medium fs-6 me-3">
-                {ModoEdicion ? "Editando Cliente" : "Insertando Nuevo Cliente"}{" "}
-              </span>
+
+             
+
+              
             </div>
             <div className="mt-2 mx-4">
               <span className="fs-6 fw-medium text-info">Datos Personales</span>
@@ -627,7 +730,10 @@ const ClienteForm = ({ ModoEdicion, idCliente, open, handleClose }) => {
                                 {isLoading ? (
                                   <BeatLoader color="#008080" size={15} />
                                 ) : (
-                                  <IoIosSearch className="fs-3" style={{color:"#008080"}} />
+                                  <IoIosSearch
+                                    className="fs-3"
+                                    style={{ color: "#008080" }}
+                                  />
                                 )}
                               </IconButton>
                             </span>
@@ -706,12 +812,10 @@ const ClienteForm = ({ ModoEdicion, idCliente, open, handleClose }) => {
 
                 <div className="col-12 col-sm-6 col-md-4  p-2 ">
                   <TextField
-                    label="Apodo *"
+                    label="Apodo "
                     fullWidth
                     onInput={handleInputChange}
-                    {...register("apodo", {
-                      required: "Este campo es obligatorio",
-                    })}
+                    {...register("apodo")}
                     InputLabelProps={{ style: { fontSize: "0.9em" } }}
                     sx={{
                       "& .MuiOutlinedInput-root": {
@@ -723,9 +827,6 @@ const ClienteForm = ({ ModoEdicion, idCliente, open, handleClose }) => {
                     }}
                     className="clFont"
                   />
-                  {errors.apodo && (
-                    <p className="errorColor"> {errors.apodo.message} </p>
-                  )}
                 </div>
                 <div className="col-12 col-sm-6 col-md-4  p-2 ">
                   <TextField
@@ -1138,7 +1239,7 @@ const ClienteForm = ({ ModoEdicion, idCliente, open, handleClose }) => {
                 <div className="col-12 col-sm-6 col-md-4  p-2 ">
                   <TextField
                     label="Ruta Asignada"
-                    {...register("idrutas")}
+                    {...register("idrutas", { required: "Campo requerido" })}
                     select
                     fullWidth
                     InputLabelProps={{ style: { fontSize: "0.8em" } }}
@@ -1163,6 +1264,9 @@ const ClienteForm = ({ ModoEdicion, idCliente, open, handleClose }) => {
                       </MenuItem>
                     ))}
                   </TextField>
+                  {errors.idrutas && (
+                    <p className="errorColor">{errors.idrutas.message}</p>
+                  )}
                 </div>
                 <div className="col-12 col-sm-6 col-md-4  p-2 ">
                   <Controller

@@ -17,7 +17,6 @@ const __dirname = path.dirname(__filename);
 export const getUser = async (req, res) => {
   try {
     const user = await UserModels.findAll({
-      where: { estado: "1" },
       include: {
         model: RolesModels,
         attributes: ["nombre"],
@@ -71,7 +70,7 @@ export const getGestor = async (req, res) => {
 export const getTipo = async (req, res) => {
   try {
     const usuarios = await UserModels.findAll({
-      where: { idrole: req.params.tipo, estado: "HABILITADO" },
+      where: { idrole: req.params.tipo, estado: "1" },
       include: {
         model: RolesModels,
         attributes: ["nombre"],

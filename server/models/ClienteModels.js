@@ -35,7 +35,7 @@ const ClientesModel = db.define("tclientes", {
   idrutas: { type: DataTypes.INTEGER },
   limitecredito: { type: DataTypes.DECIMAL, defaultValue: 0.0 },
   vivienda: { type: DataTypes.STRING, defaultValue: "ALQUILER" },
-  estado: { type: DataTypes.INTEGER, defaultValue: 1 },
+  estado: { type: DataTypes.STRING, defaultValue: 'ACTIVO' },
   longitud: {type: DataTypes.STRING},
   latitud: {type: DataTypes.STRING},
   imgDNI1: { type: DataTypes.STRING },

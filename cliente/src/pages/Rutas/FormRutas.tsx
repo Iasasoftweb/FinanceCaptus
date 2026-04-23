@@ -14,6 +14,8 @@ import axios from "axios";
 import Swal from "sweetalert2";
 import { MdOutlineCancel, MdOutlineSaveAlt } from "react-icons/md";
 import { SiReacthookform } from "react-icons/si";
+import { MisColores } from "../../components/stuff/MisColores";
+import { MapPin, X } from "lucide-react";
 
 export const FormRutas = ({
   ModoEdicion,
@@ -21,6 +23,7 @@ export const FormRutas = ({
   handleClose,
   initialData,
   idRutas,
+  updateList,
 }) => {
   const {
     control,
@@ -37,11 +40,10 @@ export const FormRutas = ({
   const [cargado, setCargado] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const URI = "http://localhost:8000/zonas/";
+  const URI = "http://localhost:5000/zonas/";
 
   useEffect(() => {
-
-    if (ModoEdicion ===true) {
+    if (ModoEdicion === true) {
       reset(initialData);
       setRutaData(initialData);
       console.log(initialData);
@@ -49,11 +51,11 @@ export const FormRutas = ({
   }, [initialData, reset, ModoEdicion]);
 
   useEffect(() => {
-     if (!ModoEdicion) {
-      reset()
-      console.log(ModoEdicion)      
-     }
-  }, [ModoEdicion])
+    if (!ModoEdicion) {
+      reset();
+      console.log(ModoEdicion);
+    }
+  }, [ModoEdicion]);
 
   const handleInputChange = (e) => {
     const upperCaseValue = e.target.value.toUpperCase();
@@ -62,7 +64,7 @@ export const FormRutas = ({
 
   const onSubmit = async (data: FieldValues) => {
     if (ModoEdicion) {
-      await axios.put(`http://localhost:8000/zonas/${idRutas}`, data);
+      await axios.put(`http://localhost:5000/zonas/${idRutas}`, data);
       Swal.fire({
         position: "top-end",
         icon: "success",
@@ -71,9 +73,9 @@ export const FormRutas = ({
         timer: 2000,
       });
     } else {
-      console.log(data)
-      const respond = await axios.post(URI, data)
-      console.log(respond)
+      console.log(data);
+      const respond = await axios.post(URI, data);
+      console.log(respond);
       //await new Promise((resolve) => setTimeout(resolve, 1000));
 
       Swal.fire({
@@ -84,7 +86,7 @@ export const FormRutas = ({
         timer: 2000,
       });
     }
-
+    await updateList();
     reset();
     handleClose();
   };
@@ -117,23 +119,41 @@ export const FormRutas = ({
           p: 2,
         }}
       >
-        <div className="d-flex mx-2 bg-dark bg-opacity-100  p-2 rounded-4">
-          <div className="p-2">
-            <SiReacthookform className="IconsTitle text-info fs-2" />
+        <div className="card-header border-bottom bg-white p-4 d-flex justify-content-between align-items-center">
+          <div className="d-flex align-items-center gap-3">
+            <div
+              className="p-2 rounded-3 text-white d-flex align-items-center justify-content-center shadow-sm"
+              style={{
+                backgroundColor: MisColores.headerBlue,
+                width: "45px",
+                height: "45px",
+              }}
+            >
+              <MapPin size={20} />
+            </div>
+            <div>
+              <h2
+                className="fw-bold mb-0"
+                style={{ color: "#2c3e50", fontSize: "1.5rem" }}
+              >
+                Formulario Rutas
+              </h2>
+              <p className="text-muted mb-0 small">
+                Mantenimiento de Rutas{" "}
+                <strong className="text-success">
+                  {ModoEdicion ? "Editando" : "Insertando"}
+                </strong>
+              </p>
+            </div>
           </div>
-
-          <div>
-            <h5 className="cFont d-flex lh-1 mb-0 text-white">
-              Formulario Rutas
-            </h5>
-            <p className="d-flex lh- clFont mb-0">
-              El Formulario esta en Modo :
-              <strong className="text-success">
-                {ModoEdicion ? "Editando" : "Insertando"}
-              </strong>
-            </p>
-          </div>
+          <button
+            className="btn btn-light rounded-circle p-2 text-secondary hover:bg-danger hover:text-white transition-all"
+            // onClick={handleClose}
+          >
+            <X size={20} onClick={handleClose} />
+          </button>
         </div>
+
         <br />
         <form onSubmit={handleSubmit(onSubmit)}>
           <TextField
@@ -186,32 +206,24 @@ export const FormRutas = ({
           <br />
           <br />
           <div className="d-flex justify-content-center">
-            <Button
+            <button
               type="submit"
-              variant="contained"
-              sx={{
-                ml: 3,
-                background: "#0097B2",
-                "&:hover": { background: "#59A5B3" },
-              }}
+              className="btn mx-3"
+              style={{ backgroundColor: MisColores.headerBlue }}
             >
               <p className="clFont text-white m-auto text-capitalize">
                 {ModoEdicion ? "Guardar Cambios" : "Guardar"}
               </p>
-            </Button>
-            <Button
+            </button>
+            <button
               onClick={handlKillModal}
-              variant="contained"
-              sx={{
-                ml: 3,
-                background: "#56595C",
-                "&:hover": { background: "#3A3D3D" },
-              }}
+              style={{ backgroundColor: MisColores.bgGray }}
+              className="mx-2 btn rounded-2 border-dark-subtle"
             >
-              <p className="clFont text-white m-auto text-capitalize">
+              <p className="clFont text-muted m-auto text-capitalize">
                 Cancelar
               </p>
-            </Button>
+            </button>
           </div>
         </form>
       </Box>

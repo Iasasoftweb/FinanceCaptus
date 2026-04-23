@@ -82,3 +82,14 @@
  background-color:#dc4c4c
  
 }  
+
+@keyframes resaltar {
+  0% { box-shadow: 0 0 0px rgba(255, 193, 7, 0); }
+  50% { box-shadow: 0 0 15px rgba(255, 193, 7, 0.7); }
+  100% { box-shadow: 0 0 0px rgba(255, 193, 7, 0); }
+}
+
+.animar-resalte {
+  animation: resaltar 2s infinite;
+  border: 1px solid #ffc107; /* Un borde sutil ayuda al resalte */
+}

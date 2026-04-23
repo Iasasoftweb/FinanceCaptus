@@ -191,12 +191,21 @@ export const deleteCliente = async (req, res) => {
   } catch (error) {
     res.json({ message: error.message });
   }
+  
 };
 
 // Subir Archivo
 
 export const uploadImg = (req, res) => {
-  res.send("carga de archivo realizo");
+  if (!req.file) {
+    return res.status(400).send("No se subió ningún archivo");
+  }
+  
+  // Enviamos el nombre generado por Multer de vuelta al frontend
+  res.status(200).json({
+    message: "Carga de archivo realizada",
+    filename: req.file.filename 
+  });
 };
 
 const storage = multer.diskStorage({

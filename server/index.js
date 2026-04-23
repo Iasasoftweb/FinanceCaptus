@@ -95,10 +95,11 @@ app.post(
   },
 );
 
-app.use(
-  "/uploads",
-  express.static(path.join(__dirname, "uploads/clientes/avata/")),
-);
+// app.use(
+//   "/uploads",
+//   express.static(path.join(__dirname, "uploads/clientes/avata/")),
+// );
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.use(
   "/uploadusers",

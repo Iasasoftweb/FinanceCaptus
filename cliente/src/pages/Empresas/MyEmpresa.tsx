@@ -26,6 +26,11 @@ import { FaCamera } from "react-icons/fa";
 import "./myEmpresas.css";
 import { NumericFormat } from "react-number-format";
 import limpiarMonto from "../../components/stuff/LimpiarMonto.tsx";
+import { MisColores } from "../../components/stuff/MisColores.tsx";
+import { InputField } from "../../components/stuff/InputField.tsx";
+import { Rocket, X, Building2 } from "lucide-react";
+import { SectionTitle } from "../../components/stuff/SectionTitle.tsx";
+
 
 const MyEmpresa = ({ open }) => {
   const [isModalOpen, setIsModalOpen] = useState(open);
@@ -35,9 +40,9 @@ const MyEmpresa = ({ open }) => {
   const [vpais, setVpais] = useState("");
   const [isAplicaMora, setIsAplicaMora] = useState("");
   const [isImprimilo, setIsimprimelogo] = useState("");
-  const UriImg = "http://localhost:8000/uploadEmpresa/";
-  const URIEmpresas = "http://localhost:8000/empresas/estado/";
-  const UriMoneda = "http://localhost:8000/moneda/";
+  const UriImg = "http://localhost:5000/uploadEmpresa/";
+  const URIEmpresas = "http://localhost:5000/empresas/estado/";
+  const UriMoneda = "http://localhost:5000/moneda/";
   const navigate = useNavigate();
   const [selectedFileId, setSelectedFileId] = useState(null);
   const [MoraDefault, setMoraDefault] = useState(0);
@@ -114,7 +119,7 @@ const MyEmpresa = ({ open }) => {
 
     try {
       const res = await axios.post(
-        "http://localhost:8000/uploadEmpresa/",
+        "http://localhost:5000/uploadEmpresa/",
         formatdata
       );
       console.log(res.data.fileName);
@@ -177,7 +182,7 @@ const MyEmpresa = ({ open }) => {
   };
 
   const onSubmit = async (data: FieldValues) => {
-    await axios.put(`http://localhost:8000/empresas/${Idempresas}`, data);
+    await axios.put(`http://localhost:5000/empresas/${Idempresas}`, data);
     Swal.fire({
       position: "center",
       icon: "success",
@@ -189,7 +194,7 @@ const MyEmpresa = ({ open }) => {
   };
 
   return (
-    <div className="vh-100">
+    <div className="container-fluid min-vh-100 p-4" style={{ backgroundColor: MisColores.bgGray, fontFamily: 'Segoe UI, Roboto, Helvetica, Arial, sans-serif' }}>
       <Modal
         open={isModalOpen}
         onClose={handleClose}
@@ -228,31 +233,23 @@ const MyEmpresa = ({ open }) => {
             boxShadow: 24,
           }}
         >
-          <div className="  bg-secondary p-2 d-flex justify-content-between align-content-center">
-            <div className="d-flex">
-              <SiMeteor className="fs-1 text-white me-2" /> <Logo fs={20} />
+
+          <div className="card-header border-bottom bg-white p-4 d-flex justify-content-between align-items-center">
+          <div className="d-flex align-items-center gap-3">
+            <div className="p-2 rounded-3 text-white d-flex align-items-center justify-content-center shadow-sm" 
+                 style={{ backgroundColor: MisColores.headerBlue, width: '45px', height: '45px' }}>
+              <Building2 size={20} />
             </div>
             <div>
-              <Link to="/">
-                <div
-                  className="p-1 rounded-circle border"
-                  onClick={handleClose}
-                >
-                  <span
-                    className="p-2 text-white fs-6"
-                    style={{ cursor: "pointer" }}
-                  >
-                    X
-                  </span>
-                </div>
-              </Link>
+              <h5 className="fw-bold mb-0" style={{ color: '#2c3e50' }}>Mi Empresa</h5>
+              <p className="text-muted mb-0 " style={{fontSize:"0.8em"}}>Configuración de Empresa</p>
             </div>
           </div>
-
-          <div className=" bg-body-secondary p-2">
-            <span className=" fw-medium fs-6">Empresas </span>
-          </div>
-
+          <button className="btn btn-light rounded-circle p-2 text-secondary">
+            <X size={20} onClick={handleClose} />
+          </button>
+        </div>
+          
           <div className="p-4 ">
             <div className="justify-content-center align-items-center mb-2">
               <div
@@ -269,7 +266,7 @@ const MyEmpresa = ({ open }) => {
                     ></img>
                   ) : (
                     <Avatar
-                      sx={{ width: 125, height: 125, bgcolor: "cadetblue" }}
+                      sx={{ width: 80, height: 80, bgcolor: "cadetblue" }}
                       onClick={handleImageClick}
                     />
                   )}
@@ -278,7 +275,7 @@ const MyEmpresa = ({ open }) => {
                 </div>
               </div>
               <div className="d-flex justify-content-center">
-                <span className="clFont text-primary">
+                <span className="" style={{fontSize:"0.7em"}} >
                   Click en imgen para Subir Imagen
                 </span>
               </div>
@@ -307,7 +304,7 @@ const MyEmpresa = ({ open }) => {
                 </Button>
               </div>
             </div>
-            <span className="fs-6 fw-medium text-info">Datos de empresa</span>
+            <SectionTitle title="Datos Generales" />
 
             <form onSubmit={handleSubmit(onSubmit)}>
               <div className="row g-3">
@@ -608,11 +605,7 @@ const MyEmpresa = ({ open }) => {
                 </div>
               </div>
 
-              <div className="mt-4">
-                <span className="fs-6 fw-medium text-info">
-                  Opciones de Negocio
-                </span>
-              </div>
+              <SectionTitle title="Opciones de Negocios" />
 
               <div className="row g-3 mt-1">
                 <div className="col-12 col-sm-6 col-md-3  mt-4">
@@ -819,27 +812,24 @@ const MyEmpresa = ({ open }) => {
               </div>
 
               <div className="mt-5 d-flex justify-content-center">
-                <Button
-                  variant="contained"
-                  className="me-3 bg-info text-white"
-                  style={{ fontSize: "0.8em" }}
+                <button
+                  className=" btn me-3 text-white"
+                  style={{ fontSize: "0.8em", backgroundColor:MisColores.teal }}
                   type="submit"
+                  
                 >
                   {" "}
                   Guardar
-                </Button>
-                <Button
-                  variant="outlined"
+                </button>
+                <button
+                  className="btn, border-1 p-2 rounded-3 border-dark-subtle"
+                  style={{ fontSize: "0.8em", backgroundColor:"white" }}
                   onClick={handleClose}
-                  sx={{
-                    borderColor: "#20b2aa",
-                    color: "GrayText",
-                    fontSize: "0.8em",
-                  }}
+                  
                 >
                   {" "}
                   Cancelar
-                </Button>
+                </button>
               </div>
             </form>
           </div>

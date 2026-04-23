@@ -19,6 +19,7 @@ import fondo from "../../assets/img/bg.jpg";
 import { SiMeteor } from "react-icons/si";
 import { Allusuarios } from "../../data/usuarios/usuariosData.tsx";
 import { getDate } from "date-fns";
+import { MisColores } from "../../components/stuff/MisColores.tsx";
 
 
 interface LoginProps {
@@ -181,13 +182,14 @@ const Login = () => {
                     data-mdb-ripple-init
                     className="btn mb-4 px-5 shadow w-100 clFont text-white p-2"
                     //onClick={validarCredencial}
+                    style={{backgroundColor: MisColores.headerBlue}}
                   >
                     Login
                   </button>
                 </div>
                 <div className="footer">
                   <p className="" style={{ fontSize: 10, color: "GrayText" }}>
-                    Desarrollado por Iasasoft <span>©</span> 2024.{" "}
+                    Desarrollado por Iasasoft <span>©</span> 2026.{" "}
                   </p>
                 </div>
               </form>
