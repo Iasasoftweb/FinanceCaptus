@@ -36,6 +36,10 @@ import BtnXLSEstilizado from "../../components/ExportXLS/BtnXLSEstilizado.tsx";
 import { SlPrinter } from "react-icons/sl";
 import { PDFViewer, PDFDownloadLink } from "@react-pdf/renderer";
 import PrnPrestamos from "./Pdfs/prnPrestamos.tsx";
+import { MisColores } from "../../components/stuff/MisColores.tsx";
+import { Briefcase, Landmark, RefreshCcw, Search, X } from "lucide-react";
+import { style } from "./Pdfs/style.ts";
+import { InputField } from "../../components/stuff/InputField.tsx";
 
 const ShowPrestamos = () => {
   const [PrestamoData, setPrestamoData] = useState([]);
@@ -56,6 +60,9 @@ const ShowPrestamos = () => {
   const uriCuotas = "http://localhost:5000/cuotas/";
   const uriRutas = "http://localhost:5000/zonas/";
   const UrisImg = "http://localhost:5000/uploads/";
+
+  const [currentPage, setCurrentPage] = useState(1);
+
   const Navigate = useNavigate();
   const PER_PAGE = 8;
   const countpage = Math.ceil(PrestamoData.length / PER_PAGE);
@@ -163,28 +170,28 @@ const ShowPrestamos = () => {
     setTotalItems(result.length);
   };
 
-  const filtrar = (condicionesFiltrar) => {
-    const resultados = PrestamoData.filter((elementos) => {
-      if (
-        elementos.tcliente.nombre_completo
-          .toString()
-          .toLowerCase()
-          .includes(condicionesFiltrar.toLowerCase()) ||
-        elementos.tcliente.dni
-          .toString()
-          .toLowerCase()
-          .includes(condicionesFiltrar.toLowerCase()) ||
-        elementos.tcliente.tbzona.nombrerutas
-          .toString()
-          .toLowerCase()
-          .includes(condicionesFiltrar.toLowerCase())
-      ) {
-        return elementos;
-      }
-    });
-    setDataPrestamo(resultados);
-    setTotalItems(resultados.length);
-  };
+  // const filtrar = (condicionesFiltrar) => {
+  //   const resultados = PrestamoData.filter((elementos) => {
+  //     if (
+  //       elementos.tcliente.nombre_completo
+  //         .toString()
+  //         .toLowerCase()
+  //         .includes(condicionesFiltrar.toLowerCase()) ||
+  //       elementos.tcliente.dni
+  //         .toString()
+  //         .toLowerCase()
+  //         .includes(condicionesFiltrar.toLowerCase()) ||
+  //       elementos.tcliente.tbzona.nombrerutas
+  //         .toString()
+  //         .toLowerCase()
+  //         .includes(condicionesFiltrar.toLowerCase())
+  //     ) {
+  //       return elementos;
+  //     }
+  //   });
+  //   setDataPrestamo(resultados);
+  //   setTotalItems(resultados.length);
+  // };
 
   const searcher = (e) => {
     setSearch(e.target.value);
@@ -246,6 +253,27 @@ const ShowPrestamos = () => {
     inputRef.current.focus();
   }, []);
 
+  const itemsPerPage = 5;
+  console.log(PrestamoData);
+  const filtrar = PrestamoData.filter(
+    (items) =>
+      items.tcliente.nombre_completo
+        .toLowerCase()
+        .includes(search.toLowerCase()) ||
+      items.tcliente.dni.toLowerCase().includes(search.toLowerCase()),
+  );
+
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentPrestamos = filtrar.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filtrar.length / itemsPerPage);
+
+  const paginate = (pageNumber) => {
+    if (pageNumber >= 1 && pageNumber <= totalPages) {
+      setCurrentPage(pageNumber);
+    }
+  };
+
   const ShowDatos = () => {
     setSearch("");
     setsearchRutas("");
@@ -280,22 +308,85 @@ const ShowPrestamos = () => {
         />
       )}
 
-      <TitleTop
-        titulos={"Préstamos"}
-        subtitulos={"Control de Préstamos Emitidos"}
-        btnVisible={false}
-        btnLabel={"Refrescar"}
-        visibleEstado={false}
-        estado="Show"
-        icon={
-          <GiTakeMyMoney
-            className="border-1 rounded-circle p-2 text-info"
-            style={{ fontSize: 55 }}
-          />
-        }
-      />
+      <div className="card-header border-bottom bg-white p-4 d-flex justify-content-between align-items-center">
+        <div className="d-flex align-items-center gap-3">
+          <div
+            className="p-2 rounded-3 text-white d-flex align-items-center justify-content-center shadow-sm"
+            style={{
+              backgroundColor: MisColores.headerBlue,
+              width: "45px",
+              height: "45px",
+            }}
+          >
+            <Landmark size={20} />
+          </div>
+          <div>
+            <h5 className="fw-bold mb-0" style={{ color: "#2c3e50" }}>
+              Préstamos
+            </h5>
+            <p className="text-muted mb-0 " style={{ fontSize: "0.8em" }}>
+              Control de Préstamos Emitidos
+            </p>
+          </div>
+        </div>
+        <button className="btn btn-light rounded-circle p-2 text-secondary">
+          <X size={20} />
+        </button>
+      </div>
 
       <Paper>
+        <div className="d-flex justify-content-md-end mt-5 mt-md-3 mb-4 ">
+          <div className="d-flex justify-content-end w-100 ">
+            <div className="mx-4">
+              <InputField label="" icon={Search} col="">
+                <input
+                  id="search"
+                  type="text"
+                  className="form-control border-start-0 shadow-none"
+                  placeholder="Buscar Prestamos..."
+                  value={search}
+                  onChange={(e) => {
+                    setSearch(e.target.value);
+                    setCurrentPage(1); // Reiniciar a página 1 al buscar
+                  }}
+                  style={{ fontSize: "0.9em" }}
+                />
+                <button
+                  className="btn text-white d-flex align-items-center gap-2 shadow-sm border-0 "
+                  style={{ backgroundColor: MisColores.buscarOrange }}
+                  onClick={ShowDatos}
+                >
+                  <RefreshCcw size={16} />
+                  <span
+                    className="d-none d-sm-inline font-weight-bold"
+                    style={{ fontSize: "0.8em" }}
+                  >
+                    Refresh
+                  </span>
+                </button>
+              </InputField>
+            </div>
+
+            <InputField label="Zonas" icon={Briefcase} col="col-md-3">
+              <select
+                name="compania"
+                //  onChange={HandleCompany}
+                className="form-select border-0 shadow-none"
+                style={{ fontSize: "0.8em" }}
+              >
+                <option value="" disabled selected>
+                  Seleccione una Zona
+                </option>
+                {dataRutas.map((item) => (
+                  <option value={item.id} key={item.id}>
+                    {item.nombrerutas}
+                  </option>
+                ))}
+              </select>
+            </InputField>
+          </div>
+        </div>
+
         <div className="d-flex justify-content-between align-content-center mb-1 mt-1 ">
           <div className="d-flex">
             <div className="m-3">
@@ -409,7 +500,7 @@ const ShowPrestamos = () => {
         </div>
 
         <div className="p-3">
-          {DataPrestamo.length > 0 ? (
+          {currentPrestamos.length > 0 ? (
             <Table className="mi-tabla">
               <thead>
                 <tr className="fw-normal">
@@ -432,7 +523,7 @@ const ShowPrestamos = () => {
               </thead>
 
               <tbody>
-                {_DATA.currentData().map((items) => {
+                {currentPrestamos.map((items) => {
                   const {
                     atrasadas,
                     cuotaspagada,

@@ -1,41 +1,52 @@
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
+import Map, { Marker, NavigationControl } from 'react-map-gl';
+import 'mapbox-gl/dist/mapbox-gl.css';
+import { MapPin } from 'lucide-react'; // O cualquier icono que uses
 
-// Fix para iconos
-import icon from 'leaflet/dist/images/marker-icon.png';
-import iconShadow from 'leaflet/dist/images/marker-shadow.png';
+const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 
-const DefaultIcon = L.icon({
-    iconUrl: icon,
-    shadowUrl: iconShadow,
-    iconSize: [25, 41],
-    iconAnchor: [12, 41]
-});
+interface Props {
+  lat: number;
+  lng: number;
+  nombre?: string;
+  styleMap?: string;
+}
 
-const MapCliente = ({lat, lng, nombre}: any) => {
-    const latitude = parseFloat(lat);
-    const longitude = parseFloat(lng);
+const MapCliente = ({ lat, lng, nombre, styleMap }: Props) => {
+  return (
+    <div style={{ height: '450px', width: '100%', overflow: 'hidden', borderRadius: '12px' }}>
+      <Map
+        initialViewState={{
+          latitude: lat,
+          longitude: lng,
+          zoom: 8
+        }}
+        mapStyle={styleMap}
+        mapboxAccessToken={MAPBOX_TOKEN}
+      >
+        {/* Controles de navegación (zoom, rotar) */}
+        <NavigationControl position="top-right" />
 
-    if (isNaN(latitude) || isNaN(longitude)) {
-        return <div className="alert alert-warning">Coordenadas inválidas</div>;
-    }
-
-    return (
-        <div style={{ height: "450px", width: "100%", overflow: "hidden" }}>
-            <MapContainer 
-                center={[latitude, longitude]} 
-                zoom={16} 
-                scrollWheelZoom={true}
-                style={{ height: "100%", width: "100%" }}
-            >
-                <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                <Marker position={[latitude, longitude]} icon={DefaultIcon}>
-                    <Popup>{nombre}</Popup>
-                </Marker>
-            </MapContainer>
-        </div>
-    );
+        {/* Marcador personalizado */}
+        <Marker latitude={lat} longitude={lng} anchor="bottom">
+          <div style={{ color: '#d32f2f', textAlign: 'center' }}>
+            <span style={{ 
+              backgroundColor: 'white', 
+              padding: '2px 8px', 
+              borderRadius: '8px',
+              fontSize: '12px',
+              fontWeight: 'bold',
+              boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+              display: 'block',
+              marginBottom: '4px'
+            }}>
+              {nombre || 'Cliente'}
+            </span>
+            <MapPin size={32} fill="#d32f2f" color="white" />
+          </div>
+        </Marker>
+      </Map>
+    </div>
+  );
 };
 
-export default MapCliente; // Es vital que sea export default para el lazy loading
+export default MapCliente;

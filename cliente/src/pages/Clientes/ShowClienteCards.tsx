@@ -4,13 +4,10 @@ import "./clientes.css";
 import Swal from "sweetalert2";
 import { Link, useNavigate } from "react-router-dom";
 import AllClient from "../../data/clientes/AllClentes.tsx";
-import PaginationItem from "../../components/Pagination/PaginatedItems.tsx";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import ClienteDo from "./ClientesDoc.tsx";
 import { useAuth } from "../../components/Roles/AuthProvider.tsx";
-
 import ClienteForm from "./ClienteForm.tsx";
-
 import BeatLoader from "react-spinners/BeatLoader";
 import PrestamosForm from "../Prestamos/PrestamosForm.tsx";
 import useGeClient from "../../hooks/useGetCliente.tsx";
@@ -42,18 +39,13 @@ import { MisColores } from "../../components/stuff/MisColores.tsx";
 import { EmptyState } from "../../components/stuff/EmptyState.tsx";
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
-import Typography from "@mui/material/Typography";
-import IconButton from "@mui/material/IconButton";
 import DialogContent from "@mui/material/DialogContent";
-import DialogActions from "@mui/material/DialogActions";
-import Button from "@mui/material/Button";
+import MapCliente from "../../components/Maps/MapCliente.tsx";
+import "mapbox-gl/dist/mapbox-gl.css";
+import { StyleMap } from "../../components/Maps/StyleMap.tsx";
+import { useEmpresa } from "../../hooks/useEmpresas.tsx";
 
 // Componente para re-centrar el mapa cuando cambian las coordenadas
-function RecenterMap({ lat, lng }) {
-  const map = useMap();
-  map.setView([lat, lng], 15);
-  return null;
-}
 
 const ITEM_HEIGHT = 48;
 const menuOptions = [
@@ -71,7 +63,6 @@ const ShowClienteCards = () => {
   const [isModalpopupOpen, setIsModalpopupOpen] = useState(false);
   const [idRow, setIdRow] = useState(0);
   const [modoEdicion, setModoEdicion] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
   const [totalItems, setTotalItems] = useState(0);
   const [tipoModal, setTipoModal] = useState(true);
   const [isModalDoc, setIsModalDoc] = useState(false);
@@ -89,13 +80,16 @@ const ShowClienteCards = () => {
 
   const [openMapa, setOpenMapa] = useState(false);
   const [clienteSeleccionado, setClienteSeleccionado] = useState(null);
+  const [estiloActual, setEstiloActual] = useState(StyleMap.calles);
 
   const { DataPrestamos } = useDataPrestamos();
+  
   const open = Boolean(anchorEl);
 
   //Estado de Paginacion
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;
+  
 
   const handleClickMenu = (event, ClientID) => {
     setAnchorEl(event.currentTarget);
@@ -146,7 +140,7 @@ const ShowClienteCards = () => {
           setClientes(allClientes);
           setClienteData(allClientes);
           setTotalItems(allClientes.length);
-          setIsLoading(false);
+         
         }),
           10000);
       });
@@ -161,7 +155,7 @@ const ShowClienteCards = () => {
 
   useEffect(() => {
     datosCliente();
-
+    // console.log(dataEmpresa)  
     console.log(idRow);
   }, [reload]);
 
@@ -289,7 +283,13 @@ const ShowClienteCards = () => {
 
   const handleVerMapa = (cliente) => {
     setClienteSeleccionado(cliente); // Guardamos el objeto completo del cliente
-    setOpenMapa(true); // Abrimos el modal
+    if (cliente?.longitud) {
+        setOpenMapa(true);
+    } else {
+      toast.error("No existe coordenada para este cliente");
+    } 
+     // Abrimos el modal
+    
   };
 
   return (
@@ -319,22 +319,96 @@ const ShowClienteCards = () => {
       <Dialog
         open={openMapa}
         onClose={() => setOpenMapa(false)}
-        maxWidth="md"
         fullWidth
+        maxWidth="md"
       >
-        <DialogTitle className="fw-bold">Ubicación del Cliente</DialogTitle>
-        <DialogContent dividers>
-          {/* 2. El Suspense evita que el error detenga el renderizado del Modal */}
-          {openMapa && clienteSeleccionado && (
-            <Suspense
-              fallback={<div className="text-center p-5">Cargando Mapa...</div>}
+        <DialogTitle>
+          <div className="d-flex align-items-center justify-content-between">
+            <div className="col-md-6 d-flex align-items-center">
+              <div
+                className="p-3 rounded-3 me-3 shadow-sm text-white d-flex align-items-center justify-center"
+                style={{
+                  backgroundColor: `${MisColores.headerBlue}`,
+                  width: "56px",
+                  height: "56px",
+                }}
+              >
+                <Navigation size={24} />
+              </div>
+              <div>
+                <h2
+                  className="fw-bold mb-0"
+                  style={{ color: "#2c3e50", fontSize: "1.2rem" }}
+                >
+                  {clienteSeleccionado?.nombres}{" "}
+                  {clienteSeleccionado?.apellidos}
+                </h2>
+                <p
+                  className="text-muted mb-0 small"
+                  style={{ fontSize: "0.6em" }}
+                >
+                  {clienteSeleccionado?.direccion},{" "}
+                  {clienteSeleccionado?.ciudad}
+                </p>
+                <p
+                  className="text-muted mb-0 small"
+                  style={{ fontSize: "0.6em" }}
+                >
+                  Nombre de Rutas :{clienteSeleccionado?.tbzona.nombrerutas}
+                </p>
+              </div>
+            </div>
+
+            <div
+              className="btn-group on-absolute top-0 start-0 m-3"
+              style={{ zIndex: 10 }}
             >
-              <MapClienteLazy
-                lat={clienteSeleccionado.latitud}
-                lng={clienteSeleccionado.longitud}
-                nombre={clienteSeleccionado.nombres}
-              />
-            </Suspense>
+              <button
+                className={`btn btn-sm ${estiloActual === StyleMap.calles ? "btn-primary" : "btn-light"}`}
+                onClick={() => setEstiloActual(StyleMap.calles)}
+              >
+                Mapa
+              </button>
+              <button
+                className={`btn btn-sm ${estiloActual === StyleMap.satelite ? "btn-primary" : "btn-light"}`}
+                onClick={() => setEstiloActual(StyleMap.satelite)}
+              >
+                Satélite
+              </button>
+              <button
+                className={`btn btn-sm ${estiloActual === StyleMap.oscuro ? "btn-primary" : "btn-light"}`}
+                onClick={() => setEstiloActual(StyleMap.oscuro)}
+              >
+                Noche
+              </button>
+
+              <button
+                className={`btn btn-sm ${estiloActual === StyleMap.Outdoors ? "btn-primary" : "btn-light"}`}
+                onClick={() => setEstiloActual(StyleMap.Outdoors)}
+              >
+                Outdoors
+              </button>
+
+              <button
+                className={`btn btn-sm ${estiloActual === StyleMap.NavigationDay ? "btn-primary" : "btn-light"}`}
+                onClick={() => setEstiloActual(StyleMap.NavigationDay)}
+              >
+                NavigationDay
+              </button>
+            </div>
+          </div>
+
+          {/* Selector de Estilo (Botones sobre el mapa) */}
+        </DialogTitle>
+
+        <DialogContent dividers>
+          {openMapa && clienteSeleccionado && (
+            <MapCliente
+              lat={parseFloat(clienteSeleccionado.latitud)}
+              lng={parseFloat(clienteSeleccionado.longitud)}
+              nombre={clienteSeleccionado.nombres}
+              styleMap={estiloActual}
+            />
           )}
         </DialogContent>
       </Dialog>
@@ -640,7 +714,10 @@ const ShowClienteCards = () => {
           ) : (
             // Vista de Cards */
 
-            currentClientes.map((cliente) => (
+            currentClientes.map((cliente) => {
+              const { resultTotal } = prestamosInf(cliente.id);
+             
+             return (
               <div key={cliente.id} className="col-12 col-md-6 col-xl-3 mb-4">
                 <div
                   className="card border-0 shadow-sm h-100 rounded-4 overflow-hidden border-top border-4"
@@ -702,7 +779,7 @@ const ShowClienteCards = () => {
                         className="badge rounded-pill px-3 py-2 shadow-sm"
                         style={{ backgroundColor: MisColores.lightTeal }}
                       >
-                        1 {/* {resultTotal} */}
+                        {resultTotal}
                       </span>
                     </div>
                   </div>
@@ -714,6 +791,9 @@ const ShowClienteCards = () => {
                         fontSize: "11px", // Bajamos un punto para asegurar que el texto no rompa
                         whiteSpace: "nowrap", // Evita que el texto salte de línea
                       }}
+                       onClick={() =>
+                                    HandlInserPrestamos(cliente.id)
+                                  }
                     >
                       <PlusCircle size={16} className="me-2" /> Crear Préstamo
                     </button>
@@ -725,13 +805,14 @@ const ShowClienteCards = () => {
                       <Files size={18} />
                     </button>
 
-                    <button className="btn btn-outline-secondary border shadow-sm flex-shrink-0">
+                    <button className="btn btn-outline-secondary border shadow-sm flex-shrink-0" onClick={()=>handleVerMapa(cliente)}>
                       <MapPin size={18} />
                     </button>
                   </div>
                 </div>
               </div>
-            ))
+            )}
+          )
           )}
 
           <div

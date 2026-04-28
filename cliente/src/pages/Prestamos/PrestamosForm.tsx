@@ -1,13 +1,7 @@
 import React, { useEffect, useState } from "react";
 import Modal from "@mui/material/Modal";
 import "../../App.css";
-import {
-  Box,
-  InputAdornment,
-  MenuItem,
-  TextField,
-  Tooltip,
-} from "@mui/material";
+import { Box } from "@mui/material";
 
 import { useForm, Controller, useWatch } from "react-hook-form";
 import type { FieldValues } from "react-hook-form";
@@ -37,27 +31,20 @@ import {
   Percent,
   MapPin,
   Phone,
-  ShieldCheck,
   Briefcase,
   Info,
   X,
   Save,
-  Rocket,
-  ChevronDown,
   CreditCard,
-  Plus,
-  RefreshCcw,
   List,
   Map,
-  Home,
   HandCoins,
-  Users,
 } from "lucide-react";
 import { SectionTitle } from "../../components/stuff/SectionTitle.tsx";
 import { InputField } from "../../components/stuff/InputField.tsx";
 // import { FieldBinaryOutlined } from "@ant-design/icons";
 import { calcularTasaNewtonRaphson } from "../../components/Prestamos/CalculoTasaEfectiva.tsx";
-import { MisColores } from "../../components/stuff/MisColores.tsx";
+import { useEmpresa } from "../../hooks/useEmpresas.tsx";
 
 interface PrestamosFormProps {
   ModoEdicion: boolean;
@@ -81,12 +68,12 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
   const [Frecuencia, setFrecuencia] = useState("SEMANAL");
   const [fechaPrimerPago, setFechaPrimerPato] = useState(dayjs());
 
-  const [idCompany, setIdCompany] = useState("");
+  const [idCompany, setIdCompany] = useState(0);
   const [ruta, setRuta] = useState("");
   const [gastosLegales, setgastosLegales] = useState(0);
-  const [Gestor, setGestor] = useState("");
+  const [Gestor, setGestor] = useState(0);
 
-  const [Cobrador, setCobrador] = useState("");
+  const [Cobrador, setCobrador] = useState(0);
   const [isModalCuotas, setIsModalCuotas] = useState(false);
   const [idPresta, setIdPresta] = useState(0);
   const [capital, setCapital] = useState(0.0);
@@ -103,7 +90,9 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
   const { dataUser } = useDataUsuario();
   const { dataCompany, IdDataCompany } = useCompany();
   const { dataCobrador } = useCobrador();
-
+  
+  const { data: DataEmpresa, isLoading } = useEmpresa();
+  console.log(DataEmpresa)
   const colors = {
     headerBlue: "#4A7BB7",
     teal: "#008B8B",
@@ -112,7 +101,6 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
     borderGray: "#E2E8F0",
   };
 
-  console.log(dataCobrador);
   const URI = "http://localhost:5000/prestamos/";
   const URICuotas = "http://localhost:5000/cuotas/";
   const {
@@ -182,6 +170,7 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
   };
 
   const HandleCobrador = (e) => {
+    console.log(e.target.value);
     setCobrador(e.target.value);
   };
 
@@ -295,10 +284,17 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
     const fechaActual = FechaCorta(new Date());
 
     ClienteData();
+     setValue("gastoslegal", DataEmpresa.gastolegal)
+     const usaMora = DataEmpresa?.aplicarmora ==='SI';
+     console.log(usaMora)
+     const valorMora = usaMora ? (DataEmpresa.modoporcentaje ?? 0) : 0;
+     setValue('mora', valorMora)
+     setValue('seguro', DataEmpresa?.seguro)
+
 
     setValue("capital", 0.0);
     setValue("interes", "0.0000");
-  }, [idCliente]);
+  }, [idCliente, DataEmpresa]);
 
   useEffect(() => {
     const capital1 = parseFloat(capital.toString().replace(/[^0-9.-]/g, ""));
@@ -574,7 +570,12 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
                   />
                 </InputField>
 
-                <InputField label="Fecha" icon={Calendar} required col="col-md-3">
+                <InputField
+                  label="Fecha"
+                  icon={Calendar}
+                  required
+                  col="col-md-3"
+                >
                   <input
                     type="date"
                     className="form-control border-0 shadow-none"
@@ -583,7 +584,12 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
                   />
                 </InputField>
 
-                <InputField label="Amortización" icon={Info} required col="col-md-3">
+                <InputField
+                  label="Amortización"
+                  icon={Info}
+                  required
+                  col="col-md-3"
+                >
                   <select
                     className="form-select border-0 shadow-none"
                     style={{ fontSize: "0.8em" }}
@@ -599,7 +605,12 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
                   </select>
                 </InputField>
 
-                <InputField label="Frecuencia" icon={Info} required col="col-md-3">
+                <InputField
+                  label="Frecuencia"
+                  icon={Info}
+                  required
+                  col="col-md-3"
+                >
                   <select
                     className="form-select border-0 shadow-none"
                     style={{ fontSize: "0.8em" }}
@@ -615,65 +626,125 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
                   </select>
                 </InputField>
 
-                <InputField label="Monto a Prestar" icon={DollarSign} required col="col-md-3">
+                <InputField
+                  label="Monto a Prestar"
+                  icon={DollarSign}
+                  required
+                  col="col-md-3"
+                >
                   <Controller
                     name="capital"
                     control={control}
                     defaultValue=""
-                    render={({ field: { onChange, value, name, ref } }) => (
-                      <NumericFormat
-                        name={name}
-                        getInputRef={ref}
-                        value={value}
-                        thousandSeparator={true}
-                        prefix={"DOP "}
-                        decimalScale={2}
-                        fixedDecimalScale={true}
-                        className="form-control border-0 shadow-none fw-bold"
-                        placeholder="DOP 0.00"
-                        onChange={HandleCapital}
-                        onValueChange={(values) => {
-                          // Actualiza el formulario (esto es ligero y no pierde el foco)
-                          onChange(values.floatValue || 0);
-                        }}
-                        style={{ fontSize: "0.8em" }}
-                      />
+                    rules={{
+                      required: "El monto es obligatorio",
+                      min: { value: 1, message: "El monto debe ser mayor a 0" },
+                    }}
+                    render={({
+                      field: { onChange, value, name, ref },
+                      fieldState: { error },
+                    }) => (
+                      <>
+                        <NumericFormat
+                          name={name}
+                          getInputRef={ref}
+                          value={value}
+                          thousandSeparator={true}
+                          prefix={"DOP "}
+                          decimalScale={2}
+                          fixedDecimalScale={true}
+                          className="form-control border-0 shadow-none fw-bold"
+                          placeholder="DOP 0.00"
+                          onChange={HandleCapital}
+                          onValueChange={(values) => {
+                            // Actualiza el formulario (esto es ligero y no pierde el foco)
+                            onChange(values.floatValue || 0);
+                          }}
+                          style={{ fontSize: "0.8em" }}
+                        />
+
+                        {error && (
+                          <span
+                            className="text-danger ps-2"
+                            style={{ fontSize: "0.7em" }}
+                          >
+                            {error.message}
+                          </span>
+                        )}
+                      </>
                     )}
                   />
                 </InputField>
 
                 <InputField label="Cuotas" icon={List} required col="col-md-3">
-                  <input
-                    type="number"
-                    placeholder="0"
-                    {...register("tcuota")}
-                    className="form-control border-0 shadow-none"
-                    style={{ fontSize: "0.8em" }}
-                  />
+                  <div>
+                    <input
+                      type="number"
+                      placeholder="0"
+                      {...register("tcuota", {
+                        required: "El número de cuotas es obligatorio",
+                        min: { value: 1, message: "Mínimo 1 cuota" },
+                      })}
+                      className="form-control border-0 shadow-none"
+                      style={{ fontSize: "0.8em" }}
+                    />
+                  </div>
+
+                  {errors.tcuota && (
+                    <span
+                      className="text-danger ps-2"
+                      style={{ fontSize: "0.7em" }}
+                    >
+                      {errors.tcuota.message}
+                    </span>
+                  )}
                 </InputField>
 
-                <InputField label="Monto de Cuota" icon={DollarSign} required col="col-md-3">
+                <InputField
+                  label="Monto de Cuota"
+                  icon={DollarSign}
+                  required
+                  col="col-md-3"
+                >
                   <Controller
                     name="mcuota"
                     control={control}
                     defaultValue=""
-                    render={({ field: { onChange, value, name, ref } }) => (
-                      <NumericFormat
-                        name={name}
-                        getInputRef={ref}
-                        value={value}
-                        thousandSeparator={true}
-                        prefix={"DOP "}
-                        decimalScale={2}
-                        fixedDecimalScale={true}
-                        className="form-control border-0 shadow-none fw-bold"
-                        placeholder="DOP 0.00"
-                        onValueChange={(values) => {
-                          // Actualiza el formulario (esto es ligero y no pierde el foco)
-                          onChange(values.floatValue || 0);
-                        }}
-                        style={{ fontSize: "0.8em" }}
-                      />
+                    rules={{
+                      required: "El monto es obligatorio",
+                      min: { value: 1, message: "El monto debe ser mayor a 0" },
+                    }}
+                    render={({
+                      field: { onChange, value, name, ref },
+                      fieldState: { error },
+                    }) => (
+                      <>
+                        <NumericFormat
+                          name={name}
+                          getInputRef={ref}
+                          value={value}
+                          thousandSeparator={true}
+                          prefix={"DOP "}
+                          decimalScale={2}
+                          fixedDecimalScale={true}
+                          className="form-control border-0 shadow-none fw-bold"
+                          placeholder="DOP 0.00"
+                          onValueChange={(values) => {
+                            // Actualiza el formulario (esto es ligero y no pierde el foco)
+                            onChange(values.floatValue || 0);
+                          }}
+                          style={{ fontSize: "0.8em" }}
+                        />
+
+                        {error && (
+                          <span
+                            className="text-danger ps-2"
+                            style={{ fontSize: "0.7em" }}
+                          >
+                            {error.message}
+                          </span>
+                        )}
+                      </>
                     )}
                   />
                 </InputField>
@@ -693,7 +764,12 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
                   />
                 </InputField>
 
-                <InputField label="Fecha Primer Pago" icon={Calendar} required col="col-md-3">
+                <InputField
+                  label="Fecha Primer Pago"
+                  icon={Calendar}
+                  required
+                  col="col-md-3"
+                >
                   <input
                     type="date"
                     className="form-control border-0 shadow-none"
@@ -702,22 +778,35 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
                   />
                 </InputField>
 
-                <InputField label="Compañía" icon={Briefcase} required col="col-md-3">
+                <InputField
+                  label="Compañía"
+                  icon={Briefcase}
+                  required
+                  col="col-md-3"
+                >
                   <select
                     name="compania"
                     onChange={HandleCompany}
                     className="form-select border-0 shadow-none"
                     style={{ fontSize: "0.8em" }}
                   >
+                    <option value="" disabled selected>
+                      Seleccione un Compañia
+                    </option>
                     {dataCompany.map((items) => (
-                      <option value="Finance Cactus Azua" key={items.id}>
+                      <option value={items.id} key={items.id}>
                         {items.company}
                       </option>
                     ))}
                   </select>
                 </InputField>
 
-                <InputField label="Nombre de Ruta" icon={Map} readOnly col="col-md-3">
+                <InputField
+                  label="Nombre de Ruta"
+                  icon={Map}
+                  readOnly
+                  col="col-md-3"
+                >
                   <input
                     type="text"
                     value={ruta}
@@ -739,22 +828,27 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
                         getInputRef={ref}
                         value={value}
                         thousandSeparator={true}
-                        prefix={"DOP "}
                         decimalScale={2}
                         fixedDecimalScale={true}
                         className="form-control border-0 shadow-none fw-bold"
-                        placeholder="DOP 0.00"
+                        placeholder="0.00"
                         onValueChange={(values) => {
                           // Actualiza el formulario (esto es ligero y no pierde el foco)
                           onChange(values.floatValue || 0);
                         }}
                         style={{ fontSize: "0.8em" }}
+                        disabled={DataEmpresa.aplicarmora ? false : true}
                       />
                     )}
                   />
                 </InputField>
 
-                <InputField label="Gastos Legales" icon={Percent} required col="col-md-3">
+                <InputField
+                  label="Gastos Legales"
+                  icon={Percent}
+                  required
+                  col="col-md-3"
+                >
                   <Controller
                     name="gastoslegal"
                     control={control}
@@ -779,7 +873,12 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
                   />
                 </InputField>
 
-                <InputField label="Seguro" icon={Percent} required col="col-md-3">
+                <InputField
+                  label="Seguro"
+                  icon={Percent}
+                  required
+                  col="col-md-3"
+                >
                   <Controller
                     name="seguro"
                     control={control}
@@ -804,7 +903,12 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
                   />
                 </InputField>
 
-                <InputField label="Comisión" icon={Percent} required col="col-md-3">
+                <InputField
+                  label="Comisión"
+                  icon={Percent}
+                  required
+                  col="col-md-3"
+                >
                   <Controller
                     name="comision"
                     control={control}
@@ -829,30 +933,46 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
                   />
                 </InputField>
 
-                <InputField label="Gestor" icon={Briefcase} required col="col-md-3">
+                <InputField
+                  label="Gestor"
+                  icon={Briefcase}
+                  required
+                  col="col-md-3"
+                >
                   <select
                     name="idgestor"
                     onChange={HandleGestor}
                     className="form-select border-0 shadow-none"
                     style={{ fontSize: "0.8em" }}
                   >
+                    <option value="" disabled selected>
+                      Seleccione un gestor...
+                    </option>
                     {dataUser.map((items) => (
-                      <option value="Finance Cactus Azua" key={items.id}>
+                      <option value={items.id} key={items.id}>
                         {items.nombreusuario}
                       </option>
                     ))}
                   </select>
                 </InputField>
 
-                <InputField label="Cobrador" icon={Briefcase} required col="col-md-3">
+                <InputField
+                  label="Cobrador"
+                  icon={Briefcase}
+                  required
+                  col="col-md-3"
+                >
                   <select
                     name="idcobrador"
                     onChange={HandleCobrador}
                     className="form-select border-0 shadow-none"
                     style={{ fontSize: "0.8em" }}
                   >
+                    <option value="" disabled selected>
+                      Seleccione un cobrador...
+                    </option>
                     {dataCobrador.map((items) => (
-                      <option value="Finance Cactus Azua" key={items.id}>
+                      <option value={items.id} key={items.id}>
                         {items.nombreusuario}
                       </option>
                     ))}
@@ -880,7 +1000,11 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
                     style={{ fontSize: "0.8em" }}
                   />
                 </InputField>
-                <InputField label="Identificación" icon={CreditCard} col="col-md-3">
+                <InputField
+                  label="Identificación"
+                  icon={CreditCard}
+                  col="col-md-3"
+                >
                   <input
                     type="text"
                     value={coDeudorIdentificador}
@@ -896,7 +1020,6 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
                     onChange={HandleCoDedudorTelefono}
                     className="form-control border-0 shadow-none"
                     {...register("codeudortelefono")}
-                   
                   />
                 </InputField>
                 <InputField label="Dirección" icon={MapPin} col="col-md-3">
@@ -906,7 +1029,6 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
                     value={coDeudorDireccion}
                     onChange={handleInputUppercase}
                     className="form-control border-0 shadow-none"
-                    
                   />
                 </InputField>
 
