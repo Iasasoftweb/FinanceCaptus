@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { lazy, useRef } from "react";
 import { useState, useEffect } from "react";
 
 import { PiPiggyBank, PiUsersThreeThin } from "react-icons/pi";
@@ -29,22 +29,28 @@ import BeatLoader from "react-spinners/BeatLoader";
 import { LuUserRoundCheck } from "react-icons/lu";
 import { TbUserX } from "react-icons/tb";
 import dayjs from "dayjs";
-import getCliente from "../../data/clientes/Getclientes";
+
 import  MapFront from "../Maps/MapFront";
+import { useAllClientes } from "../../hooks/useGetCliente";
+import { useEmpresa } from "../../hooks/useEmpresas";
+
 
 const Dashboard=()=> {
   const [totalCliente, setTotalCliente] = useState(0);
   const hasFetched = useRef(false);
-  const [dataCliente, setDataCliente] = useState([]);
+  
+  // const [dataEmpresa, setDataEmpresa] = useState([]);
+  
   const [dataPrestamosActivos, setDataPrestamosActivos] = useState([]);
   const [dataPrestamosActivosporcent, setDataPrestamosActivosporcent] =useState(0);
+  const [clientesData, setClientesData] = useState([]);
 
   const UriCliente = "http://localhost:5000/clientes/";
   const UriPrestamos = "http://localhost:5000/prestamos/";
   const UriCuotas = "http://localhost:5000/cuotas/"
    
- 
-
+  const { data: listaDeClientes, isLoading } = useAllClientes();
+  
   const getInf = async () => {
     try {
       const [clientesRes, prestamosRes, cuotasRes] = await Promise.all([
@@ -53,14 +59,12 @@ const Dashboard=()=> {
         axios.get(`${UriCuotas}`),
       ]);
 
-      const getClientes = clientesRes?.data.data || clientesRes.data;
+      const getClients = clientesRes?.data.data || clientesRes.data;
       const getPrestamos = prestamosRes?.data.data || prestamosRes.data;
       const getCuotas = cuotasRes?.data.data || cuotasRes.data;
-      
-      
-  
-       
-      const hoy = dayjs();
+
+     
+        const hoy = dayjs();
 
       
         const cuotasVencidas = getCuotas.filter((item) => {
@@ -87,7 +91,7 @@ const Dashboard=()=> {
       prestamosIdsConCuotasVencidas.includes(prestamo.id)
     );
 
-
+    console.log(clientesData.isArray ? clientesData.length : "clientesData no es un array");
     console.log(`Préstamos con cuotas vencidas: ${cantidadPrestamosVencidos}`);
 
   
@@ -128,6 +132,8 @@ const Dashboard=()=> {
   useEffect(() => {
     getTotalClient();
     getInf();
+   
+   
   }, []);
 
   const data = [
@@ -175,6 +181,7 @@ const Dashboard=()=> {
     },
   ];
 
+  
   return (
     <main className="p-4">
       <div className="row">
@@ -206,7 +213,7 @@ const Dashboard=()=> {
 
             <LinearProgress
               variant="determinate"
-              value={dataPrestamosActivosporcent}
+              value={parseInt(dataPrestamosActivosporcent)}
               color="success"
               className="mb-2"
             />
@@ -240,7 +247,7 @@ const Dashboard=()=> {
 
             <LinearProgress
               variant="determinate"
-              value={dataPrestamosActivosporcent}
+              value={parseInt(dataPrestamosActivosporcent)}
               color="primary"
               className="mb-2"
             />
@@ -310,8 +317,17 @@ const Dashboard=()=> {
           </div> */}
       </div>
 
-<div className="row">
-     <MapFront clientes={[]}/>
+<div className="row border shadow-lg  w-100" style={{height:'500px'}}>
+  
+  {isLoading ? (
+    <div className="text-center w-full py-10">
+      <BeatLoader color="#008080" size={15} className="text-center" />
+    </div>
+  ) : (
+    <MapFront clientes={listaDeClientes} /> 
+  )}
+  
+    
 </div>
       <div className="row p-2 mx-1">
         <div
@@ -319,11 +335,11 @@ const Dashboard=()=> {
           style={{ height: "450px", overflowY: "auto" }}
         >
           <table className="table table-striped table-hover table-responsive text-center">
-            <div className="text-center">
+            {/* <div className="text-center">
               <img src={FindPng} alt="" width={100} />
               <p className="text-center clFont">No Existe Datos</p>
               <BeatLoader color="#008080" size={15} className="text-center" />
-            </div>
+            </div> */}
             {/* <thead className="">
               <tr className="clFont">
                 <th scope="col" className="text-muted " style={{fontSize:"0.9em"}}>Id</th>

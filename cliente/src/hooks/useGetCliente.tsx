@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios'
+import { QueryClient, useQuery } from '@tanstack/react-query';
 
 
-const useGeClient = ( id ) => {
+const useGetCliente = ( id ) => {
   const [DataCliente, setDataCliente] = useState([]);
   
   
@@ -26,4 +27,19 @@ const useGeClient = ( id ) => {
   }
 };
 
-export default useGeClient;
+export default useGetCliente;
+
+
+export const useAllClientes = () => {
+  return useQuery({
+    queryKey: ['clientes'],
+    queryFn: async () => {
+      const { data} = await axios.get('http://localhost:5000/clientes');
+      console.log(data)
+      
+      return data;
+    },
+    staleTime: 60000, 
+  })
+ 
+};

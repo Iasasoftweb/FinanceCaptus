@@ -37,7 +37,14 @@ import { SlPrinter } from "react-icons/sl";
 import { PDFViewer, PDFDownloadLink } from "@react-pdf/renderer";
 import PrnPrestamos from "./Pdfs/prnPrestamos.tsx";
 import { MisColores } from "../../components/stuff/MisColores.tsx";
-import { Briefcase, Landmark, RefreshCcw, Search, X } from "lucide-react";
+import {
+  Briefcase,
+  Landmark,
+  Printer,
+  RefreshCcw,
+  Search,
+  X,
+} from "lucide-react";
 import { style } from "./Pdfs/style.ts";
 import { InputField } from "../../components/stuff/InputField.tsx";
 
@@ -250,7 +257,7 @@ const ShowPrestamos = () => {
 
   useEffect(() => {
     Datos();
-    inputRef.current.focus();
+    //  inputRef.current.focus();
   }, []);
 
   const itemsPerPage = 5;
@@ -389,78 +396,17 @@ const ShowPrestamos = () => {
 
         <div className="d-flex justify-content-between align-content-center mb-1 mt-1 ">
           <div className="d-flex">
-            <div className="m-3">
-              <TextField
-                inputRef={inputRef}
-                placeholder=""
-                label="Buscar"
-                fullWidth
-                disabled={false}
-                value={search}
-                onChange={searcher}
-                InputLabelProps={{ style: { fontSize: "1em" } }}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <span>
-                        <IoIosSearch className="fs-5 text-info" />
-                      </span>
-                    </InputAdornment>
-                  ),
-                }}
-                sx={{
-                  "& .MuiOutlinedInput-root": {
-                    borderRadius: "10px",
-                    fontSize: "12px", // Controla el radio de borde
-                    width: "100%",
-                    color: "GrayText",
-                  },
-                }}
-              />
-            </div>
+            <button
+              className="btn text-white d-flex align-items-center gap-2 shadow-sm fw-medium px-3 mx-3 border-0"
+              style={{
+                backgroundColor: MisColores.headerBlue,
+                borderColor: MisColores.headerBlue,
+              }}
+            >
+              <Printer size={16} /> Imprimir Reporte
+            </button>
 
-            <div className="mt-3">
-              <TextField
-                select
-                className="clFont"
-                label="Buscar Rutas"
-                value={searchRutas}
-                fullWidth
-                onChange={handleRutas}
-                InputLabelProps={{ style: { fontSize: "1.0em" } }}
-                sx={{
-                  minWidth: 200,
-                  minHeight: 40,
-
-                  "& .MuiOutlinedInput-root": {
-                    borderRadius: "10px",
-                    fontSize: "10px", // Controla el radio de borde
-                    width: "100%",
-                    color: "GrayText",
-                  },
-                }}
-              >
-                <MenuItem value="" className="clFont fw-semibold">
-                  {" "}
-                  None
-                </MenuItem>
-                {dataRutas.map((item) => (
-                  <MenuItem
-                    value={item.nombrerutas}
-                    className="clFont"
-                    key={item.id}
-                  >
-                    {item.nombrerutas}
-                  </MenuItem>
-                ))}
-              </TextField>
-            </div>
-
-            <div className="mx-2 m-3" onClick={ShowDatos}>
-              <div className="btnRefrescar">
-                <TbRefresh className="mx-2 fs-4" /> Refrescar
-              </div>
-            </div>
+            
 
             <div className="mx-2 m-3">
               <BtnXLSEstilizado

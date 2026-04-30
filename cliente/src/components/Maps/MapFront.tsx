@@ -1,67 +1,242 @@
-import React, { useMemo } from "react";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
-import L from "leaflet";
+import React, { useState, useMemo } from "react";
+// Importamos los componentes de react-map-gl
+// Nota: Asegúrate de ejecutar 'pnpm add react-map-gl mapbox-gl' en tu terminal del VPS
+import Map, {
+  Marker,
+  Popup,
+  NavigationControl,
+  FullscreenControl,
+} from "react-map-gl";
+import "mapbox-gl/dist/mapbox-gl.css";
+import { MapPin, User, DollarSign, AlertCircle } from "lucide-react";
+import { StyleMap } from "./StyleMap";
 
-const iconBaseConfig = {
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
-  shadowSize: [41, 41],
-};
-
-const iconNormal = L.icon({
-  ...iconBaseConfig,
-  iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png",
-});
-
-const iconAtraso = L.icon({
-  ...iconBaseConfig,
-  iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png",
-});
-
-
+/**
+ * Componente MapaClientes
+ * Diseñado para visualizar la ubicación geográfica de los clientes en el dashboard.
+ * @param {Array} clientes - Lista de objetos cliente desde la API
+ */
 const MapFront = ({ clientes = [] }) => {
-console.log(clientes)
-  
-  if (!clientes || clientes.length === 0) {
-    return <div style={{ height: "500px", display: "flex", alignItems: "center", justifyContent: "center" }}>Cargando mapa o sin datos de clientes...</div>;
+  const [popupInfo, setPopupInfo] = useState(null);
+  const [mapError, setMapError] = useState(false);
+
+  const UrisImg = "http://localhost:5000/uploads/clientes/avata/";
+
+  // Filtrado de clientes con coordenadas válidas para prevenir errores de renderizado
+  const clientesConGPS = useMemo(() => {
+    return (clientes || []).filter((cliente) => {
+      const lat = parseFloat(cliente.latitud);
+      const lng = parseFloat(cliente.longitud);
+      // Validamos que sean números, no sean 0 (ubicación nula) y existan
+      return !isNaN(lat) && !isNaN(lng) && lat !== 0 && lng !== 0;
+    });
+  }, [clientes]);
+
+  // Acceso seguro al Token de Mapbox
+  const getSafeToken = () => {
+    try {
+      // Intentamos obtenerlo del entorno de Vite
+      const envToken = import.meta.env.VITE_MAPBOX_TOKEN;
+      if (envToken) return envToken;
+    } catch (err) {
+      // Fallback para entornos donde import.meta no esté disponible
+    }
+    // Token proporcionado para la demostración
+    return import.meta.env.VITE_MAPBOX_TOKEN;
+  };
+
+  const MAPBOX_TOKEN = getSafeToken();
+
+  // Vista de error si no hay Token configurado
+  if (!MAPBOX_TOKEN) {
+    return (
+      <div className="w-full h-[400px] bg-slate-100 rounded-3xl border-2 border-dashed border-slate-300 flex flex-col items-center justify-center p-8 text-center">
+        <div className="bg-amber-100 p-4 rounded-full text-amber-600 mb-4">
+          <AlertCircle size={40} />
+        </div>
+        <h3 className="text-lg font-bold text-slate-800">
+          Token de Mapbox no configurado
+        </h3>
+        <p className="text-sm text-slate-500 max-w-sm mt-2">
+          Para que el mapa funcione, añade{" "}
+          <code className="bg-slate-200 px-1 rounded">VITE_MAPBOX_TOKEN</code> a
+          tu archivo .env y reinicia el servidor.
+        </p>
+      </div>
+    );
   }
 
   return (
-    <MapContainer 
-      center={[18.45, -70.73]} 
-      zoom={13} 
-      style={{ height: "500px", width: "100%", borderRadius: "8px" }}
-    >
-      <TileLayer
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-      />
+    <div className="w-full h-[600px] rounded-[2.5rem] overflow-hidden shadow-2xl border border-slate-200 bg-slate-50 relative group font-sans p-1">
+      <Map
+        initialViewState={{
+          longitude: -70.1627, // República Dominicana
+          latitude: 18.7357,
+          zoom:7,
+        }}
+        mapStyle={StyleMap.Outdoors}
+        mapboxAccessToken={MAPBOX_TOKEN}
+        onError={() => setMapError(true)}
+        reuseMaps
+      >
+        <NavigationControl position="top-right" />
+        <FullscreenControl position="top-right" />
 
-      {(Array.isArray(clientes) ? clientes: []).map((items) => {
-        // Validar que el cliente tenga coordenadas válidas
-        if (!items.longitud || !items.latitud) return null;
-
-        return (
+        {/* Marcadores de Clientes */}
+        {clientesConGPS.map((cliente) => (
           <Marker
-            key={items.id}
-            position={[items.latitud, items.longitud]}
-            icon={items.enAtraso ? iconAtraso : iconNormal}
+            key={cliente.id}
+            longitude={parseFloat(cliente.longitud)}
+            latitude={parseFloat(cliente.latitud)}
+            anchor="bottom"
+            onClick={(e) => {
+              e.originalEvent.stopPropagation();
+              setPopupInfo(cliente);
+            }}
           >
-            <Popup>
-              <div style={{ fontSize: "14px" }}>
-                <strong>{items.nombre}</strong> <br />
-                <span style={{ color: items.enAtraso ? "red" : "green" }}>
-                  Estado: {items.enAtraso ? "En atraso" : "Al día"}
-                </span> <br />
-                <small>Ubicación: {items.latitud.toFixed(4)}, {items.longitud.toFixed(4)}</small>
+            <div
+  className="rounded-circle bg-light d-flex align-items-center justify-content-center border border-2 border-white shadow-sm overflow-hidden"
+  style={{ width: "40px", height: "40px" }}
+>
+  {cliente.imgFOTOS ? (
+    <img
+      src={`${UrisImg}${cliente.imgFOTOS}`}
+      alt="avatar"
+      // "w-100 h-100" asegura que llene el círculo
+      // "object-cover" evita que se deforme y la centra automáticamente
+      className="w-100 h-100 object-cover"
+      style={{ display: "block" }}
+    />
+  ) : (
+    <User className="text-secondary" size={20} />
+  )}
+</div>
+            {/* <div className="relative cursor-pointer group/pin">
+            
+              <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[10px] px-2 py-1 rounded shadow-xl opacity-0 group-hover/pin:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10 font-medium">
+                {cliente.nombre}
               </div>
-            </Popup>
+              <MapPin 
+                className="text-indigo-600 fill-indigo-100 transition-transform duration-200 group-hover/pin:scale-125 drop-shadow-md" 
+                size={36} 
+                strokeWidth={2.5}
+              />
+            </div> */}
           </Marker>
-        );
-      })}
-    </MapContainer>
+        ))}
+
+        {/* Ventana de información del Cliente al hacer clic */}
+        {popupInfo && (
+          <Popup
+            anchor="top-left"
+            longitude={parseFloat(popupInfo.longitud)}
+            latitude={parseFloat(popupInfo.latitud)}
+            onClose={() => setPopupInfo(null)}
+            closeOnClick={false}
+            className="z-50 rounded-lg "
+          >
+            <div className="p-2 min-w-[200px] font-sans bg-body-secondary">
+              <div className="d-flex align-content-center items-center gap-3 mb-3 border-b border-slate-100 pb-2 justify-content-center ">
+                <div className="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600 flex-shrink-0">
+                  <div
+                    className="rounded-circle bg-light d-flex align-items-center justify-content-center border border-2 border-white shadow-sm overflow-hidden"
+                    style={{ width: "60px", height: "60px" }}
+                  >
+                    {popupInfo.imgFOTOS ? (
+                      <img
+                        src={`${UrisImg}${popupInfo.imgFOTOS}`}
+                        alt="avatar"
+                        // "w-100 h-100" asegura que llene el círculo
+                        // "object-cover" evita que se deforme y la centra automáticamente
+                        className="w-100 h-100 object-cover"
+                        style={{ display: "block" }}
+                      />
+                    ) : (
+                      <User className="text-secondary" size={20} />
+                    )}
+                  </div>
+                </div>
+                <div className="overflow-hidden">
+                  <h6 className="text-sm font-bold text-slate-800 truncate">
+                    {popupInfo.nombres} {popupInfo.apellidos}
+                  </h6>
+                  <p className="text-[10px] text-slate-400 font-mono italic">
+                     ID : {popupInfo.dni}
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-2 mb-2">
+                <div className="flex items-center justify-between bg-emerald-50 p-2 rounded-lg">
+                  <span className="text-[11px] text-emerald-700 font-medium">
+                   Balance Actual:
+                  </span>
+                  <span className="text-xs font-bold text-emerald-600 flex items-center">
+                    <DollarSign size={14} />
+                    {popupInfo.balance || "0.00"}
+                  </span>
+                </div>
+                {popupInfo.direccion && (
+                  <span className="text-[10px] text-slate-500 leading-relaxed italic line-clamp-2">
+                    {popupInfo.direccion}
+                  </span>
+                )}
+                <br />
+                <span className="text-[10px] text-slate-500 leading-relaxed italic line-clamp-2 mt-0">
+                   Nombre Ruta :  {popupInfo.tbzona.nombrerutas}
+                </span>
+              </div>
+              {/* <button
+                onClick={() =>
+                  (window.location.href = `/clientes/${popupInfo.id}`)
+                }
+                className="w-full py-2 bg-indigo-600 text-white text-xs font-bold rounded-lg hover:bg-indigo-700 transition-all shadow-md active:scale-95"
+              >
+                Gestionar Cliente
+              </button> */}
+            </div>
+          </Popup>
+        )}
+      </Map>
+
+      {/* Indicadores de Estado y Resumen */}
+      <div className="absolute bottom-8 left-8 right-8 flex justify-between items-end pointer-events-none">
+        <div className="bg-white/90 backdrop-blur-xl p-5 rounded-[1.5rem] shadow-2xl border border-white/20 pointer-events-auto">
+          <div className="flex items-center gap-3 mb-3 text-indigo-600">
+            <div className="w-2.5 h-2.5 rounded-full bg-indigo-600 animate-pulse" />
+            <span className="text-[11px] font-black uppercase tracking-widest">
+              Cartera en Tiempo Real
+            </span>
+          </div>
+          <div className="flex gap-6 divide-x divide-slate-100">
+            <div className="pr-2">
+              <p className="text-[10px] text-slate-400 uppercase font-bold mb-1">
+                Localizados
+              </p>
+              <p className="text-2xl font-black text-slate-800">
+                {clientesConGPS.length}
+              </p>
+            </div>
+            <div className="pl-6">
+              <p className="text-[10px] text-slate-400 uppercase font-bold mb-1">
+                Sin Ubicación
+              </p>
+              <p className="text-2xl font-black text-amber-500">
+                {clientes.length - clientesConGPS.length}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {mapError && (
+          <div className="bg-red-600 text-white text-[10px] font-bold px-4 py-2 rounded-full shadow-lg mb-2 flex items-center gap-2 pointer-events-auto">
+            <AlertCircle size={14} />
+            Error de conexión con el servicio
+          </div>
+        )}
+      </div>
+    </div>
   );
-}
-export default MapFront
+};
+
+export default MapFront;
