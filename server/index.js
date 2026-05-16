@@ -1,8 +1,6 @@
-import express from "express";
 
-import dotenv from "dotenv";
+import express from "express";
 import cors from "cors";
-import db from "./database/db.js";
 import ClienteRoute from "./routes/routes.js";
 import TipoDocs from "./routes/routeTipodocs.js";
 import Zonas from "./routes/routeszonas.js";
@@ -28,11 +26,15 @@ import Moneda from "./routes/ModenaRouter.js";
 
 //Inizializations
 const app = express();
-
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 app.use(morgan("dev"));
+
+// const result = dotenv.config({ path: path.resolve(__dirname, "../.env") });
+// if (result.error) {
+//   console.error("No se pudo cargar el archivo .env:", result.error);
+// }
 
 //middlewares
 app.use(cors());

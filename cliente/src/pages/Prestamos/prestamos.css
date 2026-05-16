@@ -1,1 +1,81 @@
+.max-width-xxl {
+  max-width: 1400px;
+}
+.cursor-pointer {
+  cursor: pointer;
+}
+.page-link {
+  color: #6c757d;
+}
+.page-item.active .page-link {
+  background-color: #0d6efd;
+  color: white;
+}
+.table-hover tbody tr:hover {
+  background-color: #f8f9fa;
+}
+.form-check-input:checked {
+  background-color: #0d6efd;
+  border-color: #0d6efd;
+}
 
+@media print {
+  /* Ocultar elementos innecesarios */
+  .btn,
+  .input-group,
+  .form-check,
+  .vr,
+  .card-footer,
+  .bg-light,
+  .nav,
+  .lucide-x,
+  .btn-group {
+    display: none !important;
+  }
+
+  /* Forzar que el fondo de las tarjetas y tabla sea blanco */
+  body,
+  .bg-light {
+    background-color: white !important;
+  }
+
+  .card {
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  .container-fluid {
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: 100% !important;
+  }
+
+  /* Asegurar que el texto sea negro para ahorrar tinta y mejorar contraste */
+  .text-muted,
+  .text-secondary {
+    color: #000 !important;
+  }
+
+  /* Mostrar solo lo esencial en la tabla */
+  table {
+    width: 100% !important;
+    border: 1px solid #dee2e6 !important;
+  }
+
+  th {
+    background-color: #f8f9fa !important;
+    color: black !important;
+    -webkit-print-color-adjust: exact;
+  }
+}
+
+/* Estilos normales de pantalla */
+.max-width-xxl {
+  max-width: 1400px;
+}
+.cursor-pointer {
+  cursor: pointer;
+}
+.table-hover tbody tr:hover {
+  background-color: #f8f9fa;
+}

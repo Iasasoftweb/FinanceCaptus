@@ -1,33 +1,66 @@
-import React, {useState, useEffect} from 'react';
-import axios from 'axios';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { useQuery } from "@tanstack/react-query";
 interface props {
-  id?: number;
+  iidprestamos?: number;
 }
-const useDataPrestamos = (id) => {
+
+export const useDataPrestamos = () => {
   const UrisPrestamos = "http://localhost:5000/prestamos/";
-  const [DataPrestamos, setDataPrestamos] = useState([]);
-  
+
+  const [DataPrestamos, setDataPrestamos] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
   const getPrestamos = async () => {
     try {
-      const response = await axios.get(`${UrisPrestamos}`);
-      const Data = response.data;
-      setDataPrestamos(Data);
-    
-      
-    } catch (error) {
-      console.log(error);
+      setLoading(true);
+
+      const response = await axios.get(UrisPrestamos);
+
+      setDataPrestamos(response.data);
+    } catch (err: any) {
+      console.log(err);
+      setError("Error al cargar los préstamos");
+    } finally {
+      setLoading(false);
     }
   };
 
-
-
-  useEffect(()=>{
-    getPrestamos()
-  },[])
+  useEffect(() => {
+    getPrestamos();
+  }, []);
 
   return {
-     DataPrestamos,
-  }
+    DataPrestamos,
+    loading,
+    error,
+    getPrestamos,
+  };
 };
 
-export default useDataPrestamos;
+export const usePrestamosOne = (idprestamos?: number) => {
+  return useQuery({
+    queryKey: ["prestamos", idprestamos],
+    queryFn: async () => {
+      const { data } = await axios.get(
+        `http://localhost:5000/prestamos/${idprestamos}`,
+      );
+      return data;
+    },
+  });
+};
+
+export const useCuotasPrestamos = (idprestamos?: number) => {
+  return useQuery({
+    queryKey: ["cuotas", idprestamos],
+    queryFn: async () => {
+      const { data } = await axios.get(
+        `http://localhost:5000/cuotas/${idprestamos}`,
+      );
+      return data.data || [];
+    },
+
+    enabled: !!idprestamos,
+  });
+};

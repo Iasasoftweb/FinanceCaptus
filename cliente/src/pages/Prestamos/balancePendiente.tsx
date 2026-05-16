@@ -4,11 +4,7 @@ import { format, isBefore } from "date-fns";
 import dayjs from "dayjs";
 import { formatCurrency } from "../../components/UtilsStuff";
 
-interface balanceForm {
-  idprestemo: Number;
-}
-
-const useBalancePendiente = (idPrestamo) => {
+const useBalancePendiente = (idprestamo: number) => {
   const [dataPrestamos, setDataPrestamos] = useState([]);
   const [dataCuotas, setDataCuotas] = useState([]);
   const [CuotasPendientes, setCuotasPendientes] = useState(0);
@@ -19,10 +15,10 @@ const useBalancePendiente = (idPrestamo) => {
   const [CuotasAtrasadas, setCuotasAtrasadas] = useState(0);
   const [montoCuota, setMontoCuota] = useState(0);
 
-  const uriPrestamos = "http://localhost:8000/prestamos/";
-  const uriCuotas = "http://localhost:8000/cuotas/";
+  const uriPrestamos = "http://localhost:5000/prestamos/";
+  const uriCuotas = "http://localhost:5000/cuotas/";
 
-  const getPrestamos = async (idprestamo) => {
+  const getPrestamos = async (idprestamo: number) => {
     try {
       const [PrestamoRes, CuotasRes] = await Promise.all([
         axios.get(`${uriPrestamos}${idprestamo}`),
@@ -33,7 +29,7 @@ const useBalancePendiente = (idPrestamo) => {
 
       setDataPrestamos(PrestamoRes.data);
       setDataCuotas(CuotasData);
-      setMontoCuota(CuotasData[0].montocuota);
+      setMontoCuota(CuotasData.length > 0 ? CuotasData[0].montocuota : 0);
 
       const hoy = dayjs();
 
@@ -43,18 +39,18 @@ const useBalancePendiente = (idPrestamo) => {
             ? item.pagada.toLowerCase() === "true"
             : Boolean(item.pagada);
 
-        const estaVencida = dayjs(item.fechapago).isAfter(hoy);
-
-        return !pagada && estaVencida;
+        return !pagada;
       });
 
       const Atrasos = CuotasData.filter((item) => {
         const pagada =
           typeof item.pagada === "string"
-            ? item.pagada.toLowerCase() === "true" 
+            ? item.pagada.toLowerCase() === "true"
             : Boolean(item.pagada);
 
-        const estaVencida = dayjs(item.fechavencimiento).isBefore(hoy);
+        const estaVencida = dayjs(item.fechavencimiento)
+          .endOf("day")
+          .isBefore(hoy);
 
         return !pagada && estaVencida;
       });
@@ -62,33 +58,44 @@ const useBalancePendiente = (idPrestamo) => {
       setCuotasPendientes(pendientes.length);
       setCuotasAtrasadas(Atrasos.length);
 
-      const totalPendiente = Atrasos.reduce(
-        (sum, cuota) => sum + parseFloat(cuota.montopendiente || 0),
-        0
-      );
-
-      const CapitalPendiente = Atrasos.reduce(
+      const totalPendiente = CuotasData.reduce(
         (sum, cuota) =>
           sum +
-          (parseFloat(cuota.montocapital) - parseFloat(cuota.capitalpagado) ||
-            0),
-        0
+          (parseFloat(cuota.montocapital) +
+            parseFloat(cuota.montointeres || 0) +
+            parseFloat(cuota.mora || 0) -
+            (parseFloat(cuota.capitalpagado || 0) +
+              parseFloat(cuota.interespagado || 0) +
+              parseFloat(cuota.morapagado || 0)) || 0),
+        0,
       );
-      const InteresPendiente = Atrasos.reduce(
+
+      console.log(Math.round(totalPendiente));
+
+      const CapitalPendiente = CuotasData.reduce(
+        (sum, cuota) =>
+          sum +
+          (parseFloat(cuota.montocapital) -
+            parseFloat(cuota.capitalpagado || 0) || 0),
+        0,
+      );
+
+      const InteresPendiente = CuotasData.reduce(
         (sum, cuota) =>
           sum +
           (parseFloat(cuota.montointeres) - parseFloat(cuota.interespagado) ||
             0),
-        0
+        0,
       );
+
       const totalMoraPendiente = Atrasos.reduce(
         (sum, cuota) =>
           sum + (parseFloat(cuota.mora) - parseFloat(cuota.morapagado) || 0),
-        0
+        0,
       );
 
       setBalanceMoraPendiente(totalMoraPendiente);
-      setBalancePendiente(totalPendiente);
+      setBalancePendiente(Math.round(totalPendiente));
       setBalanceInteresPendiente(InteresPendiente);
       setBalanceCapitalPendiente(CapitalPendiente);
 
@@ -101,11 +108,11 @@ const useBalancePendiente = (idPrestamo) => {
   };
 
   useEffect(() => {
-    if (idPrestamo) {
-      getPrestamos(idPrestamo);
-      console.log(idPrestamo);
+    if (idprestamo) {
+      getPrestamos(idprestamo);
+      console.log(idprestamo);
     }
-  }, [idPrestamo]);
+  }, [idprestamo]);
 
   return {
     CuotasPendientes,

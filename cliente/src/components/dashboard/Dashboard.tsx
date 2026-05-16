@@ -1,15 +1,11 @@
 import React, { lazy, useRef } from "react";
 import { useState, useEffect } from "react";
-
-import { PiPiggyBank, PiUsersThreeThin } from "react-icons/pi";
-
 import "./DashStyle.css";
 import axios from "axios";
 
 import {
   BarChart,
   Bar,
-  Cell,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -19,38 +15,34 @@ import {
   LineChart,
   Line,
 } from "recharts";
-import LinearProgress, {
-  LinearProgressProps,
-} from "@mui/material/LinearProgress";
+import LinearProgress from "@mui/material/LinearProgress";
 import formatNumber from "../misc/formattedNumber";
-import { GiTakeMyMoney } from "react-icons/gi";
-import FindPng from "../../assets/img/nodata.png";
 import BeatLoader from "react-spinners/BeatLoader";
 import { LuUserRoundCheck } from "react-icons/lu";
 import { TbUserX } from "react-icons/tb";
 import dayjs from "dayjs";
-
-import  MapFront from "../Maps/MapFront";
+import MapFront from "../Maps/MapFront";
 import { useAllClientes } from "../../hooks/useGetCliente";
-import { useEmpresa } from "../../hooks/useEmpresas";
+import { MisColores } from "../stuff/MisColores";
 
 
-const Dashboard=()=> {
+const Dashboard = () => {
   const [totalCliente, setTotalCliente] = useState(0);
   const hasFetched = useRef(false);
-  
+
   // const [dataEmpresa, setDataEmpresa] = useState([]);
-  
+
   const [dataPrestamosActivos, setDataPrestamosActivos] = useState([]);
-  const [dataPrestamosActivosporcent, setDataPrestamosActivosporcent] =useState(0);
+  const [dataPrestamosActivosporcent, setDataPrestamosActivosporcent] =
+    useState(0);
   const [clientesData, setClientesData] = useState([]);
 
   const UriCliente = "http://localhost:5000/clientes/";
   const UriPrestamos = "http://localhost:5000/prestamos/";
-  const UriCuotas = "http://localhost:5000/cuotas/"
-   
+  const UriCuotas = "http://localhost:5000/cuotas/";
+
   const { data: listaDeClientes, isLoading } = useAllClientes();
-  
+
   const getInf = async () => {
     try {
       const [clientesRes, prestamosRes, cuotasRes] = await Promise.all([
@@ -63,55 +55,52 @@ const Dashboard=()=> {
       const getPrestamos = prestamosRes?.data.data || prestamosRes.data;
       const getCuotas = cuotasRes?.data.data || cuotasRes.data;
 
-     
-        const hoy = dayjs();
+      const hoy = dayjs();
 
-      
-        const cuotasVencidas = getCuotas.filter((item) => {
-              const pagada =
-                typeof item.pagada === "string"
-                  ? item.pagada.toLowerCase() === "true"
-                  : Boolean(item.pagada);
-      
-              const estaVencida = dayjs(item.fechapago).isAfter(hoy);
-      
-              return !pagada && estaVencida;
-            });
-            
-     
-      
-      const prestamosIdsConCuotasVencidas = [...new Set(
-        cuotasVencidas.map(cuota => cuota.idprestamo)
-      )];
-      
+      const cuotasVencidas = getCuotas.filter((item) => {
+        const pagada =
+          typeof item.pagada === "string"
+            ? item.pagada.toLowerCase() === "true"
+            : Boolean(item.pagada);
 
-      console.log(prestamosIdsConCuotasVencidas)
-    const cantidadPrestamosVencidos = prestamosIdsConCuotasVencidas.length;
-    const prestamosVencidos = getPrestamos.filter(prestamo => 
-      prestamosIdsConCuotasVencidas.includes(prestamo.id)
-    );
+        const estaVencida = dayjs(item.fechapago).isAfter(hoy);
 
-    console.log(clientesData.isArray ? clientesData.length : "clientesData no es un array");
-    console.log(`Préstamos con cuotas vencidas: ${cantidadPrestamosVencidos}`);
+        return !pagada && estaVencida;
+      });
 
-  
+      const prestamosIdsConCuotasVencidas = [
+        ...new Set(cuotasVencidas.map((cuota) => cuota.idprestamo)),
+      ];
+
+      console.log(prestamosIdsConCuotasVencidas);
+      const cantidadPrestamosVencidos = prestamosIdsConCuotasVencidas.length;
+      const prestamosVencidos = getPrestamos.filter((prestamo) =>
+        prestamosIdsConCuotasVencidas.includes(prestamo.id),
+      );
+
+      console.log(
+        clientesData.isArray
+          ? clientesData.length
+          : "clientesData no es un array",
+      );
+      console.log(
+        `Préstamos con cuotas vencidas: ${cantidadPrestamosVencidos}`,
+      );
 
       const prestamosAct = getPrestamos.filter(
-        (prestamos) => prestamos.modo === "activo"
+        (prestamos) => prestamos.modo === "activo",
       );
 
       console.log(prestamosAct.length);
       console.log(getPrestamos.length);
       const pocentPrestAct =
         getPrestamos.length > 0
-          ? (Number(prestamosAct.length) / Number(getPrestamos.length) ) * 100
+          ? (Number(prestamosAct.length) / Number(getPrestamos.length)) * 100
           : 0;
       console.log(pocentPrestAct);
 
       setDataPrestamosActivos(prestamosAct.length);
-      setDataPrestamosActivosporcent(pocentPrestAct.toFixed(0))
-
-     
+      setDataPrestamosActivosporcent(pocentPrestAct.toFixed(0));
     } catch (error) {
       console.log(error);
     }
@@ -132,8 +121,6 @@ const Dashboard=()=> {
   useEffect(() => {
     getTotalClient();
     getInf();
-   
-   
   }, []);
 
   const data = [
@@ -181,154 +168,168 @@ const Dashboard=()=> {
     },
   ];
 
-  
   return (
     <main className="p-4">
-      <div className="row">
-        <div className="col-md-3 my-2">
-          <div className="border p-3 shadow-lg border-opacity-25 rounded-4 w-100 mx-3">
-            <div className="d-flex justify-content-between align-items-center">
-              <div className="mx-3">
-                <p className="text-muted fw-medium text-center mb-0 fs-1">
+      <div className="row g-4 mb-3">
+        {/* Tarjeta 1: Préstamos Activos */}
+        <div className="col-md-3">
+          <div className="card border-0 shadow-sm rounded-4 p-4 h-100 bg-white">
+            <div className="d-flex align-items-center mb-4">
+              <div className="bg-success bg-opacity-10 rounded-circle p-3 d-flex align-items-center justify-content-center">
+                <LuUserRoundCheck className="text-success fs-4" />
+              </div>
+              <div className="ms-3">
+                <p className="text-muted small fw-medium mb-0 tracking-tight">
+                  Activos
+                </p>
+                <h2 className="fw-bold mb-0 text-dark">
                   {dataPrestamosActivos}
-                </p>
+                </h2>
               </div>
-              <span className="">
-                <LuUserRoundCheck
+            </div>
+            <div className="pt-2">
+              <div className="d-flex justify-content-between mb-2">
+                <span
+                  className="text-muted"
+                  style={{ fontSize: "11px", fontWeight: 600 }}
+                >
+                  CUMPLIMIENTO
+                </span>
+                <span
+                  className="text-success"
+                  style={{ fontSize: "11px", fontWeight: 700 }}
+                >
+                  {dataPrestamosActivosporcent}%
+                </span>
+              </div>
+              <LinearProgress
+                variant="determinate"
+                value={parseInt(dataPrestamosActivosporcent)}
+                sx={{
+                  height: 4,
+                  borderRadius: 2,
+                  backgroundColor: "#f0f0f0",
+                  "& .MuiLinearProgress-bar": {
+                    borderRadius: 2,
+                    backgroundColor: "#2ecc71",
+                  },
+                }}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Tarjeta 2: Préstamos en Atrasos */}
+        <div className="col-md-3">
+          <div className="card border-0 shadow-sm rounded-4 p-4 h-100 bg-white">
+            <div className="d-flex align-items-center mb-4">
+              <div className="bg-danger bg-opacity-10 rounded-circle p-3 d-flex align-items-center justify-content-center">
+                <TbUserX className="text-danger fs-4" />
+              </div>
+              <div className="ms-3">
+                <p className="text-muted small fw-medium mb-0 tracking-tight">
+                  En Mora
+                </p>
+                {/* <h2 className="fw-bold mb-0 text-dark">
+                  {dataAtrasosCount || 0}
+                </h2> */}
+              </div>
+            </div>
+            <div className="pt-2">
+              <div className="d-flex justify-content-between mb-2">
+                <span
+                  className="text-muted"
+                  style={{ fontSize: "11px", fontWeight: 600 }}
+                >
+                  RIESGO
+                </span>
+                <span
                   className="text-danger"
-                  style={{ fontSize: "40px" }}
-                />
-              </span>
+                  style={{ fontSize: "11px", fontWeight: 700 }}
+                >
+                  {dataPrestamosActivosporcent}%
+                </span>
+              </div>
+              <LinearProgress
+                variant="determinate"
+                value={parseInt(dataPrestamosActivosporcent)}
+                sx={{
+                  height: 4,
+                  borderRadius: 2,
+                  backgroundColor: "#f0f0f0",
+                  "& .MuiLinearProgress-bar": {
+                    borderRadius: 2,
+                    backgroundColor: "#e74c3c",
+                  },
+                }}
+              />
             </div>
-
-            <div className=" d-flex justify-content-between">
-              <span className=" lh-0" style={{ fontSize: "0.9em" }}>
-                Prestamos Activos
-              </span>
-
-              <span className=" lh-0" style={{ fontSize: "0.9em" }}>
-                {dataPrestamosActivosporcent}%
-              </span>
-            </div>
-
-            <LinearProgress
-              variant="determinate"
-              value={parseInt(dataPrestamosActivosporcent)}
-              color="success"
-              className="mb-2"
-            />
           </div>
         </div>
-        <div className="col-md-3 my-2">
-        <div className="border p-3 shadow-lg border-opacity-25 rounded-4 w-100 mx-3">
-            <div className="d-flex justify-content-between align-items-center">
-              <div className="mx-3">
-                <p className="text-muted fw-medium text-center mb-0 fs-1">
-                  {dataPrestamosActivos}
-                </p>
-              </div>
-              <span className="">
-                <TbUserX 
-                  className="text-danger"
-                  style={{ fontSize: "40px" }}
-                />
-              </span>
-            </div>
 
-            <div className=" d-flex justify-content-between">
-              <span className=" lh-0" style={{ fontSize: "0.9em" }}>
-                Prestamos en Atrasos
-              </span>
-
-              <span className=" lh-0" style={{ fontSize: "0.9em" }}>
-                {dataPrestamosActivosporcent}%
-              </span>
-            </div>
-
-            <LinearProgress
-              variant="determinate"
-              value={parseInt(dataPrestamosActivosporcent)}
-              color="primary"
-              className="mb-2"
-            />
-          </div>
-        </div>
-        <div className="col-md-3 my-2">
-          <div className="border p-2 shadow-lg border-opacity-25 rounded-4 w-100 mx-3">
-            <div className="d-flex justify-content-between align-items-center">
-              <span className="">
-                <GiTakeMyMoney className="fs-1 text-primary" />
-              </span>
-              <div className="">
-                <p className="text-muted mb-0" style={{ fontSize: "0.8em" }}>
-                  Total Prestamos
-                </p>
-                <p className="text-muted text-center mb-0 fs-2">
-                  {formatNumber(4000)}
-                </p>
-              </div>
-            </div>
-            <hr className="m-0 p-1" />
-            <p className="text-muted" style={{ fontSize: "0.8em" }}>
-              Total Capital : <strong>DOP {formatNumber(50700)}</strong>
+        {/* Tarjeta 3: Total Cartera (Estilo Minimal Dark o Light Accent) */}
+        <div className="col-md-3">
+          <div
+            className="card border-0 shadow-sm rounded-4 p-4 h-100"
+            style={{
+              background: MisColores.cremaArena
+            }}
+          >
+            <p
+              className=" text-info small fw-bold text-uppercase mb-1"
+              style={{ letterSpacing: "1px" }}
+            >
+              Total Cartera
             </p>
-          </div>
-        </div>
-        <div className="col-md-3 my-2">
-          <div className="border p-2 shadow-lg border-opacity-25 rounded-4 w-100 mx-3">
-            <div className="d-flex justify-content-between align-items-center">
-              <span className="">
-                <GiTakeMyMoney className="fs-1 text-primary" />
+            <h2 className="text-muted fw-bold mb-4">
+              DOP {formatNumber(50700)}
+            </h2>
+
+            <div className="mt-auto d-flex align-items-center justify-content-between bg-white bg-opacity-75 p-2 rounded-3 shadow">
+              <span className="text-opacity-75 small">
+                Préstamos:
               </span>
-              <div className="">
-                <p className="text-muted mb-0" style={{ fontSize: "0.8em" }}>
-                  Total Prestamos
-                </p>
-                <p className="text-muted text-center mb-0 fs-2">
-                  {formatNumber(4000)}
-                </p>
-              </div>
+              <span className="fw-bold text-muted">{formatNumber(4000)}</span>
             </div>
-            <hr className="m-0 p-1" />
-            <p className="text-muted" style={{ fontSize: "0.8em" }}>
-              Total Capital : <strong>DOP {formatNumber(50700)}</strong>
-            </p>
           </div>
         </div>
 
-        {/* <div className="border p-2 shadow-lg border-opacity-25 rounded-4 w-100 mx-3">
-            <div className="d-flex justify-content-between align-items-center">
-              <span className="">
-                <GiTakeMyMoney className="fs-1 text-primary" />
+        {/* Tarjeta 4: Rendimiento Simple */}
+        <div className="col-md-3">
+          <div className="card border-0 shadow-sm rounded-4 p-4 h-100 bg-white">
+            <div className="d-flex justify-content-between align-items-start">
+              <div>
+                <p className="text-muted small fw-medium mb-1">
+                  Rendimiento Estimado
+                </p>
+                <h2 className="fw-bold mb-0 text-dark">DOP 12.5K</h2>
+              </div>
+              <span
+                className="badge bg-success-subtle text-success border-0 px-2 py-1 rounded-2"
+                style={{ fontSize: "10px" }}
+              >
+                +12.5%
               </span>
-              <div className="">
-                <p className="text-muted mb-0" style={{ fontSize: "0.8em" }}>
-                  Total Prestamos
-                </p>
-                <p className="text-muted text-center mb-0 fs-2">
-                  {formatNumber(4000)}
-                </p>
+            </div>
+            <div className="mt-4 pt-3 border-top border-light">
+              <div className="d-flex align-items-center text-muted">
+                <small>Proyección al cierre de mes</small>
               </div>
             </div>
-            <hr className="m-0 p-1" />
-            <p className="text-muted" style={{ fontSize: "0.8em" }}>
-              Total Capital : <strong>DOP {formatNumber(50700)}</strong>
-            </p>
-          </div> */}
+          </div>
+        </div>
       </div>
-
-<div className="row border shadow-lg  w-100" style={{height:'500px'}}>
-  
-  {isLoading ? (
-    <div className="text-center w-full py-10">
-      <BeatLoader color="#008080" size={15} className="text-center" />
-    </div>
-  ) : (
-    <MapFront clientes={listaDeClientes} /> 
-  )}
-  
     
-</div>
+
+      <div className="row border shadow-lg  w-100" style={{ height: "500px" }}>
+        {isLoading ? (
+          <div className="text-center w-full py-10">
+            <BeatLoader color="#008080" size={15} className="text-center" />
+          </div>
+        ) : (
+          <MapFront clientes={listaDeClientes} />
+        )}
+      </div>
       <div className="row p-2 mx-1">
         <div
           className="col-md-6 border shadow-lg overflow-x-scroll d-flex justify-content-center align-items-center"
@@ -445,6 +446,6 @@ const Dashboard=()=> {
       </div>
     </main>
   );
-}
+};
 
 export default Dashboard;

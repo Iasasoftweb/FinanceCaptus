@@ -72,7 +72,7 @@ const MapFront = ({ clientes = [] }) => {
         initialViewState={{
           longitude: -70.1627, // República Dominicana
           latitude: 18.7357,
-          zoom:7,
+          zoom: 7,
         }}
         mapStyle={StyleMap.Outdoors}
         mapboxAccessToken={MAPBOX_TOKEN}
@@ -95,22 +95,22 @@ const MapFront = ({ clientes = [] }) => {
             }}
           >
             <div
-  className="rounded-circle bg-light d-flex align-items-center justify-content-center border border-2 border-white shadow-sm overflow-hidden"
-  style={{ width: "40px", height: "40px" }}
->
-  {cliente.imgFOTOS ? (
-    <img
-      src={`${UrisImg}${cliente.imgFOTOS}`}
-      alt="avatar"
-      // "w-100 h-100" asegura que llene el círculo
-      // "object-cover" evita que se deforme y la centra automáticamente
-      className="w-100 h-100 object-cover"
-      style={{ display: "block" }}
-    />
-  ) : (
-    <User className="text-secondary" size={20} />
-  )}
-</div>
+              className="rounded-circle bg-light d-flex align-items-center justify-content-center border border-2 border-white shadow-sm overflow-hidden"
+              style={{ width: "40px", height: "40px" }}
+            >
+              {cliente.imgFOTOS ? (
+                <img
+                  src={`${UrisImg}${cliente.imgFOTOS}`}
+                  alt="avatar"
+                  // "w-100 h-100" asegura que llene el círculo
+                  // "object-cover" evita que se deforme y la centra automáticamente
+                  className="w-100 h-100 object-cover"
+                  style={{ display: "block" }}
+                />
+              ) : (
+                <User className="text-secondary" size={20} />
+              )}
+            </div>
             {/* <div className="relative cursor-pointer group/pin">
             
               <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[10px] px-2 py-1 rounded shadow-xl opacity-0 group-hover/pin:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10 font-medium">
@@ -127,6 +127,8 @@ const MapFront = ({ clientes = [] }) => {
 
         {/* Ventana de información del Cliente al hacer clic */}
         {popupInfo && (
+          
+
           <Popup
             anchor="top-left"
             longitude={parseFloat(popupInfo.longitud)}
@@ -135,65 +137,35 @@ const MapFront = ({ clientes = [] }) => {
             closeOnClick={false}
             className="z-50 rounded-lg "
           >
-            <div className="p-2 min-w-[200px] font-sans bg-body-secondary">
-              <div className="d-flex align-content-center items-center gap-3 mb-3 border-b border-slate-100 pb-2 justify-content-center ">
-                <div className="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600 flex-shrink-0">
-                  <div
-                    className="rounded-circle bg-light d-flex align-items-center justify-content-center border border-2 border-white shadow-sm overflow-hidden"
-                    style={{ width: "60px", height: "60px" }}
-                  >
-                    {popupInfo.imgFOTOS ? (
-                      <img
-                        src={`${UrisImg}${popupInfo.imgFOTOS}`}
-                        alt="avatar"
-                        // "w-100 h-100" asegura que llene el círculo
-                        // "object-cover" evita que se deforme y la centra automáticamente
-                        className="w-100 h-100 object-cover"
-                        style={{ display: "block" }}
-                      />
-                    ) : (
-                      <User className="text-secondary" size={20} />
-                    )}
-                  </div>
-                </div>
-                <div className="overflow-hidden">
-                  <h6 className="text-sm font-bold text-slate-800 truncate">
-                    {popupInfo.nombres} {popupInfo.apellidos}
-                  </h6>
-                  <p className="text-[10px] text-slate-400 font-mono italic">
-                     ID : {popupInfo.dni}
-                  </p>
+            <div className="popup-container">
+              <div className="popup-header">
+                <img
+                  src={`${UrisImg}${popupInfo.imgFOTOS}`}
+                  className="popup-avatar"
+                  alt="Avatar"
+                />
+                <div className="user-info">
+                  <h3>Juan Mendez</h3>
+                  <p>ID: 010-0022566-2</p>
                 </div>
               </div>
 
-              <div className="space-y-2 mb-2">
-                <div className="flex items-center justify-between bg-emerald-50 p-2 rounded-lg">
-                  <span className="text-[11px] text-emerald-700 font-medium">
-                   Balance Actual:
-                  </span>
-                  <span className="text-xs font-bold text-emerald-600 flex items-center">
-                    <DollarSign size={14} />
-                    {popupInfo.balance || "0.00"}
-                  </span>
+              <div className="popup-body">
+                <div className="data-row">
+                  <span className="label">Balance Actual</span>
+                  <span className="value balance-highlight">$ 0.00</span>
                 </div>
-                {popupInfo.direccion && (
-                  <span className="text-[10px] text-slate-500 leading-relaxed italic line-clamp-2">
-                    {popupInfo.direccion}
-                  </span>
-                )}
-                <br />
-                <span className="text-[10px] text-slate-500 leading-relaxed italic line-clamp-2 mt-0">
-                   Nombre Ruta :  {popupInfo.tbzona.nombrerutas}
-                </span>
+
+                <div className="data-row">
+                  <span className="label">Dirección</span>
+                  <span className="value">📍 Respaldo Colon #206</span>
+                </div>
+
+                <div className="data-row">
+                  <span className="label">Ruta</span>
+                  <span className="value">🚚 AZUA 01</span>
+                </div>
               </div>
-              {/* <button
-                onClick={() =>
-                  (window.location.href = `/clientes/${popupInfo.id}`)
-                }
-                className="w-full py-2 bg-indigo-600 text-white text-xs font-bold rounded-lg hover:bg-indigo-700 transition-all shadow-md active:scale-95"
-              >
-                Gestionar Cliente
-              </button> */}
             </div>
           </Popup>
         )}

@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import App from "./App.tsx";
 import Login from "./pages/Login/Login.tsx";
 
-
 function parseJwt(token: string | null) {
   if (!token) return null;
   const base64Url = token.split(".")[1];
@@ -14,7 +13,7 @@ function parseJwt(token: string | null) {
       .map(function (c) {
         return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
       })
-      .join("")
+      .join(""),
   );
 
   return JSON.parse(jsonPayload);
@@ -44,7 +43,6 @@ function MainHome() {
   }, []); // Este useEffect solo se ejecuta una vez cuando el componente se monta
 
   return <div>{tokenExistAndStillValid ? <App /> : <Login />}</div>;
-
 }
 
 export default MainHome;

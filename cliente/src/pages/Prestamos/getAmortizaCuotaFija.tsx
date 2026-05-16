@@ -1,8 +1,5 @@
-import React, { useEffect, useState } from "react";
+import { addDays } from "date-fns";
 import limpiarMonto from "../../components/stuff/LimpiarMonto";
-import { addDays, format } from "date-fns";
-import { MdVaccines } from "react-icons/md";
-import dayjs from "dayjs";
 
 interface AmortizaData {
   numcuota: number;
@@ -12,22 +9,23 @@ interface AmortizaData {
   montocapital: number;
   montointeres: number;
   seguro: number;
+  saldoPendiente: number;
   estado: string;
   pagada: string;
 }
 
 interface AmortizaProps {
   fechainicio: string;
-  tc: number;
-  mc: number;
-  loan: number;
-  ccapital: number;
+  tc: number; // total cuotas
+  mc: number; // monto cuota fija
+  loan: number; // interés %
+  ccapital: number; // capital préstamo
   tipo: string;
   fre: string;
   seguro: number;
 }
 
-const getAmortizaData: React.FC<AmortizaProps> = ({
+const getAmortizaData = ({
   fechainicio,
   tc,
   mc,
@@ -36,45 +34,74 @@ const getAmortizaData: React.FC<AmortizaProps> = ({
   tipo,
   fre,
   seguro,
-}) => {
-  console.log(tc, mc, loan, ccapital, tipo, fre, seguro);
-
-  let saldoPendiente = limpiarMonto(ccapital);
-  let fecha = new Date(fechainicio);
-  
-  let InteresFijo =
-    (limpiarMonto(ccapital) * (loan / 100) * tc - ccapital) / 13;
-  let prorrogaCuotas = Number(localStorage.getItem("prorrogacuota"));  
-
+}: AmortizaProps): AmortizaData[] => {
   const tabla: AmortizaData[] = [];
+
+  const capital = limpiarMonto(ccapital);
+
+  let saldoPendiente = capital;
+
+  let fecha = new Date(fechainicio);
+
+  const cuotaFija = limpiarMonto(mc);
+
+  const seguroMonto = limpiarMonto(seguro);
+
+  const prorrogaCuotas = Number(localStorage.getItem("prorrogacuota") || 0);
+
+  // TASA POR PERIODO
+  // ejemplo:
+  // 4% mensual = 0.04
+  const tasa = loan / 100;
 
   if (tipo === "Cuota Fija" && fre === "SEMANAL") {
     for (let i = 0; i < tc; i++) {
-      const cuotaActual = mc;
-      const iinteres = InteresFijo;
-      const pagado = cuotaActual - InteresFijo;
-      const SSeguro = limpiarMonto(seguro);
-      
-      
-      saldoPendiente = saldoPendiente < 0 ? 0 : saldoPendiente;
-      console.log(prorrogaCuotas)
+      // INTERÉS SOBRE SALDO
+      const interes = saldoPendiente * tasa;
+
+      // CAPITAL PAGADO
+      let capitalPagado = cuotaFija - interes;
+
+      // EVITAR QUE LA ÚLTIMA CUOTA SE PASE
+      if (capitalPagado > saldoPendiente) {
+        capitalPagado = saldoPendiente;
+      }
+
+      // NUEVO SALDO
+      saldoPendiente -= capitalPagado;
+
+      if (saldoPendiente < 0) {
+        saldoPendiente = 0;
+      }
+
       tabla.push({
         numcuota: i + 1,
-        fechapago: format(fecha, "MM-dd-yyyy"),
-        fechavencimiento: format((addDays(fecha, prorrogaCuotas)), 'MM-dd-yyyy'), 
-        montocuota: mc + SSeguro,
-        montocapital: cuotaActual - parseFloat(iinteres.toFixed(2)),
-        montointeres: parseFloat(iinteres.toFixed(2)),
-        seguro: SSeguro || 0,
-        estado: "normal",
-        pagada: "false",
 
+        fechapago: fecha.toISOString().split("T")[0],
+
+        fechavencimiento: addDays(fecha, prorrogaCuotas)
+          .toISOString()
+          .split("T")[0],
+
+        montocuota: parseFloat((cuotaFija + seguroMonto).toFixed(2)),
+
+        montocapital: parseFloat(capitalPagado.toFixed(2)),
+
+        montointeres: parseFloat(interes.toFixed(2)),
+
+        seguro: parseFloat(seguroMonto.toFixed(2)),
+
+        saldoPendiente: parseFloat(saldoPendiente.toFixed(2)),
+
+        estado: "normal",
+
+        pagada: "false",
       });
+
+      // SIGUIENTE SEMANA
       fecha = addDays(fecha, 7);
     }
   }
-
-  console.log(tabla);
 
   return tabla;
 };

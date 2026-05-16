@@ -11,9 +11,10 @@ function Menutop() {
         
         <ul className="d-flex">
     
-          <NavNotificaciones />
+          {/* <NavNotificaciones />
 
-          <NavMensajes />
+          <NavMensajes /> */}
+    
 
           <NavAvatar />
         </ul>

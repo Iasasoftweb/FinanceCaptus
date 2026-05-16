@@ -1,6 +1,8 @@
 import React from "react";
 // Usamos lucide-react, que ya tienes en el proyecto
 import { Users, Search, DatabaseBackup } from "lucide-react";
+import BeatLoader from "react-spinners/BeatLoader";
+import { MisColores } from "./MisColores";
 
 // Puedes guardar esto en un archivo separado como components/stuff/EmptyState.jsx
 export const EmptyState = ({ 
@@ -41,6 +43,8 @@ export const EmptyState = ({
       >
         {subtitle}
       </p>
+
+       <BeatLoader color={MisColores.headerBlue} size={15} className="text-center" />
     </div>
   );
 };

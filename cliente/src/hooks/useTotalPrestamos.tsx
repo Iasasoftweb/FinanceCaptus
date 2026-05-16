@@ -19,7 +19,7 @@ const useTotalPrestamo = (idCliente: number) => {
   };
 
   const Total = setTotalPrestamos(DataPrestamos.length);
-   
+
   useEffect(() => {
     getPrestamos(idCliente);
   }, [idCliente]);
@@ -27,8 +27,6 @@ const useTotalPrestamo = (idCliente: number) => {
   return {
     Total,
   };
-
-
 };
 
 export default useTotalPrestamo;

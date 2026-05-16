@@ -11,7 +11,7 @@ import ClienteForm from "./ClienteForm.tsx";
 import BeatLoader from "react-spinners/BeatLoader";
 import PrestamosForm from "../Prestamos/PrestamosForm.tsx";
 import useGeClient from "../../hooks/useGetCliente.tsx";
-import useDataPrestamos from "../../hooks/useDataPrestamos.tsx";
+import { useDataPrestamos } from "../../hooks/useDataPrestamos.tsx";
 import {
   Search,
   RefreshCcw,
@@ -44,6 +44,8 @@ import MapCliente from "../../components/Maps/MapCliente.tsx";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { StyleMap } from "../../components/Maps/StyleMap.tsx";
 import { useEmpresa } from "../../hooks/useEmpresas.tsx";
+import { InputField } from "../../components/stuff/InputField.tsx";
+import InputAdornment from "@mui/material/InputAdornment";
 
 // Componente para re-centrar el mapa cuando cambian las coordenadas
 
@@ -83,13 +85,12 @@ const ShowClienteCards = () => {
   const [estiloActual, setEstiloActual] = useState(StyleMap.calles);
 
   const { DataPrestamos } = useDataPrestamos();
-  
+
   const open = Boolean(anchorEl);
 
   //Estado de Paginacion
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;
-  
 
   const handleClickMenu = (event, ClientID) => {
     setAnchorEl(event.currentTarget);
@@ -140,7 +141,6 @@ const ShowClienteCards = () => {
           setClientes(allClientes);
           setClienteData(allClientes);
           setTotalItems(allClientes.length);
-         
         }),
           10000);
       });
@@ -155,7 +155,7 @@ const ShowClienteCards = () => {
 
   useEffect(() => {
     datosCliente();
-    // console.log(dataEmpresa)  
+    // console.log(dataEmpresa)
     console.log(idRow);
   }, [reload]);
 
@@ -284,12 +284,11 @@ const ShowClienteCards = () => {
   const handleVerMapa = (cliente) => {
     setClienteSeleccionado(cliente); // Guardamos el objeto completo del cliente
     if (cliente?.longitud) {
-        setOpenMapa(true);
+      setOpenMapa(true);
     } else {
       toast.error("No existe coordenada para este cliente");
-    } 
-     // Abrimos el modal
-    
+    }
+    // Abrimos el modal
   };
 
   return (
@@ -438,10 +437,10 @@ const ShowClienteCards = () => {
           </div>
         </div>
         <div className="col-md-6 d-flex justify-content-md-end mt-3 mt-md-0 gap-2">
-          <div className="input-group shadow-sm" style={{ maxWidth: "300px" }}>
-            <span className="input-group-text bg-white border-end-0">
+          {/* <span className="input-group-text bg-white border-end-0">
               <Search size={16} className="text-muted" />
-            </span>
+            </span> */}
+          <InputField col="" icon={Search} label="">
             <input
               id="search"
               type="text"
@@ -452,10 +451,21 @@ const ShowClienteCards = () => {
                 setSearch(e.target.value);
                 setCurrentPage(1); // Reiniciar a página 1 al buscar
               }}
+              style={{ fontSize: "0.85rem" }}
             />
-          </div>
+
+            <span className="input-group-text bg-white border-start-0 d-flex align-items-center justify-content-center">
+              <X
+                color="#718096"
+                size={18}
+                onClick={() => setSearch("")}
+                style={{ cursor: "pointer" }}
+              />
+            </span>
+          </InputField>
+
           <button
-            className="btn text-white d-flex align-items-center gap-2 shadow-sm border-0 "
+            className="btn text-white d-flex align-items-center gap-2 shadow-sm border-0 mt-3 mb-3 "
             style={{ backgroundColor: MisColores.buscarOrange }}
             onClick={ShowClients}
           >
@@ -716,103 +726,104 @@ const ShowClienteCards = () => {
 
             currentClientes.map((cliente) => {
               const { resultTotal } = prestamosInf(cliente.id);
-             
-             return (
-              <div key={cliente.id} className="col-12 col-md-6 col-xl-3 mb-4">
-                <div
-                  className="card border-0 shadow-sm h-100 rounded-4 overflow-hidden border-top border-4"
-                  style={{ borderTopColor: MisColores.headerBlue }}
-                >
-                  <div className="card-body p-4">
-                    <div className="d-flex justify-content-between align-items-start mb-3">
-                      <div className="d-flex align-items-center">
-                        <div
-                          className="rounded-3 p-3 me-3 text-white shadow-sm d-flex align-items-center justify-center"
+
+              return (
+                <div key={cliente.id} className="col-12 col-md-6 col-xl-3 mb-4">
+                  <div
+                    className="card border-0 shadow-sm h-100 rounded-4 overflow-hidden border-top border-4"
+                    style={{ borderTopColor: MisColores.headerBlue }}
+                  >
+                    <div className="card-body p-4">
+                      <div className="d-flex justify-content-between align-items-start mb-3">
+                        <div className="d-flex align-items-center">
+                          <div
+                            className="rounded-3 p-3 me-3 text-white shadow-sm d-flex align-items-center justify-center"
+                            style={{
+                              width: "48px",
+                              height: "48px",
+                              backgroundColor: MisColores.headerBlue,
+                            }}
+                          >
+                            <h5 className="mb-0 fw-bold">
+                              {cliente.nombres.charAt(0)}
+                            </h5>
+                          </div>
+                          <div>
+                            <h6 className="fw-bold mb-0 text-dark">
+                              {cliente.nombres} {cliente.apellidos}
+                            </h6>
+                            <small className="text-muted">{cliente.dni}</small>
+                          </div>
+                        </div>
+                        <span
+                          className="badge rounded-pill fw-bold text-center p-2"
                           style={{
-                            width: "48px",
-                            height: "48px",
-                            backgroundColor: MisColores.headerBlue,
+                            backgroundColor: MisColores.teal,
+                            fontSize: "9px",
                           }}
                         >
-                          <h5 className="mb-0 fw-bold">
-                            {cliente.nombres.charAt(0)}
-                          </h5>
+                          {cliente.estado}
+                        </span>
+                      </div>
+
+                      <div className="mb-4 pt-2">
+                        <div className="d-flex align-items-center text-muted mb-2 small">
+                          <Phone size={14} className="me-2 text-primary" />{" "}
+                          {cliente.telefono1}
                         </div>
-                        <div>
-                          <h6 className="fw-bold mb-0 text-dark">
-                            {cliente.nombres} {cliente.apellidos}
-                          </h6>
-                          <small className="text-muted">{cliente.dni}</small>
+                        <div className="d-flex align-items-center text-muted small">
+                          <MapPin size={14} className="me-2 text-primary" />{" "}
+                          {cliente.tbzona.nombrerutas} • {cliente.sector}
                         </div>
                       </div>
-                      <span
-                        className="badge rounded-pill fw-bold text-center p-2"
+
+                      <div
+                        className="d-flex justify-content-between align-items-center p-3 rounded-3"
+                        style={{ backgroundColor: "#f0f4f8" }}
+                      >
+                        <div className="small fw-medium text-secondary">
+                          <Wallet size={16} className="me-2" />
+                          Préstamos Activos
+                        </div>
+                        <span
+                          className="badge rounded-pill px-3 py-2 shadow-sm"
+                          style={{ backgroundColor: MisColores.lightTeal }}
+                        >
+                          {resultTotal}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="card-footer bg-white border-0 p-3 d-flex gap-2">
+                      <button
+                        className="btn text-white w-100 fw-bold shadow-sm py-2 d-flex align-items-center justify-content-center"
                         style={{
-                          backgroundColor: MisColores.teal,
-                          fontSize: "9px",
+                          backgroundColor: MisColores.actionRed,
+                          fontSize: "11px", // Bajamos un punto para asegurar que el texto no rompa
+                          whiteSpace: "nowrap", // Evita que el texto salte de línea
                         }}
+                        onClick={() => HandlInserPrestamos(cliente.id)}
                       >
-                        {cliente.estado}
-                      </span>
-                    </div>
+                        <PlusCircle size={16} className="me-2" /> Crear Préstamo
+                      </button>
 
-                    <div className="mb-4 pt-2">
-                      <div className="d-flex align-items-center text-muted mb-2 small">
-                        <Phone size={14} className="me-2 text-primary" />{" "}
-                        {cliente.telefono1}
-                      </div>
-                      <div className="d-flex align-items-center text-muted small">
-                        <MapPin size={14} className="me-2 text-primary" />{" "}
-                        {cliente.tbzona.nombrerutas} • {cliente.sector}
-                      </div>
-                    </div>
-
-                    <div
-                      className="d-flex justify-content-between align-items-center p-3 rounded-3"
-                      style={{ backgroundColor: "#f0f4f8" }}
-                    >
-                      <div className="small fw-medium text-secondary">
-                        <Wallet size={16} className="me-2" />
-                        Préstamos Activos
-                      </div>
-                      <span
-                        className="badge rounded-pill px-3 py-2 shadow-sm"
-                        style={{ backgroundColor: MisColores.lightTeal }}
+                      <button
+                        className="btn btn-outline-secondary border shadow-sm flex-shrink-0"
+                        onClick={handleRol}
                       >
-                        {resultTotal}
-                      </span>
+                        <Files size={18} />
+                      </button>
+
+                      <button
+                        className="btn btn-outline-secondary border shadow-sm flex-shrink-0"
+                        onClick={() => handleVerMapa(cliente)}
+                      >
+                        <MapPin size={18} />
+                      </button>
                     </div>
-                  </div>
-                  <div className="card-footer bg-white border-0 p-3 d-flex gap-2">
-                    <button
-                      className="btn text-white w-100 fw-bold shadow-sm py-2 d-flex align-items-center justify-content-center"
-                      style={{
-                        backgroundColor: MisColores.actionRed,
-                        fontSize: "11px", // Bajamos un punto para asegurar que el texto no rompa
-                        whiteSpace: "nowrap", // Evita que el texto salte de línea
-                      }}
-                       onClick={() =>
-                                    HandlInserPrestamos(cliente.id)
-                                  }
-                    >
-                      <PlusCircle size={16} className="me-2" /> Crear Préstamo
-                    </button>
-
-                    <button
-                      className="btn btn-outline-secondary border shadow-sm flex-shrink-0"
-                      onClick={handleRol}
-                    >
-                      <Files size={18} />
-                    </button>
-
-                    <button className="btn btn-outline-secondary border shadow-sm flex-shrink-0" onClick={()=>handleVerMapa(cliente)}>
-                      <MapPin size={18} />
-                    </button>
                   </div>
                 </div>
-              </div>
-            )}
-          )
+              );
+            })
           )}
 
           <div

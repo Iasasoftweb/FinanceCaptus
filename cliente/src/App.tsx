@@ -16,6 +16,7 @@ import PrinterContainer from "./pages/Clientes/Printer/PrinterContainer.tsx";
 import Company from "./pages/Companies/Company.tsx";
 import axios from "axios";
 import PrestamoDetail from "./pages/Prestamos/PrestamoDetail.tsx";
+import PagosCuotas from "./pages/pagos/PagosCuotas.tsx";
 
 function App() {
   const [openSidebarToggle, setOpenSidebarToggle] = useState(false);
@@ -106,6 +107,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <ShowUsuarios />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/pagos/:id"
+            element={
+              <ProtectedRoute>
+                <PagosCuotas />
               </ProtectedRoute>
             }
           />

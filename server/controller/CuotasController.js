@@ -48,9 +48,16 @@ export const GetCuota = async (req, res) => {
 };
 
 const validateCuotas = (cuotas) => {
-  const dateRegex = /^\d{2}-\d{2}-\d{4}$/;
-  return cuotas.every(cuota => dateRegex.test(cuota.fechapago));
+
+  const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+
+  return cuotas.every(cuota =>
+    dateRegex.test(cuota.fechapago) &&
+    dateRegex.test(cuota.fechavencimiento)
+  );
 };
+
+
 
 export const getCuotas = async (req, res) => {
   try {

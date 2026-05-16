@@ -23,3 +23,33 @@
    
 
 }
+
+/* Elimina el espacio extra del dropdown de Bootstrap */
+.compact-dropdown {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+}
+
+/* Reduce el padding de cada ítem */
+.compact-dropdown .dropdown-item {
+    padding-top: 6px !important;
+    padding-bottom: 6px !important;
+    font-size: 0.85rem !important; /* Texto un poco más pequeño */
+}
+
+/* Reduce el espacio del divisor */
+.compact-dropdown .dropdown-divider {
+    margin: 4px 0 !important;
+}
+
+/* Ajuste fino para la cabecera */
+.compact-dropdown .bg-light {
+    padding-top: 8px !important;
+    padding-bottom: 8px !important;
+}
+
+/* Efecto hover más discreto */
+.compact-dropdown .dropdown-item:hover {
+    padding-left: 1rem !important; /* Menos desplazamiento al hacer hover */
+    background-color: #f8f9fa;
+}

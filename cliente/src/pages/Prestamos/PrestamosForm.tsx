@@ -66,6 +66,7 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
   const [cedulaCliente, setCedulaCliente] = useState("");
   const [amortiza, setAmortiza] = useState("Cuota Fija");
   const [Frecuencia, setFrecuencia] = useState("SEMANAL");
+  const [fecha, setFecha] = useState(dayjs());
   const [fechaPrimerPago, setFechaPrimerPato] = useState(dayjs());
 
   const [idCompany, setIdCompany] = useState(0);
@@ -86,13 +87,12 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
   const [coDeudorDireccion, setcoDeudorDireccion] = useState("");
   const [coDeudorTelefono, setcoDeudorTelefono] = useState("");
   const [TabValue, setTabValue] = useState("1");
-  const [isTabDisabled, setIsTabDisabled] = useState(false);
   const { dataUser } = useDataUsuario();
-  const { dataCompany, IdDataCompany } = useCompany();
+  const { dataCompany } = useCompany();
   const { dataCobrador } = useCobrador();
-  
+
   const { data: DataEmpresa, isLoading } = useEmpresa();
-  console.log(DataEmpresa)
+
   const colors = {
     headerBlue: "#4A7BB7",
     teal: "#008B8B",
@@ -223,9 +223,9 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
     return `${day}/${month}/${year}`;
   };
 
-  const HandleFechaPrimer = (date) => {
-    setFechaPrimerPato(date);
-    console.log(date);
+  const HandleFechaPrimer = (e) => {
+    setFechaPrimerPato(dayjs(e.target.value));
+    console.log(dayjs(e.target.value));
   };
 
   const HandleReferencia = (e) => {
@@ -272,6 +272,10 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
     setAmortiza(e.target.value);
   };
 
+  const handleFecha = (e) => {
+    setFecha(e.target.value);
+  };
+
   const HandleFrecuencia = (e) => {
     setFrecuencia(e.target.value);
   };
@@ -284,13 +288,12 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
     const fechaActual = FechaCorta(new Date());
 
     ClienteData();
-     setValue("gastoslegal", DataEmpresa.gastolegal)
-     const usaMora = DataEmpresa?.aplicarmora ==='SI';
-     console.log(usaMora)
-     const valorMora = usaMora ? (DataEmpresa.modoporcentaje ?? 0) : 0;
-     setValue('mora', valorMora)
-     setValue('seguro', DataEmpresa?.seguro)
-
+    setValue("gastoslegal", DataEmpresa.gastolegal);
+    const usaMora = DataEmpresa?.aplicarmora === "SI";
+    console.log(usaMora);
+    const valorMora = usaMora ? (DataEmpresa.modoporcentaje ?? 0) : 0;
+    setValue("mora", valorMora);
+    setValue("seguro", DataEmpresa?.seguro);
 
     setValue("capital", 0.0);
     setValue("interes", "0.0000");
@@ -345,7 +348,7 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
         cuotaspagas: 0,
         capitalpendiente: capitalValue,
         balancependiente: 0,
-        fecha: dayjs(new Date()),
+        fecha: dayjs(fecha),
         fechaprimer: dayjs(fechaPrimerPago),
         fechaultimopago: null,
         mora: 0.0,
@@ -417,6 +420,7 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
       handleClose();
     } catch (error) {
       toast.error("Prestamos no pudo ser guardado");
+
       console.error("Error al enviar los datos:", error);
 
       if (axios.isAxiosError(error)) {
@@ -581,6 +585,7 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
                     className="form-control border-0 shadow-none"
                     style={{ fontSize: "0.8em" }}
                     {...register("fecha")}
+                    onChange={handleFecha}
                   />
                 </InputField>
 
@@ -775,6 +780,7 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
                     className="form-control border-0 shadow-none"
                     style={{ fontSize: "0.8em" }}
                     {...register("fechaprimer")}
+                    onChange={HandleFechaPrimer}
                   />
                 </InputField>
 

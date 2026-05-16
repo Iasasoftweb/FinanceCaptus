@@ -1,52 +1,34 @@
-import React, { act, useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
-import TitleTop from "../../components/TitleTop/TItleTop";
-import { GiPayMoney, GiTakeMyMoney } from "react-icons/gi";
-import {
-  Paper,
-  Table,
-  Pagination,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  TextField,
-  Autocomplete,
-  InputAdornment,
-  Switch,
-  FormGroup,
-  FormControlLabel,
-  Avatar,
-  Tooltip,
-  Box,
-} from "@mui/material";
-
-import PaginationItem from "../../components/Pagination/PaginatedItems.tsx";
-import { IoIosSearch } from "react-icons/io";
-import { TbRefresh } from "react-icons/tb";
+import { Paper, Avatar } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import { createTheme, ThemeProvider } from "@mui/material/styles";
+import { createTheme } from "@mui/material/styles";
 import PrestamosForm from "./PrestamosForm.tsx";
-import NoDatos from "../../components/stuff/NoDatos.tsx";
-import { format, isBefore } from "date-fns";
 import { formatCurrency } from "../../components/UtilsStuff.tsx";
-import { PiEye } from "react-icons/pi";
 import "./prestamos.css";
-import BtnXLSEstilizado from "../../components/ExportXLS/BtnXLSEstilizado.tsx";
-import { SlPrinter } from "react-icons/sl";
-import { PDFViewer, PDFDownloadLink } from "@react-pdf/renderer";
-import PrnPrestamos from "./Pdfs/prnPrestamos.tsx";
 import { MisColores } from "../../components/stuff/MisColores.tsx";
 import {
+  AlertCircle,
   Briefcase,
+  ChevronLeft,
+  ChevronRight,
+  Eye,
+  FileSpreadsheet,
+  FileText,
+  HandCoins,
   Landmark,
   Printer,
-  RefreshCcw,
+  RefreshCw,
   Search,
+  TrendingUp,
+  Users,
   X,
 } from "lucide-react";
-import { style } from "./Pdfs/style.ts";
 import { InputField } from "../../components/stuff/InputField.tsx";
+import { EmptyState } from "../../components/stuff/EmptyState.tsx";
+import { useEmpresa } from "../../hooks/useEmpresas.tsx";
+import { getBase64ImageFromURL } from "../../components/stuff/getBase64ImageFromURL.tsx";
+import { agregarImagenProporcional } from "../../components/stuff/agragarImagenProporcional.tsx";
 
 const ShowPrestamos = () => {
   const [PrestamoData, setPrestamoData] = useState([]);
@@ -57,8 +39,8 @@ const ShowPrestamos = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isModalEdit, setIsModalEdit] = useState(false);
   const [search, setSearch] = useState("");
+  const [searchZonas, setSearchZonas] = useState("");
   const [cuotas, setCuotas] = useState([]);
-  const [searchRutas, setsearchRutas] = useState("");
   const [checked, setChecked] = React.useState(true);
   const [idPrestamo, setIdPrestamos] = useState(0);
   const [verPDF, setVerPDF] = useState(false);
@@ -66,24 +48,184 @@ const ShowPrestamos = () => {
   const UriData = "http://localhost:5000/prestamos/";
   const uriCuotas = "http://localhost:5000/cuotas/";
   const uriRutas = "http://localhost:5000/zonas/";
-  const UrisImg = "http://localhost:5000/uploads/";
 
-  const [currentPage, setCurrentPage] = useState(1);
+  const UrisImg = "http://localhost:5000/uploads/clientes/avata/";
+  const UrisImgEmpresa = "http://localhost:5000/uploads/clientes/empresa/";
+
+  const { data: dataEmpresa, isLoading } = useEmpresa();
 
   const Navigate = useNavigate();
-  const PER_PAGE = 8;
-  const countpage = Math.ceil(PrestamoData.length / PER_PAGE);
-  const _DATA = PaginationItem(DataPrestamo, PER_PAGE);
 
-  const inputRef = useRef(null);
-  const navigate = useNavigate();
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
 
-  const handlePageChance = (e, p) => {
-    setPage(p);
-    _DATA.jump(p);
+  const paginate = (pageNumber) => {
+    if (pageNumber >= 1 && pageNumber <= totalPages) {
+      setCurrentPage(pageNumber);
+    }
   };
 
-  const label = { inputProps: { "aria-label": "Switch demo" } };
+  const exportarExcel = () => {
+    if (!window.XLSX) {
+      alert(
+        "La librería de Excel aún se está cargando. Intente de nuevo en un segundo.",
+      );
+      return;
+    }
+
+    // Preparar los datos para el Excel (aplanar el objeto)
+    const datosExcel = filtrar.map((item) => ({
+      "No. Préstamo": item.nPre,
+      Cliente: item.tcliente.nombre_completo,
+      DNI: item.tcliente.dni,
+      Frecuencia: item.frecuencia,
+      "Monto Capital": item.capital,
+      Interés: item.interes,
+      Cuotas: item.cuotas,
+      "Zona/Ruta": item.tcliente.tbzona.nombrerutas,
+      "Monto Vencido": item.vencido,
+      Estado: item.vencido > 0 ? "VENCIDO" : "AL DÍA",
+    }));
+
+    // Crear el libro y la hoja
+    const worksheet = window.XLSX.utils.json_to_sheet(datosExcel);
+    const workbook = window.XLSX.utils.book_new();
+    window.XLSX.utils.book_append_sheet(workbook, worksheet, "Préstamos");
+
+    // Descargar el archivo
+    const fecha = new Date().toISOString().split("T")[0];
+    window.XLSX.writeFile(workbook, `Reporte_Prestamos_${fecha}.xlsx`);
+  };
+
+  const exportarPDF = async () => {
+    const { jsPDF } = window.jspdf;
+    if (!jsPDF) return;
+
+    const doc = new jsPDF();
+    const fecha = new Date().toLocaleDateString();
+
+    const logoEmpresara = `${UrisImgEmpresa}${dataEmpresa.logoempresa}`;
+    const logoBase64 = await getBase64ImageFromURL(logoEmpresara);
+
+    // Título y encabezado
+
+    doc.setFont("helvetica", "bold");
+    await agregarImagenProporcional(doc, logoBase64, 10, 5, 40);
+
+    doc.setFontSize(18);
+    doc.setTextColor(40);
+    doc.text("Control de Préstamos Emitidos", 105, 20, {
+      align: "center",
+    });
+
+    doc.setFontSize(11);
+    doc.setTextColor(100);
+
+    doc.setFont("helvetica", "normal");
+    doc.text(`Fecha del reporte: ${fecha}`, 190, 32, {
+      align: "right",
+    });
+    doc.text(`Zona filtrada: ${searchZonas || "Todas"}`, 190, 38, {
+      align: "right",
+    });
+
+    // Preparar columnas y filas para AutoTable
+    const columns = [
+      { header: "# Pre", dataKey: "nPre" },
+      { header: "Cliente", dataKey: "cliente" },
+      { header: "DNI", dataKey: "dni" },
+      { header: "Capital", dataKey: "capital" },
+      { header: "Interés", dataKey: "interes" },
+      { header: "Cuotas", dataKey: "cuotas" },
+      { header: "Zona", dataKey: "zona" },
+      { header: "Vencido", dataKey: "vencido" },
+    ];
+
+    const rows = filtrar.map((item) => ({
+      nPre: item.id,
+      cliente: item.tcliente.nombre_completo,
+      dni: item.tcliente.dni,
+      capital: `$${item.capital.toLocaleString()}`,
+      interes: `$${item.interes.toLocaleString()}`,
+      cuotas: item.cuotas,
+      zona: item.tcliente.tbzona.nombrerutas,
+      vencido: item.vencido > 0 ? `$${item.vencido.toLocaleString()}` : "-",
+    }));
+
+    const totalCapital = filtrar.reduce(
+      (acc, item) => acc + Number(item.capital || 0),
+      0,
+    );
+
+    const totalInteres = filtrar.reduce(
+      (acc, item) => acc + Number(item.interes || 0),
+      0,
+    );
+
+    const totalVencido = filtrar.reduce(
+      (acc, item) => acc + Number(item.vencido || 0),
+      0,
+    );
+
+    rows.push({
+      nPre: "",
+      cliente: "TOTAL",
+      dni: "",
+      capital: `$${totalCapital.toLocaleString()}`,
+      interes: `$${totalInteres.toLocaleString()}`,
+      cuotas: "",
+      zona: "",
+      vencido: `$${totalVencido.toLocaleString()}`,
+    });
+
+    // Generar la tabla en el PDF
+    doc.autoTable({
+      columns,
+      body: rows,
+      startY: 45,
+
+      styles: {
+        fontSize: 8,
+        cellPadding: 2,
+      },
+
+      headStyles: {
+        fillColor: [13, 110, 253],
+        textColor: 255,
+      },
+
+      alternateRowStyles: {
+        fillColor: [245, 245, 245],
+      },
+
+      columnStyles: {
+        capital: {
+          halign: "right",
+        },
+
+        interes: {
+          halign: "right",
+        },
+
+        vencido: {
+          halign: "right",
+        },
+      },
+
+      didParseCell: function (data) {
+        const lastRowIndex = rows.length - 1;
+
+        if (data.row.index === lastRowIndex) {
+          data.cell.styles.fontStyle = "bold";
+
+          data.cell.styles.fillColor = [230, 230, 230];
+        }
+      },
+    });
+
+    // Guardar PDF
+    doc.save(`Reporte_Prestamos_${fecha.replace(/\//g, "-")}.pdf`);
+  };
 
   const Datos = async () => {
     try {
@@ -156,16 +298,6 @@ const ShowPrestamos = () => {
     };
   };
 
-  const RutasFiltrar = (condiciones) => {
-    console.log(condiciones);
-    const result = PrestamoData.filter((elementos) => {
-      const filt = elementos.tcliente.tbzona.nombrerutas === condiciones;
-      return filt;
-    });
-    setDataPrestamo(result);
-    setTotalItems(result.length);
-  };
-
   const ModoFiltrar = (condiciones) => {
     console.log(condiciones);
     const modo = condiciones ? "activo" : "inactivo";
@@ -176,29 +308,6 @@ const ShowPrestamos = () => {
     setDataPrestamo(result);
     setTotalItems(result.length);
   };
-
-  // const filtrar = (condicionesFiltrar) => {
-  //   const resultados = PrestamoData.filter((elementos) => {
-  //     if (
-  //       elementos.tcliente.nombre_completo
-  //         .toString()
-  //         .toLowerCase()
-  //         .includes(condicionesFiltrar.toLowerCase()) ||
-  //       elementos.tcliente.dni
-  //         .toString()
-  //         .toLowerCase()
-  //         .includes(condicionesFiltrar.toLowerCase()) ||
-  //       elementos.tcliente.tbzona.nombrerutas
-  //         .toString()
-  //         .toLowerCase()
-  //         .includes(condicionesFiltrar.toLowerCase())
-  //     ) {
-  //       return elementos;
-  //     }
-  //   });
-  //   setDataPrestamo(resultados);
-  //   setTotalItems(resultados.length);
-  // };
 
   const searcher = (e) => {
     setSearch(e.target.value);
@@ -220,71 +329,101 @@ const ShowPrestamos = () => {
     window.open("../Prestamos/Pdfs/reportePrestmos", "_blank");
   };
 
-  const totalCapital = DataPrestamo.reduce((sum, prestamos) => {
-    const capital = Number(prestamos.capital) || 0;
-    return sum + capital;
-  }, 0);
-
-  const totalInteres = DataPrestamo.reduce((sum, prestamos) => {
-    const capital = Number(prestamos.montointeres) || 0;
-    return sum + capital;
-  }, 0);
-
-  const balancePendiente = DataPrestamo.reduce((sum, prestamos) => {
-    const capital = Number(prestamos.balancependiente) || 0;
-    return sum + capital;
-  }, 0);
-
-  const montoCuota = DataPrestamo.reduce((sum, prestamos) => {
-    const capital = Number(prestamos.mcuota) || 0;
-    return sum + capital;
-  }, 0);
-
-  const montoMora = DataPrestamo.reduce((sum, prestamos) => {
-    const capital = Number(prestamos.mora) || 0;
-    return sum + capital;
-  }, 0);
-
-  const capitalPendiente = DataPrestamo.reduce((sum, prestamos) => {
-    const capital = Number(prestamos.capitalpendiente) || 0;
-    return sum + capital;
-  }, 0);
-
-  const gastosLegales = DataPrestamo.reduce((sum, prestamos) => {
-    const capital = Number(prestamos.gastoslegal) || 0;
-    return sum + capital;
-  }, 0);
-
   useEffect(() => {
     Datos();
+
+    const script = document.createElement("script");
+    script.src =
+      "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";
+    script.async = true;
+    document.body.appendChild(script);
+
+    const scriptJspdf = document.createElement("script");
+    scriptJspdf.src =
+      "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js";
+    scriptJspdf.async = true;
+    document.body.appendChild(scriptJspdf);
+
+    const scriptAutotable = document.createElement("script");
+    scriptAutotable.src =
+      "https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js";
+    scriptAutotable.async = true;
+    document.body.appendChild(scriptAutotable);
+
     //  inputRef.current.focus();
   }, []);
 
-  const itemsPerPage = 5;
-  console.log(PrestamoData);
-  const filtrar = PrestamoData.filter(
-    (items) =>
-      items.tcliente.nombre_completo
+  const filtrar = PrestamoData.filter((item) => {
+    const coincideZona = searchZonas
+      ? item.tcliente.tbzona.nombrerutas
+          .toLowerCase()
+          .includes(searchZonas.toLowerCase())
+      : true;
+
+    // 2. Filtro por Texto (Nombre o DNI)
+    const coincideBusqueda =
+      item.tcliente.nombre_completo
         .toLowerCase()
         .includes(search.toLowerCase()) ||
-      items.tcliente.dni.toLowerCase().includes(search.toLowerCase()),
-  );
+      item.tcliente.dni.toLowerCase().includes(search.toLowerCase());
+
+    const coincideActivo = checked
+      ? item.modo.toLowerCase() === "activo"
+      : item.modo.toLowerCase() === "inactivo";
+
+    return coincideZona && coincideBusqueda && coincideActivo;
+  });
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentPrestamos = filtrar.slice(indexOfFirstItem, indexOfLastItem);
   const totalPages = Math.ceil(filtrar.length / itemsPerPage);
 
-  const paginate = (pageNumber) => {
-    if (pageNumber >= 1 && pageNumber <= totalPages) {
-      setCurrentPage(pageNumber);
-    }
-  };
+  const totalCapital = currentPrestamos.reduce((sum, prestamos) => {
+    const capital = Number(prestamos.capital) || 0;
+    return sum + capital;
+  }, 0);
+
+  const totalInteres = currentPrestamos.reduce((sum, prestamos) => {
+    const capital = Number(prestamos.montointeres) || 0;
+    return sum + capital;
+  }, 0);
+
+  const totalMora = currentPrestamos.reduce((sum, prestamos) => {
+    const capital = Number(prestamos.montointeres) || 0;
+    return sum + capital;
+  }, 0);
+
+  const balancePendiente = currentPrestamos.reduce((sum, prestamos) => {
+    const capital = Number(prestamos.balancependiente) || 0;
+    return sum + capital;
+  }, 0);
+
+  const montoCuota = currentPrestamos.reduce((sum, prestamos) => {
+    const capital = Number(prestamos.mcuota) || 0;
+    return sum + capital;
+  }, 0);
+
+  const montoMora = currentPrestamos.reduce((sum, prestamos) => {
+    const capital = Number(prestamos.mora) || 0;
+    return sum + capital;
+  }, 0);
+
+  const capitalPendiente = currentPrestamos.reduce((sum, prestamos) => {
+    const capital = Number(prestamos.capitalpendiente) || 0;
+    return sum + capital;
+  }, 0);
+
+  const gastosLegales = currentPrestamos.reduce((sum, prestamos) => {
+    const capital = Number(prestamos.gastoslegal) || 0;
+    return sum + capital;
+  }, 0);
 
   const ShowDatos = () => {
     setSearch("");
-    setsearchRutas("");
+    setSearchZonas("");
     Datos();
+    setCurrentPage(1);
   };
 
   const Imprimir = () => {
@@ -292,8 +431,8 @@ const ShowPrestamos = () => {
   };
 
   const handleRutas = (e) => {
-    setsearchRutas(e.target.value);
-    RutasFiltrar(e.target.value);
+    setSearchZonas(e);
+    setCurrentPage(1);
   };
 
   const HandleMenuClose = () => {
@@ -301,7 +440,11 @@ const ShowPrestamos = () => {
   };
 
   const handleDetail = (id) => {
-    Navigate(`/prestamodetail/${id}`);
+    Navigate(`/pagos/${id}`);
+  };
+
+  const handlePrint = () => {
+    window.print();
   };
 
   return (
@@ -314,6 +457,72 @@ const ShowPrestamos = () => {
           handleClose={HandleMenuClose}
         />
       )}
+
+      <style>{`
+        @media print {
+          /* Ocultar elementos innecesarios */
+          .no-print, nav, .sidebar, aside, button, .input-group, .form-check, .vr, .pagination {
+            display: none !important;
+          }
+          
+          /* Forzar visibilidad de texto y quitar fondos que bloquean la vista */
+          body, .container-fluid, main {
+            background-color: white !important;
+            color: black !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 100% !important;
+          }
+
+          .card {
+            border: 1px solid #eee !important;
+            box-shadow: none !important;
+            margin-bottom: 10px !important;
+          }
+
+          /* Estilo de tabla para impresión */
+          table {
+            width: 100% !important;
+            border-collapse: collapse !important;
+            color: black !important;
+          }
+          
+          th {
+            background-color: #f8f9fa !important;
+            color: black !important;
+            border: 1px solid #dee2e6 !important;
+            -webkit-print-color-adjust: exact;
+            font-size: 9pt !important;
+          }
+          
+          td {
+            border: 1px solid #dee2e6 !important;
+            color: black !important;
+            font-size: 9pt !important;
+            padding: 6px !important;
+            background-color: transparent !important;
+          }
+
+          /* Asegurar que el contenido de las celdas sea visible */
+          td * {
+            color: black !important;
+          }
+
+          .badge {
+            border: none !important;
+            background: none !important;
+            padding: 0 !important;
+            color: black !important;
+            font-weight: bold !important;
+          }
+
+          .row { display: flex !important; flex-wrap: nowrap !important; }
+          .col-md-4 { width: 33.33% !important; flex: 0 0 33.33% !important; }
+        }
+
+        .max-width-xxl { max-width: 1400px; }
+        .cursor-pointer { cursor: pointer; }
+      `}</style>
 
       <div className="card-header border-bottom bg-white p-4 d-flex justify-content-between align-items-center">
         <div className="d-flex align-items-center gap-3">
@@ -342,310 +551,415 @@ const ShowPrestamos = () => {
       </div>
 
       <Paper>
-        <div className="d-flex justify-content-md-end mt-5 mt-md-3 mb-4 ">
-          <div className="d-flex justify-content-end w-100 ">
-            <div className="mx-4">
-              <InputField label="" icon={Search} col="">
-                <input
-                  id="search"
-                  type="text"
-                  className="form-control border-start-0 shadow-none"
-                  placeholder="Buscar Prestamos..."
-                  value={search}
-                  onChange={(e) => {
-                    setSearch(e.target.value);
-                    setCurrentPage(1); // Reiniciar a página 1 al buscar
-                  }}
-                  style={{ fontSize: "0.9em" }}
-                />
-                <button
-                  className="btn text-white d-flex align-items-center gap-2 shadow-sm border-0 "
-                  style={{ backgroundColor: MisColores.buscarOrange }}
-                  onClick={ShowDatos}
-                >
-                  <RefreshCcw size={16} />
-                  <span
-                    className="d-none d-sm-inline font-weight-bold"
-                    style={{ fontSize: "0.8em" }}
-                  >
-                    Refresh
-                  </span>
-                </button>
-              </InputField>
+        <div className="container-fluid max-width-xxl mx-auto">
+          <div className="row g-3 mb-4">
+            <div className="col-12 col-md-4">
+              <div className="card border-0 shadow-sm p-3 h-100">
+                <div className="d-flex align-items-center gap-3">
+                  <div className="rounded-3 p-2 bg-success bg-opacity-10 text-success">
+                    <TrendingUp size={24} />
+                  </div>
+                  <div>
+                    <p
+                      className="text-uppercase text-muted mb-0 fw-bold"
+                      style={{ fontSize: "0.7rem", letterSpacing: "1px" }}
+                    >
+                      Capital Total
+                    </p>
+                    <h4 className="fw-bold mb-0 text-dark">
+                      {formatCurrency(totalCapital.toFixed(2))}
+                    </h4>
+                  </div>
+                </div>
+              </div>
             </div>
-
-            <InputField label="Zonas" icon={Briefcase} col="col-md-3">
-              <select
-                name="compania"
-                //  onChange={HandleCompany}
-                className="form-select border-0 shadow-none"
-                style={{ fontSize: "0.8em" }}
-              >
-                <option value="" disabled selected>
-                  Seleccione una Zona
-                </option>
-                {dataRutas.map((item) => (
-                  <option value={item.id} key={item.id}>
-                    {item.nombrerutas}
-                  </option>
-                ))}
-              </select>
-            </InputField>
+            <div className="col-12 col-md-4">
+              <div className="card border-0 shadow-sm p-3 h-100">
+                <div className="d-flex align-items-center gap-3">
+                  <div className="rounded-3 p-2 bg-danger bg-opacity-10 text-danger">
+                    <AlertCircle size={24} />
+                  </div>
+                  <div>
+                    <p
+                      className="text-uppercase text-muted mb-0 fw-bold"
+                      style={{ fontSize: "0.7rem", letterSpacing: "1px" }}
+                    >
+                      Mora Acumulada
+                    </p>
+                    <h4 className="fw-bold mb-0 text-dark">
+                      {formatCurrency(totalMora.toFixed(2))}
+                    </h4>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="col-12 col-md-4">
+              <div className="card border-0 shadow-sm p-3 h-100">
+                <div className="d-flex align-items-center gap-3">
+                  <div className="rounded-3 p-2 bg-primary bg-opacity-10 text-primary">
+                    <Users size={24} />
+                  </div>
+                  <div>
+                    <p
+                      className="text-uppercase text-muted mb-0 fw-bold"
+                      style={{ fontSize: "0.7rem", letterSpacing: "1px" }}
+                    >
+                      Clientes Activos
+                    </p>
+                    <h4 className="fw-bold mb-0 text-dark">{filtrar.length}</h4>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
+        <div className="card-body p-3 bg-white border-bottom">
+          <div className="row g-3 align-items-center">
+            {/* Buscador */}
+            <div className="col-12 col-lg-3">
+              <div className="input-group input-group-sm">
+                <InputField label="" col="" icon={Search}>
+                  <input
+                    type="text"
+                    className="form-control bg-light border-0 shadow-none ps-2"
+                    placeholder="Buscar Préstamos..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    style={{ fontSize: "0.85rem" }}
+                  />
 
-        <div className="d-flex justify-content-between align-content-center mb-1 mt-1 ">
-          <div className="d-flex">
-            <button
-              className="btn text-white d-flex align-items-center gap-2 shadow-sm fw-medium px-3 mx-3 border-0"
-              style={{
-                backgroundColor: MisColores.headerBlue,
-                borderColor: MisColores.headerBlue,
-              }}
-            >
-              <Printer size={16} /> Imprimir Reporte
-            </button>
-
-            
-
-            <div className="mx-2 m-3">
-              <BtnXLSEstilizado
-                tdata={_DATA.currentData()}
-                fileName={"Prestamos"}
-                tTitulo={"Probando Titulo"}
-              />
+                  <span className="input-group-text bg-white border-start-0 d-flex align-items-center justify-content-center">
+                    <X
+                      color="#718096"
+                      size={18}
+                      onClick={() => setSearch("")}
+                      style={{ cursor: "pointer" }}
+                    />
+                  </span>
+                </InputField>
+              </div>
             </div>
 
-            <PDFDownloadLink
-              document={<PrnPrestamos />}
-              fileName="probando.pdf"
-              className="mx-2 m-3" // Mueve las clases aquí si son para el contenedor
-            >
-              {({ loading, error }) => {
-                if (error) {
-                  console.error("Error generando PDF:", error);
-                  return <div>Error al generar PDF</div>;
-                }
-                return (
-                  <div className={`BtnImprimir ${loading ? "loading" : ""}`}>
-                    <SlPrinter className="mx-3 fs-4" />
-                    {loading ? "Descargando..." : "Descargar PDF"}
-                  </div>
-                );
-              }}
-            </PDFDownloadLink>
-          </div>
-          <div className="text-center mt-4">
-            <FormGroup>
-              <FormControlLabel
-                control={<Switch defaultChecked onChange={handleCheck} />}
-                label={checked == true ? "Activos" : "Inactivos"}
-              />
-            </FormGroup>
+            {/* Selector de Zonas */}
+            <div className="col-12 col-md-4 col-lg-2">
+              <div className="input-group input-group-sm">
+                <InputField label="" col="" icon={Briefcase}>
+                  <select
+                    className="form-select bg-light border-0 shadow ps-2"
+                    value={searchZonas}
+                    onChange={(e) => setSearchZonas(e.target.value)}
+                    style={{ fontSize: "0.85rem" }}
+                  >
+                    <option value="">Seleccione una Zona</option>
+                    {dataRutas.map((ruta) => (
+                      <option key={ruta.id} value={ruta.nombrerutas}>
+                        {ruta.nombrerutas}
+                      </option>
+                    ))}
+                  </select>
+                </InputField>
+              </div>
+            </div>
+
+            {/* Botón Refresh */}
+
+            <div className="col-auto">
+              <button
+                className="btn text-white btn-sm px-3 fw-semibold shadow-sm d-flex align-items-center gap-2"
+                style={{ background: MisColores.buscarOrange }}
+                onClick={ShowDatos}
+              >
+                <RefreshCw size={16} /> Refresh
+              </button>
+            </div>
+
+            {/* Botones de Acción Derecha */}
+            <div className="col text-end d-flex justify-content-end align-items-center gap-2">
+              <button
+                className="btn  btn-sm px-3 fw-semibold text-white shadow-sm d-flex align-items-center gap-2"
+                style={{ background: MisColores.headerBlue }}
+                onClick={handlePrint}
+              >
+                <Printer size={16} /> Imprimir Reporte
+              </button>
+              <div
+                className="vr mx-1 d-none d-md-block"
+                style={{ height: "24px" }}
+              ></div>
+              <button
+                className="btn btn-outline-success btn-sm border-0 d-flex align-items-center gap-1"
+                onClick={exportarExcel}
+              >
+                <FileSpreadsheet size={18} />{" "}
+                <span className="d-none d-xl-inline">Excel</span>
+              </button>
+              <button
+                className="btn btn-outline-danger btn-sm border-0 d-flex align-items-center gap-1"
+                onClick={exportarPDF}
+              >
+                <FileText size={18} />{" "}
+                <span className="d-none d-xl-inline">PDF</span>
+              </button>
+              <div className="form-check form-switch ms-2">
+                <input
+                  className="form-check-input shadow-none cursor-pointer"
+                  type="checkbox"
+                  checked={checked}
+                  onChange={() => setChecked(!checked)}
+                />
+                <label className="form-check-label small fw-bold text-muted">
+                  Activos
+                </label>
+              </div>
+            </div>
           </div>
         </div>
 
         <div className="p-3">
           {currentPrestamos.length > 0 ? (
-            <Table className="mi-tabla">
-              <thead>
-                <tr className="fw-normal">
-                  <th className="clFont ">--</th>
-                  <th className="clFont ">#Clie.</th>
-                  <th className="clFont ">#Pre.</th>
-                  <th className="clFont ">Clientes</th>
-                  <th className="clFont ">Amorizacion</th>
-                  <th className="clFont ">Frecuencia</th>
-                  <th className="clFont text-end">Monto Capital</th>
-                  <th className="clFont text-end">Monto Interes</th>
-                  <th className="clFont text-end">Monto Mora</th>
-                  <th className="clFont text-end">Monto Pagado</th>
-                  <th className="clFont text-center">Cuotas</th>
-                  <th className="clFont text-center">Zonas/Rutas</th>
-                  <th className="clFont text-center">Cuotas V.</th>
-                  <th className="clFont text-center">Vencidos</th>
-                  <th className="clFont text-center">--</th>
-                </tr>
-              </thead>
-
-              <tbody>
-                {currentPrestamos.map((items) => {
-                  const {
-                    atrasadas,
-                    cuotaspagada,
-                    montovencido,
-                    Balancepagado,
-                    Balancemora,
-                  } = getCuotasInfo(items.id);
-
-                  return (
-                    <tr key={items.id}>
-                      <td width={50}>
-                        <Avatar
-                          aria-label="recipe"
-                          src={`${UrisImg}${items.tcliente.imgFOTOS}`}
-                          className=" rounded-circle  border-success text-center"
-                        />
-                      </td>
-                      <td
-                        className="clFont align-middle text-center p-2"
-                        width={25}
-                      >
-                        {items.tcliente.id}
-                      </td>
-                      <td
-                        className="clFont align-middle text-center p-2 "
-                        width={25}
-                      >
-                        {items.id}
-                      </td>
-                      <td
-                        className="clFont align-middle text-start "
-                        width={340}
-                      >
-                        <div className="">{items.tcliente.nombre_completo}</div>
-                        <div className="">
-                          <p
-                            className="text-mute"
-                            style={{ fontSize: "0.8em" }}
+            <div className="table-responsive">
+              <table
+                className="table table-hover align-middle mb-0"
+                style={{ fontSize: "0.85rem" }}
+              >
+                <thead className=" table-light">
+                  <tr>
+                    <th
+                      className="ps-4 py-3 border-0 text-muted text-uppercase fw-bold"
+                      style={{ fontSize: "0.7rem" }}
+                    >
+                      Cliente
+                    </th>
+                    <th
+                      className="py-3 border-0 text-muted text-uppercase fw-bold text-center"
+                      style={{ fontSize: "0.7rem" }}
+                    >
+                      Frecuencia
+                    </th>
+                    <th
+                      className="py-3 border-0 text-muted text-uppercase fw-bold text-end"
+                      style={{ fontSize: "0.7rem" }}
+                    >
+                      Monto Capital
+                    </th>
+                    <th
+                      className="py-3 border-0 text-muted text-uppercase fw-bold text-end"
+                      style={{ fontSize: "0.7rem" }}
+                    >
+                      Interés
+                    </th>
+                    <th
+                      className="py-3 border-0 text-muted text-uppercase fw-bold text-center"
+                      style={{ fontSize: "0.7rem" }}
+                    >
+                      Cuotas
+                    </th>
+                    <th
+                      className="py-3 border-0 text-muted text-uppercase fw-bold"
+                      style={{ fontSize: "0.7rem" }}
+                    >
+                      Zona
+                    </th>
+                    <th
+                      className="py-3 border-0 text-muted text-uppercase fw-bold text-center"
+                      style={{ fontSize: "0.7rem" }}
+                    >
+                      Estado
+                    </th>
+                    <th
+                      className="pe-4 py-3 border-0 text-muted text-uppercase fw-bold text-center"
+                      style={{ fontSize: "0.7rem" }}
+                    >
+                      Acciones
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="">
+                  {currentPrestamos.map((item, idx) => (
+                    <tr key={idx}>
+                      <td className="ps-4">
+                        <div className="d-flex align-items-center gap-3">
+                          <div
+                            className="rounded-circle bg-light d-flex align-items-center justify-content-center text-primary fw-bold"
+                            style={{
+                              width: "40px",
+                              height: "40px",
+                              fontSize: "14px",
+                            }}
                           >
-                            {items.tcliente.dni}
-                          </p>
+                            <Avatar
+                              src={`${UrisImg}${item?.tcliente?.imgFOTOS}`}
+                              sx={{ width: 40, height: 40 }}
+                            />
+                          </div>
+                          <div>
+                            <div className="fw-bold text-dark">
+                              {item?.tcliente?.nombre_completo}
+                            </div>
+                            <div
+                              className="text-muted"
+                              style={{ fontSize: "0.75rem" }}
+                            >
+                              {item.tcliente.dni}
+                            </div>
+                          </div>
                         </div>
                       </td>
-                      <td
-                        className="clFont align-middle text-center"
-                        width={50}
-                      >
-                        {items.tipoamortizacion}
-                      </td>
-                      <td
-                        className="clFont align-middle text-center"
-                        width={50}
-                      >
-                        {items.frecuencia}
-                      </td>
-
-                      <td className="clFont align-middle text-end" width={150}>
-                        {formatCurrency(items.capital)}
-                      </td>
-
-                      <td className="clFont align-middle text-end" width={150}>
-                        {formatCurrency(items.montointeres)}
-                      </td>
-                      <td className="clFont align-middle text-end" width={150}>
-                        {formatCurrency(Balancemora)}
-                      </td>
-                      <td className="clFont align-middle text-end" width={150}>
-                        {formatCurrency(Balancepagado)}
-                      </td>
-
-                      <td
-                        className="clFont align-middle text-center"
-                        width={50}
-                      >
-                        {cuotaspagada}/{items.tcuota}
-                      </td>
-
-                      <td
-                        className="clFont align-middle text-center"
-                        width={50}
-                      >
-                        {items.tcliente.tbzona.nombrerutas}
-                      </td>
-
-                      <td
-                        className="clFont align-middle text-center"
-                        width={100}
-                      >
+                      <td className="text-center">
                         <span
-                          className="border rounded-4 border-warning p-2"
-                          style={{
-                            background: atrasadas > 0 ? "#ffcccc" : "#d0efff",
-                          }}
+                          className="badge text-dark fw-medium rounded-pill px-3 py-2 border"
+                          style={{ fontSize: "0.9em" }}
                         >
-                          {atrasadas}
+                          {item.frecuencia}
                         </span>
                       </td>
-
-                      <td
-                        className="clFont align-middle text-end"
-                        width={50}
-                        style={{ background: atrasadas > 0 && "#ffcccc" }}
-                      >
-                        <span className="fw-semibold">
-                          {atrasadas === 0
-                            ? "0.0"
-                            : formatCurrency(montovencido)}
-                        </span>
-                        <br />
+                      <td className="text-end fw-bold text-dark">
+                        $
+                        {item.capital.toLocaleString("en-US", {
+                          minimumFractionDigits: 2,
+                        })}
+                      </td>
+                      <td className="text-end text-muted">
+                        $
+                        {item.interes.toLocaleString("en-US", {
+                          minimumFractionDigits: 2,
+                        })}
+                      </td>
+                      <td className="text-center">
                         <span
-                          style={{ fontSize: "0.8em" }}
-                          className="me-1 text-muted"
+                          className="border px-2 py-1 rounded-pill fw-bold text-secondary"
+                          style={{ fontSize: "0.75rem" }}
                         >
-                          Cuotas : {atrasadas}
+                          {item.cuotaspagas} / {item.tcuota}
                         </span>
                       </td>
-
-                      <td
-                        className="clFont align-middle text-center"
-                        width={50}
-                      >
-                        <div className="d-flex">
-                          <Tooltip title="Detalles" arrow>
-                            <span
-                              className="rounded-3 p-1 mx-3 me-2"
-                              style={{ background: "#e17070" }}
-                              onClick={() => handleDetail(items.id)}
-                            >
-                              <GiPayMoney className="fs-5 text-white" />
+                      <td>
+                        <span className="text-muted fw-medium">
+                          {item.tcliente.tbzona.nombrerutas}
+                        </span>
+                      </td>
+                      <td className="text-center">
+                        {item.vencido > 0 ? (
+                          <div className="d-inline-block">
+                            <span className="badge bg-danger bg-opacity-10 text-danger rounded-pill px-3 mb-1 fw-bold">
+                              VENCIDO
                             </span>
-                          </Tooltip>
-
-                          <Tooltip title="Visualizar Pagos" arrow>
-                            <span
-                              className="rounded-3 p-1 mx-1"
-                              style={{ background: "#187bcd" }}
+                            <div
+                              className="fw-bold text-danger"
+                              style={{ fontSize: "0.75rem" }}
                             >
-                              <PiEye className="fs-5 text-white" />
-                            </span>
-                          </Tooltip>
+                              ${item.vencido.toLocaleString()}
+                            </div>
+                          </div>
+                        ) : (
+                          <span className="badge bg-success bg-opacity-10 text-success rounded-pill px-3 fw-bold">
+                            AL DÍA
+                          </span>
+                        )}
+                      </td>
+                      <td className="pe-4 text-center">
+                        <div className="btn-group">
+                          <button
+                            className="btn btn-outline-primary btn-sm border-0 rounded-3 p-1 mx-1"
+                            title="Cobrar"
+                          >
+                            <HandCoins size={18} />
+                          </button>
+                          <button
+                            className="btn btn-outline-secondary btn-sm border-0 rounded-3 p-1 mx-1"
+                            title="Ver"
+                            onClick={() => handleDetail(item.id)}
+                          >
+                            <Eye size={18} />
+                          </button>
                         </div>
                       </td>
                     </tr>
-                  );
-                })}
-
-                <tr className="bg-light">
-                  <td></td>
-                  <td></td>
-                  <td></td>
-                  <td className="clFont fw-semibold">Totales</td>
-                  <td></td>
-                  <td></td>
-
-                  <td className="text-end clFont fw-semibold">
-                    {formatCurrency(totalCapital)}
-                  </td>
-                  <td className="text-end clFont fw-semibold">
-                    {formatCurrency(totalInteres)}
-                  </td>
-                  <td className="text-end clFont fw-semibold">0.0</td>
-                  <td className="text-end clFont fw-semibold"> </td>
-                  <td className="text-end clFont fw-semibold"></td>
-                  <td className="text-end clFont fw-semibold"></td>
-                  <td className="text-center"></td>
-                  <td className="text-center"></td>
-                  <td className="text-center"></td>
-                </tr>
-              </tbody>
-            </Table>
+                  ))}
+                </tbody>
+                <tfoot className="table-light fw-bold border-top">
+                  <tr>
+                    <td colSpan="2" className="text-end ps-4 py-3 text-muted">
+                      TOTALES
+                    </td>
+                    <td className="text-end py-3 text-primary">$108,000.00</td>
+                    <td className="text-end py-3 text-dark">$5,982.28</td>
+                    <td colSpan="4"></td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
           ) : (
-            <NoDatos mensaje="No se han creados prestamos" />
+            <EmptyState
+              title="No se han creados prestamos."
+              subtitle="En cuanto se cree un nuevo prestamo, aparecerá aquí."
+            />
           )}
         </div>
 
-        <ThemeProvider theme={theme}>
+        <div className="d-flex flex-column flex-sm-row justify-content-between align-items-center bg-white p-3 rounded-3 shadow-sm mt-4 border mb-3">
+          <div className="text-muted small mb-3 mb-sm-0">
+            Mostrando registros del{" "}
+            <b style={{ fontSize: "1em" }}>{indexOfFirstItem + 1}</b> al{" "}
+            <b style={{ fontSize: "1em" }}>
+              {Math.min(indexOfLastItem, filtrar.length)}
+            </b>{" "}
+            de un total de <b style={{ fontSize: "1em" }}>{filtrar.length}</b>
+          </div>
+
+          <nav aria-label="Page navigation">
+            <ul className="pagination pagination-sm mb-0 gap-1">
+              {/* Botón Anterior */}
+              <li
+                className={`page-item ${currentPage === 1 ? "disabled" : ""}`}
+              >
+                <button
+                  className="page-link border-0 bg-light text-muted rounded shadow-sm d-flex align-items-center justify-content-center"
+                  onClick={() => paginate(currentPage - 1)}
+                  style={{ width: "32px", height: "32px" }}
+                >
+                  <ChevronLeft size={16} />
+                </button>
+              </li>
+
+              {/* Números de página */}
+              {[...Array(totalPages)].map((_, index) => (
+                <li
+                  key={index}
+                  className={`page-item ${currentPage === index + 1 ? "active" : ""}`}
+                >
+                  <button
+                    className={`page-link border-0 rounded shadow-sm fw-bold d-flex align-items-center justify-content-center ${currentPage === index + 1 ? "text-white" : "text-muted bg-white"}`}
+                    style={{
+                      width: "32px",
+                      height: "32px",
+                      backgroundColor:
+                        currentPage === index + 1 ? MisColores.headerBlue : "",
+                    }}
+                    onClick={() => paginate(index + 1)}
+                  >
+                    {index + 1}
+                  </button>
+                </li>
+              ))}
+
+              {/* Botón Siguiente */}
+              <li
+                className={`page-item ${currentPage === totalPages ? "disabled" : ""}`}
+              >
+                <button
+                  className="page-link border-0 bg-light text-muted rounded shadow-sm d-flex align-items-center justify-content-center"
+                  onClick={() => paginate(currentPage + 1)}
+                  style={{ width: "32px", height: "32px" }}
+                >
+                  <ChevronRight size={16} />
+                </button>
+              </li>
+            </ul>
+          </nav>
+        </div>
+
+        {/* <ThemeProvider theme={theme}>
           <div className="d-flex align-items-center ">
             <Pagination
               count={countpage}
@@ -662,7 +976,7 @@ const ShowPrestamos = () => {
               </p>
             </div>
           </div>
-        </ThemeProvider>
+        </ThemeProvider> */}
       </Paper>
     </div>
   );

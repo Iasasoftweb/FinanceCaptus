@@ -1,57 +1,42 @@
 import React, { useState, useEffect } from "react";
-import { LuUser2 } from "react-icons/lu";
-import Favatar from "../../assets/img/favatar.png";
-import Mavatar from "../../assets/img/mavatar.png";
-import "./Menutop.css";
-import { useMediaQuery } from "@mui/material";
-import { Link, Navigate } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
+import { useMediaQuery, Avatar } from "@mui/material";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
+
+// Iconos
 import { PiUserCheckLight } from "react-icons/pi";
-import { Avatar } from "@mui/material";
 import { RxAvatar } from "react-icons/rx";
+import { BiLogOutCircle } from "react-icons/bi"; // Icono más profesional para logout
+
+import "./Menutop.css";
 
 function NavAvatar() {
-  const handleLogout = () => {
-    // Elimina el token del localStorage
-    localStorage.removeItem("token");
+  const navigate = useNavigate();
+  const isMobile = useMediaQuery("(max-width:600px)");
 
-    // Redirige al login
-    // navigate('/login',  { replace: true });
-
-    window.location.replace("/login");
-  };
+  // Estado inicial como null para validar carga
+  const [user, setUser] = useState(null);
 
   const userURI = "http://localhost:5000/usuarios/";
   const UriImg = "http://localhost:5000/uploadusers/";
 
-  const isMobile = useMediaQuery("(max-width:600px)");
-
-  const [nomUsuario, setNomUsuario] = useState(null);
-  const [tipoRol, setTipoRol] = useState(null);
-  const [userData, setUserData] = useState([]);
-  
-  const getNombreUsuario = (items) => {
-    setNomUsuario(items);
+  const handleLogout = (e) => {
+    e.preventDefault();
+    localStorage.removeItem("token");
+    localStorage.removeItem("userID");
+    window.location.replace("/login");
   };
 
-  const geTipoRol = (items) => {
-    setTipoRol(items);
-  };
   const getUser = async () => {
     try {
       const id = localStorage.getItem("userID");
-     
-      await axios.get(`${userURI}${id}`).then((response) => {
-        const dataUser = response.data;
-        const avata = dataUser.avata
-        setUserData(response.data);
-        
-        
-        
-      });
+      if (!id) return;
+
+      const response = await axios.get(`${userURI}${id}`);
+      // Asumimos que la API devuelve el objeto del usuario directamente o response.data[0]
+      setUser(Array.isArray(response.data) ? response.data[0] : response.data);
     } catch (error) {
-      console.error("Error en consulta :", error);
+      console.error("Error en consulta:", error);
     }
   };
 
@@ -59,85 +44,104 @@ function NavAvatar() {
     getUser();
   }, []);
 
+  // Si no hay usuario cargado aún, no renderizamos nada o un spinner
+  if (!user || isMobile) return null;
+
   return (
-    <div>
-      {isMobile ? (
-        <div></div>
-      ) : (
-        <div>
-          <li className="nav-item dropdown pe-3 list-unstyled lh-1">
-            <Link
-              to="/"
-              className="nav-link nav-profile d-flex align-content-center pe-0 text-decoration-none"
-              data-bs-toggle="dropdown"
+    <li className="nav-item dropdown">
+      {/* Botón del Nav (Trigger) */}
+      <Link
+        to="#"
+        className="nav-link nav-profile d-flex align-items-center pe-0"
+        data-bs-toggle="dropdown"
+        aria-expanded="false"
+      >
+        <Avatar
+          src={user.avata ? `${UriImg}${user.avata}` : ""}
+          sx={{
+            width: 38,
+            height: 38,
+            border: "2px solid #fff",
+            boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+          }}
+        >
+          <RxAvatar size={24} />
+        </Avatar>
+      </Link>
+
+      {/* Menú Desplegable Estilizado */}
+      <ul
+        className="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-3 mt-2 overflow-hidden compact-dropdown"
+        style={{ minWidth: "220px" }}
+      >
+        {/* Cabecera más delgada */}
+        <li
+          className="px-3 py-2 bg-light border-bottom "
+          style={{ lineHeight: "2em" }}
+        >
+          <div className="d-flex align-items-center">
+            <Avatar
+              src={user.avata ? `${UriImg}${user.avata}` : ""}
+              sx={{ width: 32, height: 32, mr: 2 }} // Avatar más pequeño
             >
-              {userData.map((item) => (
-                <div
-                  className="d-flex justify-content-center align-items-center"
-                  key={item.id}
-                >
-                  <Avatar
-                    src={`${UriImg}${item.avata}`}
-                    sx={{ width: 40, height: 40 }}
-                    className="mx-2"
-                  />
-                  {/* <span className="items fw-bold"> {item.nombreusuario}</span> */}
-                </div>
-              ))}
-            </Link>
-
-            <ul className="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile ">
-            <li className="dropdown-header  text-black">
-              {userData.map((item) => (
-               
-                 <div className="d-flex justify-content-end"  key={item.id}>
-                  
-                 <Avatar
-                    src={`${UriImg}${item.avata ? item.avata : <RxAvatar />}`}
-                    sx={{ width: 40, height: 40 }}
-                    className="mx-1"
-                  />
-                  <div>
-                    <span className=" fw-bold clFont  ">
-                      {item.nombreusuario}
-                    </span>
-                    <br></br>
-                    <span className="fw-light clFont">
-                      {item.tbrole.nombre}
-                    </span>
-                  </div>
-                 </div>
-                   ))}
-                </li>
-             
-
-              <li className="dropdown-divider"> </li>
-
-             
-              <Link
-                to="/usuarios"
-                className="dropdown-item items py-3 bg-light text-black-50"
+              <RxAvatar size={24} />
+            </Avatar>
+            <div className="lh-1">
+              {" "}
+              {/* lh-1 reduce el interlineado */}
+              <h6
+                className="mb-0 fw-bold text-dark"
+                style={{ fontSize: "14px" }}
               >
-                <span className="text-success fs-6 me-2">
-                  {" "}
-                  <PiUserCheckLight />
-                </span>
-                Usuarios del Sistema
-              </Link>
-
-              <Link
-                to="/logout"
-                onClick={handleLogout}
-                className="dropdown-item items py-3 text-black-50"
+                {user.nombreusuario}
+              </h6>
+              <small
+                className="text-primary fw-semibold text-uppercase"
+                style={{ fontSize: "9px", letterSpacing: "0.3px" }}
               >
-                <span className="bi bi-gear text-danger fs-6 me-2"></span>{" "}
-                Cerrar Sesión
-              </Link>
-            </ul>
-          </li>
-        </div>
-      )}
-    </div>
+                {user.tbrole?.nombre || "Usuario"}
+              </small>
+            </div>
+          </div>
+        </li>
+
+        {/* Opciones con menos altura */}
+        <li className="" style={{ lineHeight: "2em" }}>
+          <Link
+            to="/usuarios"
+            className="dropdown-item d-flex align-items-center py-1.5 px-3 transition-all"
+          >
+            <PiUserCheckLight className="text-success fs-6 me-2" />
+            <span className="text-secondary small">Usuarios del Sistema</span>
+          </Link>
+        </li>
+
+        <li style={{ lineHeight: "2em" }}>
+          <Link
+            to="/configuracion"
+            className="dropdown-item d-flex align-items-center py-1.5 px-3"
+          >
+            <i className="bi bi-gear text-muted fs-6 me-2"></i>
+            <span className="text-secondary small">Configuración</span>
+          </Link>
+        </li>
+
+        <li>
+          <hr className="dropdown-divider my-1 opacity-25" />
+        </li>
+
+        <li className="bg-body-tertiary" style={{ lineHeight: "2em" }}>
+          <Link
+            to="/logout"
+            onClick={handleLogout}
+            className="dropdown-item d-flex align-items-center py-2 px-3 text-danger fw-medium"
+          >
+            <BiLogOutCircle className="fs-6 me-2" />
+            <span className="small">Cerrar Sesión</span>
+          </Link>
+        </li>
+      </ul>
+    </li>
   );
 }
 
