@@ -1,10 +1,10 @@
-import db from '../database/db.js';
-import { DataTypes } from 'sequelize';
+import db from "../database/db.js";
+import { DataTypes } from "sequelize";
 
-import ClientesModel from './ClienteModels.js';
-import NotarioModels from './NotarioModels.js';
+import ClientesModel from "./ClienteModels.js";
+import NotarioModels from "./NotarioModels.js";
 
-const PrestaModels = db.define('tbprestamos', {
+const PrestaModels = db.define("tbprestamos", {
   id: {
     type: DataTypes.INTEGER,
     primaryKey: true,
@@ -15,6 +15,7 @@ const PrestaModels = db.define('tbprestamos', {
   referencia: { type: DataTypes.STRING },
   interes: { type: DataTypes.FLOAT },
   capital: { type: DataTypes.FLOAT },
+  montoprestar: { type: DataTypes.FLOAT },
   montointeres: { type: DataTypes.FLOAT },
   frecuencia: { type: DataTypes.STRING },
   mcuota: { type: DataTypes.FLOAT },
@@ -39,8 +40,8 @@ const PrestaModels = db.define('tbprestamos', {
   codeudoridentificador: { type: DataTypes.STRING },
   codeudortelefono: { type: DataTypes.STRING },
   codeudordireccion: { type: DataTypes.STRING },
-  estado: {type: DataTypes.STRING, defaultValue: 'VIGENTE'},
-  modo: { type: DataTypes.STRING, defaultValue: 'activo' },
+  estado: { type: DataTypes.STRING, defaultValue: "VIGENTE" },
+  modo: { type: DataTypes.STRING, defaultValue: "activo" },
   createdAt: {
     type: DataTypes.DATE,
     timestamps: false,
@@ -53,10 +54,10 @@ const PrestaModels = db.define('tbprestamos', {
   },
 });
 
-ClientesModel.hasMany(PrestaModels, { foreignKey: 'id' });
-PrestaModels.belongsTo(ClientesModel, { foreignKey: 'idclientes' });
+ClientesModel.hasMany(PrestaModels, { foreignKey: "id" });
+PrestaModels.belongsTo(ClientesModel, { foreignKey: "idclientes" });
 
-NotarioModels.hasMany(PrestaModels, { foreignKey: 'id' });
-PrestaModels.belongsTo(NotarioModels, { foreignKey: 'idnotario' });
+NotarioModels.hasMany(PrestaModels, { foreignKey: "id" });
+PrestaModels.belongsTo(NotarioModels, { foreignKey: "idnotario" });
 
 export default PrestaModels;

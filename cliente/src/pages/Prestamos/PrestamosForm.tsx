@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Modal from "@mui/material/Modal";
 import "../../App.css";
 import { Box } from "@mui/material";
@@ -92,7 +92,7 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
   const { dataCobrador } = useCobrador();
 
   const { data: DataEmpresa, isLoading } = useEmpresa();
-
+  console.log(DataEmpresa.gastolegal);
   const colors = {
     headerBlue: "#4A7BB7",
     teal: "#008B8B",
@@ -118,6 +118,7 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
       fecha: new Date().toISOString().split("T")[0],
       interes: localStorage.getItem("interesDefault"),
       capital: 0.0,
+      montoprestar: 0.0,
       frecuencia: "SEMANAL",
       mcuota: 0.0,
       cuotaspagadas: 0,
@@ -126,7 +127,7 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
       fechaprimer: new Date().toISOString().split("T")[0],
       fechaultimopago: new Date(),
       mora: 0.0,
-      gastoslegal: gastosLegales,
+      gastolegal: limpiarMonto(gastosLegales),
       comision: comision,
       seguro: 0.0,
       tcuota: 0,
@@ -140,10 +141,15 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
   const TCuotas = useWatch({ control, name: "tcuota" });
   const Mcuota = useWatch({ control, name: "mcuota" });
   const MMInteres = useWatch({ control, name: "interes" });
+  const Mcomision = useWatch({ control, name: "comision" });
+  const Mgastolegal = useWatch({ control, name: "gastolegal" });
+  const Mseguro = useWatch({ control, name: "seguro" });
 
   const handleChangeTab = (event: React.SyntheticEvent, newValue: string) => {
     setTabValue(newValue);
   };
+
+  console.log(capitalValue);
 
   const calculadoraInteres = () => {
     console.log(Mcuota * TCuotas);
@@ -285,24 +291,35 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
   };
 
   useEffect(() => {
-    const fechaActual = FechaCorta(new Date());
-
     ClienteData();
     setValue("gastoslegal", DataEmpresa.gastolegal);
     const usaMora = DataEmpresa?.aplicarmora === "SI";
-    console.log(usaMora);
     const valorMora = usaMora ? (DataEmpresa.modoporcentaje ?? 0) : 0;
     setValue("mora", valorMora);
     setValue("seguro", DataEmpresa?.seguro);
-
     setValue("capital", 0.0);
     setValue("interes", "0.0000");
   }, [idCliente, DataEmpresa]);
 
   useEffect(() => {
-    const capital1 = parseFloat(capital.toString().replace(/[^0-9.-]/g, ""));
+    const monto =
+      (DataEmpresa.gastolegal || 0) +
+      (Mseguro || 0) +
+      (Mcomision || 0) +
+      (capitalValue || 0) +
+      (limpiarMonto(Mgastolegal) || 0);
+    
+    const interesDefecto = DataEmpresa?.interesdefecto;
+    
+    const capital1 = monto;
+    
     const n = parseFloat(TCuotas);
     const p = parseFloat(Mcuota.toString().replace(/[^0-9.-]/g, ""));
+    
+    console.log(interesDefecto) 
+
+    setValue("montoprestar", monto);
+    //setValue("mcuota", (monto / interesDefecto))
 
     if (amortiza === "Cuota Fija" && capital1 > 0 && n > 0 && p > 0) {
       if (p * n > capital1) {
@@ -317,7 +334,17 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
         setValue("interes", "0.0000");
       }
     }
-  }, [capital, TCuotas, Mcuota, amortiza, Frecuencia]);
+  }, [
+    capital,
+    TCuotas,
+    Mcuota,
+    amortiza,
+    Frecuencia,
+    capitalValue,
+    Mseguro,
+    Mcomision,
+    Mgastolegal,
+  ]);
 
   const handleModalCuotas = () => {
     setIsModalCuotas(false);
@@ -632,7 +659,7 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
                 </InputField>
 
                 <InputField
-                  label="Monto a Prestar"
+                  label="Monto Capital"
                   icon={DollarSign}
                   required
                   col="col-md-3"
@@ -680,6 +707,153 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
                     )}
                   />
                 </InputField>
+
+                <InputField
+                  label="Monto a Prestar"
+                  icon={DollarSign}
+                  required
+                  col="col-md-3"
+                  readOnly
+                >
+                  <Controller
+                    name="montoprestar"
+                    control={control}
+                    rules={{
+                      required: "El monto es obligatorio",
+                      min: { value: 1, message: "El monto debe ser mayor a 0" },
+                    }}
+                    render={({
+                      field: { onChange, value, name, ref },
+                      fieldState: { error },
+                    }) => (
+                      <>
+                        <NumericFormat
+                          name={name}
+                          getInputRef={ref}
+                          value={value}
+                          thousandSeparator={true}
+                          prefix={"DOP "}
+                          decimalScale={2}
+                          fixedDecimalScale={true}
+                          className="form-control border-0 shadow-none fw-bold bg-success-subtle"
+                          placeholder="DOP 0.00"
+                          readOnly
+                          onValueChange={(values) => {
+                            onChange(values.floatValue || 0);
+                          }}
+                          style={{ fontSize: "0.8em" }}
+                        />
+
+                        {error && (
+                          <span
+                            className="text-danger ps-2"
+                            style={{ fontSize: "0.7em" }}
+                          >
+                            {error.message}
+                          </span>
+                        )}
+                      </>
+                    )}
+                  />
+                </InputField>
+
+                
+                <InputField
+                  label="Mora"
+                  icon={Percent}
+                  required
+                  col="col-md-3"
+                  readOnly
+                >
+                  <Controller
+                    name="mora"
+                    control={control}
+                    render={({ field: { onChange, value, name, ref } }) => (
+                      <NumericFormat
+                        name={name}
+                        getInputRef={ref}
+                        value={value}
+                        thousandSeparator={true}
+                        decimalScale={2}
+                        fixedDecimalScale={true}
+                        readOnly
+                        className="form-control border-0 shadow-none fw-bold bg-success-subtle"
+                        placeholder="0.00"
+                        onValueChange={(values) => {
+                          // Actualiza el formulario (esto es ligero y no pierde el foco)
+                          onChange(values.floatValue || 0);
+                        }}
+                        style={{ fontSize: "0.8em" }}
+                        disabled={DataEmpresa.aplicarmora ? false : true}
+                      />
+                    )}
+                  />
+                </InputField>
+
+                <InputField
+                  label="Gastos Legales"
+                  icon={Percent}
+                  required
+                  col="col-md-3"
+                  readOnly
+                >
+                  <Controller
+                    name="gastoslegal"
+                    control={control}
+                    render={({ field: { onChange, value, name, ref } }) => (
+                      <NumericFormat
+                        name={name}
+                        getInputRef={ref}
+                        value={value}
+                        thousandSeparator={true}
+                        prefix={"DOP "}
+                        decimalScale={2}
+                        fixedDecimalScale={true}
+                        className="form-control border-0 shadow-none fw-bold bg-success-subtle"
+                        placeholder="DOP 0.00"
+                        readOnly
+                        onValueChange={(values) => {
+                          // Actualiza el formulario (esto es ligero y no pierde el foco)
+                          onChange(values.floatValue || 0);
+                        }}
+                        style={{ fontSize: "0.8em" }}
+                      />
+                    )}
+                  />
+                </InputField>
+
+                <InputField
+                  label="Seguro"
+                  icon={Percent}
+                  required
+                  col="col-md-3"
+                  readOnly
+                >
+                  <Controller
+                    name="seguro"
+                    control={control}
+                    render={({ field: { onChange, value, name, ref } }) => (
+                      <NumericFormat
+                        name={name}
+                        getInputRef={ref}
+                        value={value}
+                        thousandSeparator={true}
+                        prefix={"DOP "}
+                        decimalScale={2}
+                        fixedDecimalScale={true}
+                        className="form-control border-0 shadow-none fw-bold bg-success-subtle"
+                        placeholder="DOP 0.00"
+                        readOnly
+                        onValueChange={(values) => {
+                          // Actualiza el formulario (esto es ligero y no pierde el foco)
+                          onChange(values.floatValue || 0);
+                        }}
+                        style={{ fontSize: "0.8em" }}
+                      />
+                    )}
+                  />
+                </InputField>
+
 
                 <InputField label="Cuotas" icon={List} required col="col-md-3">
                   <div>
@@ -824,93 +998,8 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
 
                 <SectionTitle title="Otros" />
 
-                <InputField label="Mora" icon={Percent} required col="col-md-3">
-                  <Controller
-                    name="mora"
-                    control={control}
-                    render={({ field: { onChange, value, name, ref } }) => (
-                      <NumericFormat
-                        name={name}
-                        getInputRef={ref}
-                        value={value}
-                        thousandSeparator={true}
-                        decimalScale={2}
-                        fixedDecimalScale={true}
-                        className="form-control border-0 shadow-none fw-bold"
-                        placeholder="0.00"
-                        onValueChange={(values) => {
-                          // Actualiza el formulario (esto es ligero y no pierde el foco)
-                          onChange(values.floatValue || 0);
-                        }}
-                        style={{ fontSize: "0.8em" }}
-                        disabled={DataEmpresa.aplicarmora ? false : true}
-                      />
-                    )}
-                  />
-                </InputField>
-
                 <InputField
-                  label="Gastos Legales"
-                  icon={Percent}
-                  required
-                  col="col-md-3"
-                >
-                  <Controller
-                    name="gastoslegal"
-                    control={control}
-                    render={({ field: { onChange, value, name, ref } }) => (
-                      <NumericFormat
-                        name={name}
-                        getInputRef={ref}
-                        value={value}
-                        thousandSeparator={true}
-                        prefix={"DOP "}
-                        decimalScale={2}
-                        fixedDecimalScale={true}
-                        className="form-control border-0 shadow-none fw-bold"
-                        placeholder="DOP 0.00"
-                        onValueChange={(values) => {
-                          // Actualiza el formulario (esto es ligero y no pierde el foco)
-                          onChange(values.floatValue || 0);
-                        }}
-                        style={{ fontSize: "0.8em" }}
-                      />
-                    )}
-                  />
-                </InputField>
-
-                <InputField
-                  label="Seguro"
-                  icon={Percent}
-                  required
-                  col="col-md-3"
-                >
-                  <Controller
-                    name="seguro"
-                    control={control}
-                    render={({ field: { onChange, value, name, ref } }) => (
-                      <NumericFormat
-                        name={name}
-                        getInputRef={ref}
-                        value={value}
-                        thousandSeparator={true}
-                        prefix={"DOP "}
-                        decimalScale={2}
-                        fixedDecimalScale={true}
-                        className="form-control border-0 shadow-none fw-bold"
-                        placeholder="DOP 0.00"
-                        onValueChange={(values) => {
-                          // Actualiza el formulario (esto es ligero y no pierde el foco)
-                          onChange(values.floatValue || 0);
-                        }}
-                        style={{ fontSize: "0.8em" }}
-                      />
-                    )}
-                  />
-                </InputField>
-
-                <InputField
-                  label="Comisión"
+                  label="Otros Cargos"
                   icon={Percent}
                   required
                   col="col-md-3"
@@ -929,6 +1018,7 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
                         fixedDecimalScale={true}
                         className="form-control border-0 shadow-none fw-bold"
                         placeholder="DOP 0.00"
+                        onChange={HandleComision}
                         onValueChange={(values) => {
                           // Actualiza el formulario (esto es ligero y no pierde el foco)
                           onChange(values.floatValue || 0);
