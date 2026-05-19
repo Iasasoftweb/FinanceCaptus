@@ -61,6 +61,7 @@ const ShowPrestamos = () => {
   const [tipoModal, setTipoModal] = useState(null); // 'pago' | 'detalle'
   const [notificacion, setNotificacion] = useState(null);
   const [montoIngresado, setMontoIngresado] = useState("");
+  const [reciboActivo, setReciboActivo] = useState(null);
 
   const UriData = "http://localhost:5000/prestamos/";
   const uriCuotas = "http://localhost:5000/cuotas/";
@@ -439,7 +440,7 @@ const ShowPrestamos = () => {
   }, [prestamoSeleccionado, montoIngresado]);
 
   // Aplicación definitiva del pago en el estado persistente
-  const procesarCobroDefinitivo = (e) => {
+ const procesarCobroDefinitivo = async (e) => {
     e.preventDefault();
     const monto = parseFloat(montoIngresado);
 
@@ -448,47 +449,62 @@ const ShowPrestamos = () => {
       return;
     }
 
-    setPrestamosData((prevData) => {
-      console.log(prevData)
-      return prevData.map((p) => {
-        console.log(p);
-        if (p.id === prestamoSeleccionado.id) {
-          // Ejecutar el motor distribuidor real y seguro
-          const { cuotasCalculadas } = simularDistribucionDePago(
-            p.cuotas,
-            monto,
-          );
-
-          // Re-asociar los nuevos montos pagados a las cuotas del estado persistido
-          const cuotasGuardadas = p.cuotas.map((original) => {
-            const calculada = cuotasCalculadas.find(
-              (c) => c.id === original.id,
-            );
-            return {
-              ...original,
-              montoPagado: calculada
-                ? calculada.nuevoMontoPagado
-                : original.montoPagado || 0,
-            };
-          });
-
-          return {
-            ...p,
-            cuotas: cuotasGuardadas,
-          };
-        }
-        return p;
+    try {
+      // Envía la petición a tu backend Express
+      const response = await fetch('http://localhost:5000/prestamos/cobrar', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          idprestamo: prestamoSeleccionado.id,
+          montoRecibido: monto
+        })
       });
-    });
 
-    mostrarAlerta(
-      `Cobro de $${monto.toLocaleString()} aplicado con éxito a ${prestamoSeleccionado.tcliente.nombre_completo}.`,
-    );
+      const data = await response.json();
+    
+      if (data.success) {
+        // 1. Sincronizar el cliente en tu estado de React con los datos reales recalculados por Sequelize
+        setPrestamosData((prevData) => {
+          return prevData.map((p) => {
+            if (p.id === data.prestamoActualizado.id) {
+              return {
+                ...p,
+                // Sincroniza los campos de amortización y las cuotas
+                cuotaspagas: data.prestamoActualizado.cuotaspagas,
+                montopagado: data.prestamoActualizado.montopagado,
+                capitalpendiente: data.prestamoActualizado.capitalpendiente,
+                balancependiente: data.prestamoActualizado.balancependiente,
+                estado: data.prestamoActualizado.estado,
+                cuotas: data.prestamoActualizado.cuotas
+              };
+            }
+            return p;
+          });
+        });
 
-    // Cerrar el modal y limpiar inputs
-    setPrestamoSeleccionado(null);
-    setTipoModal(null);
-    setMontoIngresado("");
+        // 2. Establecer el recibo activo devuelto del servidor para mostrar el modal de impresión
+        setReciboActivo({
+          ...data.recibo,
+          cliente: prestamoSeleccionado.tcliente?.nombre_completo || prestamoSeleccionado.cliente || "Cliente",
+          cedula: prestamoSeleccionado.tcliente.dni || "N/D",
+          zona: prestamoSeleccionado.tcliente.tbzona.nombreruta || "N/D"
+        });
+
+        mostrarAlerta(`Cobro registrado con éxito en la base de datos.`);
+        
+        // Cerrar modal de caja y limpiar input
+        setPrestamoSeleccionado(null);
+        setTipoModal(null);
+        setMontoIngresado("");
+      } else {
+        mostrarAlerta(`Error: ${data.message}`);
+      }
+    } catch (error) {
+      console.error("Error conectando con la API de Cobros:", error);
+      mostrarAlerta("Error de comunicación con el servidor.");
+    }
   };
 
   const restablecerPagosPrestamo = (prestamoId) => {
@@ -2052,6 +2068,12 @@ const ShowPrestamos = () => {
           </div>
         </div>
       )}
+
+      {notificacion && (
+  <div className="alert alert-success position-fixed top-0 end-0 m-3" style={{ zIndex: 1100 }}>
+    {notificacion}
+  </div>
+)}
     </div>
   );
 };
