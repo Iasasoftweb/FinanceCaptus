@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useMemo } from "react";
 import axios from "axios";
 import { Paper, Avatar } from "@mui/material";
 import { useNavigate } from "react-router-dom";
@@ -9,6 +9,7 @@ import "./prestamos.css";
 import { MisColores } from "../../components/stuff/MisColores.tsx";
 import {
   AlertCircle,
+  BanknoteArrowDown,
   Briefcase,
   ChevronLeft,
   ChevronRight,
@@ -21,6 +22,7 @@ import {
   RefreshCw,
   Search,
   TrendingUp,
+  TriangleAlert,
   Users,
   X,
 } from "lucide-react";
@@ -29,6 +31,16 @@ import { EmptyState } from "../../components/stuff/EmptyState.tsx";
 import { useEmpresa } from "../../hooks/useEmpresas.tsx";
 import { getBase64ImageFromURL } from "../../components/stuff/getBase64ImageFromURL.tsx";
 import { agregarImagenProporcional } from "../../components/stuff/agragarImagenProporcional.tsx";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import { ConsoleSqlOutlined } from "@ant-design/icons";
+import { usePrestamosCalculado } from "../../hooks/useDataPrestamos.tsx";
+import {
+  circleClasses,
+  circleStyle,
+} from "../../components/stuff/toolsComponents.tsx";
+import { simularDistribucionDePago } from "../../hooks/useSimularDistribucionDePago.tsx";
+import NoDatos from "../../components/stuff/NoDatos.tsx";
 
 const ShowPrestamos = () => {
   const [PrestamoData, setPrestamoData] = useState([]);
@@ -44,6 +56,11 @@ const ShowPrestamos = () => {
   const [checked, setChecked] = React.useState(true);
   const [idPrestamo, setIdPrestamos] = useState(0);
   const [verPDF, setVerPDF] = useState(false);
+  const [filtroEstado, setFiltroEstado] = useState("TODOS");
+  const [prestamoSeleccionado, setPrestamoSeleccionado] = useState(null);
+  const [tipoModal, setTipoModal] = useState(null); // 'pago' | 'detalle'
+  const [notificacion, setNotificacion] = useState(null);
+  const [montoIngresado, setMontoIngresado] = useState("");
 
   const UriData = "http://localhost:5000/prestamos/";
   const uriCuotas = "http://localhost:5000/cuotas/";
@@ -98,9 +115,6 @@ const ShowPrestamos = () => {
   };
 
   const exportarPDF = async () => {
-    const { jsPDF } = window.jspdf;
-    if (!jsPDF) return;
-
     const doc = new jsPDF();
     const fecha = new Date().toLocaleDateString();
 
@@ -179,7 +193,7 @@ const ShowPrestamos = () => {
     });
 
     // Generar la tabla en el PDF
-    doc.autoTable({
+    autoTable(doc, {
       columns,
       body: rows,
       startY: 45,
@@ -234,68 +248,120 @@ const ShowPrestamos = () => {
         axios.get(`${uriCuotas}`),
         axios.get(`${uriRutas}`),
       ]);
-      setDataPrestamo(PrestamosRes.data);
-      setPrestamoData(PrestamosRes.data);
+
+      const allPrestamos = Array.isArray(PrestamosRes.data)
+        ? PrestamosRes.data
+        : [];
+      setDataPrestamo(allPrestamos);
+      setPrestamoData(allPrestamos);
       setCuotas(CuotasRes.data);
       setDataRutas(RutasRes.data);
-      setTotalItems(PrestamosRes.data.length);
-      setIdPrestamos(PrestamosRes.data.id);
+      // setTotalItems(allPrestamos.data.length);
+      // setIdPrestamos(allPrestamos.data.id);
     } catch (error) {
       console.error(error);
     }
   };
 
-  const getCuotasInfo = (prestamoId) => {
-    const hoy = new Date();
-    const prestamoCuotas = cuotas.filter((c) => c.idprestamo === prestamoId);
+  useEffect(() => {
+    Datos();
 
-    const pendientes = prestamoCuotas.filter((item) => {
-      const pagada =
-        typeof item.pagada === "string"
-          ? item.pagada.toLowerCase() === "true"
-          : Boolean(item.pagada);
-      return !pagada;
-    });
+    const script = document.createElement("script");
+    script.src =
+      "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";
+    script.async = true;
+    document.body.appendChild(script);
 
-    const cPagadas = prestamoCuotas.filter((item) => {
-      const pagada =
-        typeof item.pagada === "string"
-          ? item.pagada.toLowerCase() === "true"
-          : Boolean(item.pagada);
-      return pagada;
-    });
+    //  inputRef.current.focus();
+  }, []);
 
-    const atrasadas = pendientes.filter((item) => {
-      const fechaVencimiento = new Date(item.fechavencimiento);
-      return fechaVencimiento < hoy;
-    });
-
-    const BalancePendiente = atrasadas.reduce(
-      (sum, cuotas) => sum + parseFloat(cuotas.montocuota || 0),
-      0,
-    );
-    const BalancePagado = atrasadas.reduce(
-      (sum, cuota) =>
-        sum +
-        parseFloat(
-          cuota.capitalpagado + cuota.interespagado + cuota.morapago || 0,
-        ),
-      0,
-    );
-
-    const BalanceMora = atrasadas.reduce(
-      (sum, cuota) => sum + parseFloat(cuota.montomora || 0),
-      0,
+  const prestamosConCuotas = DataPrestamo.map((prestamo) => {
+    const cuotasDelPrestamo = cuotas.filter(
+      (cuota) => cuota.idprestamo === prestamo.id,
     );
 
     return {
-      pendientes: pendientes.length,
-      atrasadas: atrasadas.length,
-      cuotaspagada: cPagadas.length,
-      montovencido: BalancePendiente,
-      Balancepagado: BalancePagado,
-      Balancemora: BalanceMora,
+      ...prestamo,
+      cuotas: cuotasDelPrestamo,
     };
+  });
+
+  const [prestamosData, setPrestamosData] = useState(prestamosConCuotas)
+  
+  const fechaHoySimulada = new Date("2026-05-17T12:00:00");
+  const { prestamos: misPrestamos, totalesTabla } = usePrestamosCalculado(
+    prestamosConCuotas,
+    fechaHoySimulada,
+  );
+
+ 
+  // Clonar y asegurar que cada cuota contenga sus propiedades de balance calculadas internamente
+  const cuotasCalculadas = cuotas.map((c) => {
+    const montoTotalCuota = (c.montocapital || 0) + (c.montointeres || 0);
+    const montoPagadoActual = c.montopagado || 0;
+    const saldoPendienteActual = Math.max(
+      0,
+      montoTotalCuota - montoPagadoActual,
+    );
+
+    return {
+      ...c,
+      montoTotalCuota,
+      nuevoMontoPagado: montoPagadoActual,
+      nuevoSaldoPendiente: saldoPendienteActual,
+    };
+  });
+
+  const togglePagoCuota = (prestamoId, cuotaId) => {
+    setPrestamoSeleccionado((prevData) => {
+      return prevData.map((p) => {
+        if (p.id === prestamoId) {
+          return {
+            ...p,
+            cuotas: p.cuotas.map((c) => {
+              if (c.id === cuotaId) {
+                const nuevoEstado = !c.pagada;
+                mostrarAlerta(
+                  `Cuota #${c.numero} de ${p.cliente} marcada como ${nuevoEstado ? "PAGADA" : "PENDIENTE"}`,
+                );
+                return { ...c, pagada: nuevoEstado };
+              }
+              return c;
+            }),
+          };
+        }
+
+        return p;
+      });
+    });
+
+    setTimeout(() => {
+      setPrestamoSeleccionado((prev) => {
+        const actualizado = misPrestamos.find((p) => p.id === prestamoId);
+        if (!actualizado) return prev;
+        const cuotas = actualizado.cuotas.map((c) =>
+          c.id === cuotaId ? { ...c, pagada: !c.pagada } : c,
+        );
+        const cuotasAtrasadas = cuotas.filter(
+          (c) => !c.pagada && new Date(c.fechavencimiento) < fechaHoySimulada,
+        );
+        return {
+          ...actualizado,
+          cuotas,
+          cuotasPagadas: cuotas.filter((c) => c.pagada).length,
+          cuotasTotales: cuotas.length,
+          cantidadAtrasadas: cuotasAtrasadas.length,
+          estado: cuotasAtrasadas.length > 0 ? "ATRASADO" : "AL DÍA",
+          montoCapitalTotal: cuotas.reduce((acc, c) => acc + c.montoCapital, 0),
+          interesTotal: cuotas.reduce((acc, c) => acc + c.montoInteres, 0),
+        };
+      });
+    }, 50);
+  };
+
+  const mostrarAlerta = (mensaje) => {
+    setNotificacion(mensaje);
+    setTimeout(() => setNotificacion(null), 4000);
   };
 
   const ModoFiltrar = (condiciones) => {
@@ -325,35 +391,7 @@ const ShowPrestamos = () => {
     console.log(event.target.checked);
   };
 
-  const PrintPDF = () => {
-    window.open("../Prestamos/Pdfs/reportePrestmos", "_blank");
-  };
-
-  useEffect(() => {
-    Datos();
-
-    const script = document.createElement("script");
-    script.src =
-      "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";
-    script.async = true;
-    document.body.appendChild(script);
-
-    const scriptJspdf = document.createElement("script");
-    scriptJspdf.src =
-      "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js";
-    scriptJspdf.async = true;
-    document.body.appendChild(scriptJspdf);
-
-    const scriptAutotable = document.createElement("script");
-    scriptAutotable.src =
-      "https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js";
-    scriptAutotable.async = true;
-    document.body.appendChild(scriptAutotable);
-
-    //  inputRef.current.focus();
-  }, []);
-
-  const filtrar = PrestamoData.filter((item) => {
+  const filtrar = misPrestamos.filter((item) => {
     const coincideZona = searchZonas
       ? item.tcliente.tbzona.nombrerutas
           .toLowerCase()
@@ -366,12 +404,15 @@ const ShowPrestamos = () => {
         .toLowerCase()
         .includes(search.toLowerCase()) ||
       item.tcliente.dni.toLowerCase().includes(search.toLowerCase());
-
+    // 3. Filtro por Estado (ACTIVO  E INACTIVO)
     const coincideActivo = checked
       ? item.modo.toLowerCase() === "activo"
       : item.modo.toLowerCase() === "inactivo";
+    // 4. Filtro por Estado de Cuota (Todos, Atrasados y Pagada)
+    const cumpleEstado =
+      filtroEstado === "TODOS" || item.estado === filtroEstado;
 
-    return coincideZona && coincideBusqueda && coincideActivo;
+    return coincideZona && coincideBusqueda && coincideActivo && cumpleEstado;
   });
 
   const indexOfLastItem = currentPage * itemsPerPage;
@@ -379,13 +420,101 @@ const ShowPrestamos = () => {
   const currentPrestamos = filtrar.slice(indexOfFirstItem, indexOfLastItem);
   const totalPages = Math.ceil(filtrar.length / itemsPerPage);
 
+  // Encontrar la cuota activa más antigua con saldo pendiente
+  const primerCuotaPendiente = useMemo(() => {
+    if (!prestamoSeleccionado) return null;
+    return prestamoSeleccionado.cuotas.find((c) => c.pagada === "false");
+  }, [prestamoSeleccionado]);
+
+  
+  
+  // Simulación en tiempo real de cómo se distribuirá el pago a medida que se digita
+  const simulacionPago = useMemo(() => {
+    if (!prestamoSeleccionado || !montoIngresado) return null;
+
+    const monto = parseFloat(montoIngresado);
+
+    if (isNaN(monto) || monto <= 0) return null;
+    return simularDistribucionDePago(prestamoSeleccionado.cuotas, monto);
+  }, [prestamoSeleccionado, montoIngresado]);
+
+  // Aplicación definitiva del pago en el estado persistente
+  const procesarCobroDefinitivo = (e) => {
+    e.preventDefault();
+    const monto = parseFloat(montoIngresado);
+
+    if (isNaN(monto) || monto <= 0) {
+      mostrarAlerta("Por favor, ingrese un monto válido de pago.");
+      return;
+    }
+
+    setPrestamosData((prevData) => {
+      console.log(prevData)
+      return prevData.map((p) => {
+        console.log(p);
+        if (p.id === prestamoSeleccionado.id) {
+          // Ejecutar el motor distribuidor real y seguro
+          const { cuotasCalculadas } = simularDistribucionDePago(
+            p.cuotas,
+            monto,
+          );
+
+          // Re-asociar los nuevos montos pagados a las cuotas del estado persistido
+          const cuotasGuardadas = p.cuotas.map((original) => {
+            const calculada = cuotasCalculadas.find(
+              (c) => c.id === original.id,
+            );
+            return {
+              ...original,
+              montoPagado: calculada
+                ? calculada.nuevoMontoPagado
+                : original.montoPagado || 0,
+            };
+          });
+
+          return {
+            ...p,
+            cuotas: cuotasGuardadas,
+          };
+        }
+        return p;
+      });
+    });
+
+    mostrarAlerta(
+      `Cobro de $${monto.toLocaleString()} aplicado con éxito a ${prestamoSeleccionado.tcliente.nombre_completo}.`,
+    );
+
+    // Cerrar el modal y limpiar inputs
+    setPrestamoSeleccionado(null);
+    setTipoModal(null);
+    setMontoIngresado("");
+  };
+
+  const restablecerPagosPrestamo = (prestamoId) => {
+    setPrestamosData((prev) =>
+      prev.map((p) => {
+        if (p.id === prestamoId) {
+          return {
+            ...p,
+            cuotas: p.cuotas.map((c) => ({ ...c, montoPagado: 0 })),
+          };
+        }
+        return p;
+      }),
+    );
+    mostrarAlerta("Historial de pagos restablecido para simular de nuevo.");
+    setPrestamoSeleccionado(null);
+    setTipoModal(null);
+  };
+
   const totalCapital = currentPrestamos.reduce((sum, prestamos) => {
-    const capital = Number(prestamos.capital) || 0;
+    const capital = Number(prestamos.montoprestar) || 0;
     return sum + capital;
   }, 0);
 
   const totalInteres = currentPrestamos.reduce((sum, prestamos) => {
-    const capital = Number(prestamos.montointeres) || 0;
+    const capital = parseFloat(prestamos.montointeres) || 0;
     return sum + capital;
   }, 0);
 
@@ -712,6 +841,26 @@ const ShowPrestamos = () => {
                 </label>
               </div>
             </div>
+
+            <div className="col-12 col-md-12 d-flex justify-content-end">
+              <div className="btn-group rounded-3" role="group">
+                {["TODOS", "AL DÍA", "ATRASADO"].map((est) => (
+                  <button
+                    key={est}
+                    type="button"
+                    onClick={() => setFiltroEstado(est)}
+                    className={`btn btn-sm px-3 fw-bold text-uppercase ${
+                      filtroEstado === est
+                        ? "btn-warning"
+                        : "btn-light text-muted border-0"
+                    }`}
+                    style={{ fontSize: "11px" }}
+                  >
+                    {est}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
 
@@ -760,6 +909,14 @@ const ShowPrestamos = () => {
                     >
                       Zona
                     </th>
+
+                    <th
+                      className="py-3 border-0 text-muted text-uppercase fw-bold"
+                      style={{ fontSize: "0.7rem" }}
+                    >
+                      Atrasadas
+                    </th>
+
                     <th
                       className="py-3 border-0 text-muted text-uppercase fw-bold text-center"
                       style={{ fontSize: "0.7rem" }}
@@ -775,115 +932,162 @@ const ShowPrestamos = () => {
                   </tr>
                 </thead>
                 <tbody className="">
-                  {currentPrestamos.map((item, idx) => (
-                    <tr key={idx}>
-                      <td className="ps-4">
-                        <div className="d-flex align-items-center gap-3">
-                          <div
-                            className="rounded-circle bg-light d-flex align-items-center justify-content-center text-primary fw-bold"
+                  {currentPrestamos.map((item, idx) => {
+                    return (
+                      <tr key={idx}>
+                        <td className="ps-4">
+                          <div className="d-flex align-items-center gap-3">
+                            <div
+                              className="rounded-circle bg-light d-flex align-items-center justify-content-center text-primary fw-bold"
+                              style={{
+                                width: "40px",
+                                height: "40px",
+                                fontSize: "14px",
+                              }}
+                            >
+                              <Avatar
+                                src={`${UrisImg}${item?.tcliente?.imgFOTOS}`}
+                                sx={{ width: 40, height: 40 }}
+                              />
+                            </div>
+                            <div>
+                              <div className="fw-bold text-dark">
+                                {item?.tcliente?.nombre_completo}
+                              </div>
+                              <div
+                                className="text-muted"
+                                style={{ fontSize: "0.75rem" }}
+                              >
+                                {item.tcliente.dni}
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="text-center">
+                          <span
+                            className="badge text-dark fw-medium rounded-pill px-3 py-2 border"
+                            style={{ fontSize: "0.9em" }}
+                          >
+                            {item.frecuencia}
+                          </span>
+                        </td>
+                        <td className="text-end fw-bold text-dark">
+                          $
+                          {item.montoprestar.toLocaleString("en-US", {
+                            minimumFractionDigits: 2,
+                          })}
+                        </td>
+                        <td className="text-end text-muted">
+                          $
+                          {item.interes.toLocaleString("en-US", {
+                            minimumFractionDigits: 2,
+                          })}
+                        </td>
+                        <td className="text-center">
+                          <span
+                            className="border px-2 py-1 rounded-pill fw-bold text-secondary"
+                            style={{ fontSize: "0.75rem" }}
+                          >
+                            {item.cuotasPagadas} / {item.tcuota}
+                          </span>
+                        </td>
+                        <td>
+                          <span
+                            className="text-muted fw-bold"
+                            style={{ fontSize: "0.8em" }}
+                          >
+                            {item.tcliente.tbzona.nombrerutas}
+                          </span>
+                        </td>
+
+                        <td>
+                          <span className="text-muted fw-medium">
+                            <span className={circleClasses} style={circleStyle}>
+                              {item.cantidadAtrasadas}
+                            </span>
+                            <span
+                              className="px-1"
+                              style={{ fontSize: "0.8em" }}
+                            >
+                              Cuotas
+                            </span>
+                          </span>
+                        </td>
+
+                        <td className="text-center">
+                          <span
+                            className={`badge rounded-pill text-uppercase px-3 py-1.5 fw-bold  ${
+                              item.estado === "AL DÍA"
+                                ? "bg-success-subtle text-success border border-success-subtle"
+                                : "bg-danger-subtle text-danger border border-danger-subtle"
+                            }`}
                             style={{
-                              width: "40px",
-                              height: "40px",
-                              fontSize: "14px",
+                              fontSize: "10px",
+                              letterSpacing: "0.05em",
                             }}
                           >
-                            <Avatar
-                              src={`${UrisImg}${item?.tcliente?.imgFOTOS}`}
-                              sx={{ width: 40, height: 40 }}
-                            />
-                          </div>
-                          <div>
-                            <div className="fw-bold text-dark">
-                              {item?.tcliente?.nombre_completo}
-                            </div>
-                            <div
-                              className="text-muted"
-                              style={{ fontSize: "0.75rem" }}
-                            >
-                              {item.tcliente.dni}
-                            </div>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="text-center">
-                        <span
-                          className="badge text-dark fw-medium rounded-pill px-3 py-2 border"
-                          style={{ fontSize: "0.9em" }}
-                        >
-                          {item.frecuencia}
-                        </span>
-                      </td>
-                      <td className="text-end fw-bold text-dark">
-                        $
-                        {item.capital.toLocaleString("en-US", {
-                          minimumFractionDigits: 2,
-                        })}
-                      </td>
-                      <td className="text-end text-muted">
-                        $
-                        {item.interes.toLocaleString("en-US", {
-                          minimumFractionDigits: 2,
-                        })}
-                      </td>
-                      <td className="text-center">
-                        <span
-                          className="border px-2 py-1 rounded-pill fw-bold text-secondary"
-                          style={{ fontSize: "0.75rem" }}
-                        >
-                          {item.cuotaspagas} / {item.tcuota}
-                        </span>
-                      </td>
-                      <td>
-                        <span className="text-muted fw-medium">
-                          {item.tcliente.tbzona.nombrerutas}
-                        </span>
-                      </td>
-                      <td className="text-center">
-                        {item.vencido > 0 ? (
-                          <div className="d-inline-block">
-                            <span className="badge bg-danger bg-opacity-10 text-danger rounded-pill px-3 mb-1 fw-bold">
-                              VENCIDO
-                            </span>
-                            <div
-                              className="fw-bold text-danger"
-                              style={{ fontSize: "0.75rem" }}
-                            >
-                              ${item.vencido.toLocaleString()}
-                            </div>
-                          </div>
-                        ) : (
-                          <span className="badge bg-success bg-opacity-10 text-success rounded-pill px-3 fw-bold">
-                            AL DÍA
+                            {item.estado}
                           </span>
-                        )}
-                      </td>
-                      <td className="pe-4 text-center">
-                        <div className="btn-group">
-                          <button
-                            className="btn btn-outline-primary btn-sm border-0 rounded-3 p-1 mx-1"
-                            title="Cobrar"
-                          >
-                            <HandCoins size={18} />
-                          </button>
-                          <button
-                            className="btn btn-outline-secondary btn-sm border-0 rounded-3 p-1 mx-1"
-                            title="Ver"
-                            onClick={() => handleDetail(item.id)}
-                          >
-                            <Eye size={18} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                        </td>
+                        <td className="pe-4 text-center">
+                          <div className="btn-group">
+                            <button
+                              className="btn btn-outline-primary btn-sm border-0 rounded-3 p-1 mx-1"
+                              title="Cobrar"
+                              onClick={() => {
+                                setPrestamoSeleccionado(item);
+                                setTipoModal("pagodirecto");
+                                setMontoIngresado("");
+                              }}
+                            >
+                              <HandCoins size={18} />
+                            </button>
+                            <button
+                              className="btn btn-outline-secondary btn-sm border-0 rounded-3 p-1 mx-1"
+                              title="Ver"
+                              onClick={() => {
+                                setPrestamoSeleccionado(item);
+                                setTipoModal("detalle");
+                              }}
+                            >
+                              <Eye size={18} />
+                            </button>
+                            <button
+                              className="btn btn-outline-primary btn-sm border-0 rounded-3 p-1 mx-1"
+                              title="Ver"
+                              onClick={() => {
+                                setPrestamoSeleccionado(item);
+                                setTipoModal("pago");
+                              }}
+                            >
+                              <BanknoteArrowDown size={18} />
+                            </button>
+
+                            <button
+                              className="btn btn-outline-success btn-sm border-0 rounded-3 p-1 mx-1"
+                              title="Ver"
+                              // onClick={''}
+                            >
+                              <Printer size={18} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
                 <tfoot className="table-light fw-bold border-top">
                   <tr>
                     <td colSpan="2" className="text-end ps-4 py-3 text-muted">
                       TOTALES
                     </td>
-                    <td className="text-end py-3 text-primary">$108,000.00</td>
-                    <td className="text-end py-3 text-dark">$5,982.28</td>
+                    <td className="text-end py-3 text-primary">
+                      ${formatCurrency(totalCapital)}
+                    </td>
+                    <td className="text-end py-3 text-dark">
+                      {formatCurrency(totalInteres)}
+                    </td>
+                    <td colSpan="4"></td>
                     <td colSpan="4"></td>
                   </tr>
                 </tfoot>
@@ -958,35 +1162,898 @@ const ShowPrestamos = () => {
             </ul>
           </nav>
         </div>
+      </Paper>
 
-        {/* <ThemeProvider theme={theme}>
-          <div className="d-flex align-items-center ">
-            <Pagination
-              count={countpage}
-              size="large"
-              page={page}
-              color="secundary"
-              onChange={handlePageChance}
-            />
+      {/* ==========================================
+          MODAL: REGISTRAR PAGO (BOOTSTRAP STYLE)
+          ========================================== */}
+      {prestamoSeleccionado && tipoModal === "pago" && (
+        <div
+          className="d-flex align-items-center justify-content-center"
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100vw",
+            height: "100vh",
+            backgroundColor: "rgba(15, 23, 42, 0.65)",
+            backdropFilter: "blur(4px)",
+            zIndex: 1055,
+          }}
+        >
+          <div
+            className="shadow overflow-hidden bg-white"
+            style={{
+              width: "900px", // El ancho que siempre quisiste
+              maxWidth: "92vw", // Seguro para laptops pequeñas y celulares
+              borderRadius: "20px", // Mantiene tus bordes redondeados originales
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
+            {/* HEADER */}
+            <div
+              className="bg-dark text-white p-4 d-block"
+              style={{
+                borderTopLeftRadius: "20px",
+                borderTopRightRadius: "20px",
+              }}
+            >
+              <div className="d-flex justify-content-between align-items-start">
+                <div>
+                  <h5 className="modal-title fw-bold text-white mb-1">
+                    Cobrar Cuota -{" "}
+                    {prestamoSeleccionado.tcliente.nombre_completo}
+                  </h5>
+                  <p
+                    className="text-white-50 mb-0"
+                    style={{ fontSize: "0.85em" }}
+                  >
+                    Cédula: {prestamoSeleccionado.tcliente.dni}
+                    {" | "}
+                    Zona: {prestamoSeleccionado.tcliente.tbzona.nombrerutas}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  className="btn-close btn-close-white"
+                  onClick={() => {
+                    setPrestamoSeleccionado(null);
+                    setTipoModal(null);
+                  }}
+                ></button>
+              </div>
 
-            <div>
-              <p className="clFont m-auto">
-                Total de Clientes :{" "}
-                <span className="fw-bolder">{totalItems} </span>
-              </p>
+              {/* PROGRESS */}
+              <div className="mt-4">
+                <div className="d-flex justify-content-between mb-2">
+                  <small className="text-white-50 fw-semibold">
+                    Progreso de Amortización
+                  </small>
+                  <small className="text-white-50 fw-semibold">
+                    {prestamoSeleccionado.cuotasPagadas} de{" "}
+                    {prestamoSeleccionado.cuotasTotales} cuotas
+                  </small>
+                </div>
+                <div
+                  className="progress bg-secondary"
+                  style={{ height: "8px" }}
+                >
+                  <div
+                    className="progress-bar bg-success"
+                    role="progressbar"
+                    style={{
+                      width: `${
+                        (prestamoSeleccionado.cuotasPagadas /
+                          prestamoSeleccionado.cuotasTotales) *
+                        100
+                      }%`,
+                    }}
+                  ></div>
+                </div>
+              </div>
+            </div>
+
+            {/* BODY */}
+            <div
+              className="modal-body bg-light p-4"
+              style={{ maxHeight: "450px", overflowY: "auto" }}
+            >
+              <h6
+                className="text-muted fw-bold mb-3"
+                style={{
+                  letterSpacing: "1px",
+                  fontSize: "0.8em",
+                }}
+              >
+                CALENDARIO Y COBROS
+              </h6>
+
+              <div className="d-flex flex-column gap-3 w-100">
+                {prestamoSeleccionado.cuotas.map((cuota) => {
+                  const esVencida =
+                    cuota.pagada === "false" &&
+                    new Date(cuota.fechavencimiento) < fechaHoySimulada;
+
+                  return (
+                    <div
+                      key={cuota.id}
+                      className={`card shadow-sm border w-100 ${
+                        cuota.pagada === "true"
+                          ? "bg-success-subtle border-success-subtle"
+                          : esVencida
+                            ? "bg-danger-subtle border-danger-subtle"
+                            : "bg-white border-light"
+                      }`}
+                      style={{ borderRadius: "14px" }}
+                    >
+                      <div className="card-body p-3">
+                        <div className="row align-items-center g-3">
+                          {/* INFO */}
+                          <div className="col-12 col-sm-8">
+                            <div className="d-flex align-items-center gap-2 mb-2">
+                              <span
+                                className="fw-bold text-dark"
+                                style={{ fontSize: "14px" }}
+                              >
+                                Cuota #{cuota.numcuota}
+                              </span>
+
+                              {cuota.pagada === "true" ? (
+                                <span
+                                  className="badge bg-success-subtle text-success border border-success-subtle"
+                                  style={{ fontSize: "9px" }}
+                                >
+                                  PAGADA
+                                </span>
+                              ) : esVencida ? (
+                                <span
+                                  className="badge bg-danger-subtle text-danger border border-danger-subtle"
+                                  style={{ fontSize: "9px" }}
+                                >
+                                  ATRASADA / MORA
+                                </span>
+                              ) : (
+                                <span
+                                  className="badge bg-light text-muted border"
+                                  style={{ fontSize: "9px" }}
+                                >
+                                  PENDIENTE
+                                </span>
+                              )}
+                            </div>
+
+                            <div
+                              className="row text-muted"
+                              style={{ fontSize: "12px" }}
+                            >
+                              <div className="col-4">
+                                Capital:{" "}
+                                <strong className="text-dark">
+                                  $
+                                  {cuota.montocapital.toLocaleString("es-DO", {
+                                    minimumFractionDigits: 2,
+                                  })}
+                                </strong>
+                              </div>
+
+                              <div className="col-4">
+                                Interés:{" "}
+                                <strong className="text-dark">
+                                  $
+                                  {cuota.montointeres.toLocaleString("es-DO", {
+                                    minimumFractionDigits: 2,
+                                  })}
+                                </strong>
+                              </div>
+
+                              <div className="col-4">
+                                Monto Cuota:{" "}
+                                <strong className="text-dark">
+                                  $
+                                  {cuota.montocuota.toLocaleString("es-DO", {
+                                    minimumFractionDigits: 2,
+                                  })}
+                                </strong>
+                              </div>
+
+                              <div className="col-12 mt-2">
+                                Vencimiento:{" "}
+                                <strong className="text-dark">
+                                  {new Date(
+                                    cuota.fechavencimiento,
+                                  ).toLocaleDateString("es-DO", {
+                                    year: "numeric",
+                                    month: "long",
+                                    day: "numeric",
+                                  })}
+                                </strong>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* BOTON */}
+                          <div className="col-12 col-sm-4 text-sm-end">
+                            <button
+                              onClick={() =>
+                                togglePagoCuota(
+                                  prestamoSeleccionado.id,
+                                  cuota.id,
+                                )
+                              }
+                              className={`btn btn-sm fw-bold px-3 w-100 ${
+                                cuota.pagada === "true"
+                                  ? "btn-outline-success bg-white"
+                                  : esVencida
+                                    ? "btn-danger"
+                                    : "btn-dark"
+                              }`}
+                              style={{
+                                borderRadius: "50px",
+                                fontSize: "11px",
+                              }}
+                            >
+                              {cuota.pagada ? "Anular Pago" : "Pagar Cuota"}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* FOOTER */}
+            <div className="modal-footer bg-white border-0 p-3">
+              <button
+                type="button"
+                className="btn btn-light text-secondary px-4"
+                style={{ borderRadius: "12px" }}
+                onClick={() => {
+                  setPrestamoSeleccionado(null);
+                  setTipoModal(null);
+                }}
+              >
+                Cerrar Ventana
+              </button>
             </div>
           </div>
-        </ThemeProvider> */}
-      </Paper>
+        </div>
+      )}
+      {/* ==========================================
+          MODAL: DETALLE DEL PRESTAMO 
+          ========================================== */}
+
+      {prestamoSeleccionado && tipoModal === "detalle" && (
+        <div
+          className="modal fade show d-block"
+          tabIndex="-1"
+          style={{
+            backgroundColor: "rgba(0,0,0,0.5)",
+          }}
+        >
+          <div className="modal-dialog modal-dialog-centered ">
+            <div className="modal-content border-1 shadow">
+              {/* HEADER */}
+              <div className="modal-header">
+                <h5 className="modal-title fw-semibold">
+                  Detalle del Préstamo
+                </h5>
+
+                <button
+                  type="button"
+                  className="btn-close"
+                  style={{ fontSize: "0.9em" }}
+                  onClick={() => {
+                    setPrestamoSeleccionado(null);
+                    setTipoModal(null);
+                  }}
+                ></button>
+              </div>
+
+              {/* BODY */}
+              <div className="modal-body">
+                {/* CLIENTE */}
+
+                <div className="row g-3 mb-4">
+                  <div className="card border-0 bg-light ">
+                    <div className="card-body text-start">
+                      <div className="d-flex align-items-center">
+                        <img
+                          src={`${UrisImg}${prestamoSeleccionado.tcliente.imgFOTOS}`}
+                          alt=""
+                          className="rounded-circle border shadow-sm me-3"
+                          style={{
+                            width: "70px",
+                            height: "70px",
+                            objectFit: "cover",
+                          }}
+                        />
+
+                        <div className="">
+                          <p className="mb-1 fw-bold">
+                            {prestamoSeleccionado.tcliente.nombre_completo}
+                          </p>
+
+                          <p
+                            className="text-muted mb-1"
+                            style={{ fontSize: "0.8em" }}
+                          >
+                            <span className=" fw-semibold">Cédula:</span>{" "}
+                            {prestamoSeleccionado.tcliente.dni}
+                          </p>
+
+                          <p
+                            className="text-muted mb-0"
+                            style={{ fontSize: "0.8em" }}
+                          >
+                            <strong>Zona:</strong>{" "}
+                            {prestamoSeleccionado.tcliente.tbzona.nombrerutas}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* TARJETAS
+                <div className="row g-3 mb-4">
+                  <div className="col-md-6">
+                    <div className="card border-1 border">
+                      <div className="card-body text-start">
+                        <p className="text-muted lh-1" style={{fontSize:'0.8em'}}>CAPITAL</p>
+                        <p className="fw-bold lh-1"  style={{fontSize:'1em'}}>
+                          $
+                          {prestamoSeleccionado.montoprestar.toLocaleString(
+                            "es-DO",
+                            {
+                              minimumFractionDigits: 2,
+                            },
+                          )}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="col-md-6">
+                    <div className="card">
+                      <div className="card-body">
+                        <small className="text-muted">INTERÉS</small>
+
+                        <h5 className="fw-bold mt-2">
+                          $
+                          {prestamoSeleccionado.montointeres.toLocaleString(
+                            "es-DO",
+                            {
+                              minimumFractionDigits: 2,
+                            },
+                          )}
+                        </h5>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="col-md-6">
+                    <div className="card">
+                      <div className="card-body">
+                        <small className="text-muted">FRECUENCIA</small>
+
+                        <h5 className="fw-bold text-primary mt-2">
+                          {prestamoSeleccionado.frecuencia}
+                        </h5>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="col-md-6">
+                    <div className="card">
+                      <div className="card-body">
+                        <small className="text-muted">ESTADO</small>
+
+                        <h5
+                          className={`fw-bold mt-2 ${
+                            prestamoSeleccionado.estado === "AL DÍA"
+                              ? "text-success"
+                              : "text-danger"
+                          }`}
+                        >
+                          {prestamoSeleccionado.estado}
+                        </h5>
+                      </div>
+                    </div>
+                  </div>
+                </div> */}
+
+                <div className="row g-3 mb-4">
+                  <div className="col-12 col-md-6">
+                    <div className="card shadow-sm border border-1 bg-light w-100">
+                      <div className="card-body p-3 text-start">
+                        <p
+                          className="text-muted fw-semibold mb-1"
+                          style={{ fontSize: "0.7em" }}
+                        >
+                          CAPITAL
+                        </p>
+
+                        <h6 className="fw-bold mb-0">
+                          $
+                          {prestamoSeleccionado.montoprestar.toLocaleString(
+                            "es-DO",
+                            {
+                              minimumFractionDigits: 2,
+                            },
+                          )}
+                        </h6>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="col-12 col-md-6">
+                    <div className="card shadow-sm border border-1 bg-light w-100">
+                      <div className="card-body p-3 text-start">
+                        <p
+                          className="text-muted fw-semibold mb-1"
+                          style={{ fontSize: "0.7em" }}
+                        >
+                          INTERÉS
+                        </p>
+
+                        <h6 className="fw-bold mb-0">
+                          $
+                          {prestamoSeleccionado.montointeres.toLocaleString(
+                            "es-DO",
+                            {
+                              minimumFractionDigits: 2,
+                            },
+                          )}
+                        </h6>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="col-12 col-md-6">
+                    <div className="card shadow-sm border border-1 bg-light w-100">
+                      <div className="card-body p-3 text-start">
+                        <p
+                          className="text-muted fw-semibold mb-1"
+                          style={{ fontSize: "0.7em" }}
+                        >
+                          FRECUENCIA
+                        </p>
+
+                        <h6 className="fw-bold text-primary mb-0">
+                          {prestamoSeleccionado.frecuencia}
+                        </h6>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="col-12 col-md-6">
+                    <div className="card shadow-sm border border-1 bg-light w-100 ">
+                      <div className="card-body p-3 text-start">
+                        <p
+                          className="text-muted fw-semibold mb-1"
+                          style={{ fontSize: "0.7em" }}
+                        >
+                          ESTADO
+                        </p>
+
+                        <h6
+                          className={`fw-bold mb-0 ${
+                            prestamoSeleccionado.estado === "AL DÍA"
+                              ? "text-success"
+                              : "text-danger"
+                          }`}
+                        >
+                          {prestamoSeleccionado.estado}
+                        </h6>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                {/* ALERTA */}
+
+                {prestamoSeleccionado.cantidadAtrasadas > 0 && (
+                  <div
+                    className="alert alert-danger border-danger rounded-4 d-flex align-items-start gap-3 p-3"
+                    role="alert"
+                  >
+                    {/* ICONO */}
+                    <div className="flex-shrink-0">
+                      <TriangleAlert size={20} color={MisColores.actionRed} />
+                    </div>
+
+                    {/* CONTENIDO */}
+                    <div>
+                      <p className="fw-bold mb-1" style={{ fontSize: "0.9em" }}>
+                        ¡Alerta de cuotas atrasadas!
+                      </p>
+
+                      <p
+                        className="mb-0 text-dark"
+                        style={{ fontSize: "0.8em" }}
+                      >
+                        Este préstamo tiene{" "}
+                        <strong>
+                          {prestamoSeleccionado.cantidadAtrasadas}
+                        </strong>{" "}
+                        cuota(s) vencida(s) sin pagar. Se recomienda aplicar
+                        políticas de mora o contactar al cliente de inmediato.
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* FOOTER */}
+              <div className="modal-footer">
+                <button
+                  className="btn btn-dark"
+                  onClick={() => {
+                    setPrestamoSeleccionado(null);
+                    setTipoModal(null);
+                  }}
+                  style={{ fontSize: "0.8em" }}
+                >
+                  Cerrar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* =========================================================================
+          MODAL INTERACTIVO DE PAGO AVANZADO (CON DISTRIBUCIÓN EN CASCADA)
+          ========================================================================= */}
+      {prestamoSeleccionado && tipoModal === "pagodirecto" && (
+        <div
+          className="d-flex align-items-center justify-content-center"
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100vw",
+            height: "100vh",
+            backgroundColor: "rgba(15, 23, 42, 0.65)",
+            backdropFilter: "blur(4px)",
+            zIndex: 1055,
+          }}
+        >
+          <div className="modal-dialog modal-dialog-centered modal-lg">
+            <div className="modal-content border-0 shadow-lg rounded-4 overflow-hidden w-100">
+              <div className="modal-header bg-dark text-white p-4 border-0 d-flex flex-column align-items-stretch ">
+                <div className="d-flex justify-content-between align-items-start">
+                  <div className="text-start">
+                    <h3 className="modal-title h5 fw-bold text-white">
+                      Registrar Cobro Avanzado
+                    </h3>
+                    <p className="small text-white-50 mb-0">
+                      Cliente: {prestamoSeleccionado.tcliente.nombre_completo} |{" "}
+                      {prestamoSeleccionado.tcliente.dni}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    className="btn-close btn-close-white"
+                    onClick={() => {
+                      setPrestamoSeleccionado(null);
+                      setTipoModal(null);
+                    }}
+                  ></button>
+                </div>
+
+                {/* Resumen Deudas */}
+                <div className="row g-2 mt-3 text-white text-start">
+                  <div className="col-6 col-sm-4">
+                    <span className="d-block small text-white-50">
+                      Deuda Total Préstamo:
+                    </span>
+                    <strong className="fs-6">
+                      $
+                      {prestamoSeleccionado.saldoPendienteTotal.toLocaleString(
+                        "es-DO",
+                        { minimumFractionDigits: 2 },
+                      )}
+                    </strong>
+                  </div>
+                  <div className="col-6 col-sm-4 border-start border-secondary">
+                    <span className="d-block small text-white-50">
+                      Frecuencia de Pago:
+                    </span>
+                    <strong className="fs-6 text-uppercase">
+                      {prestamoSeleccionado.frecuencia}
+                    </strong>
+                  </div>
+                  <div className="col-12 col-sm-4 border-start border-secondary mt-2 mt-sm-0">
+                    <span className="d-block small text-white-50">
+                      Amortización Real:
+                    </span>
+                    <strong className="fs-6">
+                      {prestamoSeleccionado.cuotasPagadas} /{" "}
+                      {prestamoSeleccionado.cuotasTotales} Cuotas
+                    </strong>
+                  </div>
+                </div>
+              </div>
+
+              {/* Formulario e Inteligencia de Aplicación de Cobro */}
+              <form onSubmit={procesarCobroDefinitivo}>
+                <div className="modal-body p-4 bg-light text-start">
+                  <div className="row g-4">
+                    {/* Panel de Entrada de Dinero */}
+                    <div className="col-12 col-lg-5">
+                      <div className="card border-0 shadow-sm rounded-3 p-3 bg-white h-100 w-100">
+                        <h4 className="h6 fw-bold text-secondary mb-3">
+                          Monto Recibido
+                        </h4>
+
+                        <div className="input-group mb-3">
+                          <span className="input-group-text bg-light fw-bold">
+                            $
+                          </span>
+                          <input
+                            type="number"
+                            step="0.01"
+                            className="form-control form-control-lg fw-bold text-primary"
+                            placeholder="0.00"
+                            value={montoIngresado}
+                            onChange={(e) => setMontoIngresado(e.target.value)}
+                            autoFocus
+                            required
+                          />
+                        </div>
+
+                        {/* Botones de Cobro Rápido */}
+                        <div className="d-grid gap-2 mb-3">
+                          {primerCuotaPendiente && (
+                            <button
+                              type="button"
+                              className="btn btn-xs btn-outline-secondary text-start"
+                              style={{ fontSize: "11px" }}
+                              onClick={() =>
+                                setMontoIngresado(
+                                  primerCuotaPendiente.montopendiente,
+                                )
+                              }
+                            >
+                              👉{" "}
+                              <strong>
+                                Saldar cuota #{primerCuotaPendiente.numcuota}{" "}
+                                actual:
+                              </strong>{" "}
+                              $
+                              {primerCuotaPendiente.montopendiente.toLocaleString(
+                                "es-DO",
+                                { minimumFractionDigits: 2 },
+                              )}
+                            </button>
+                          )}
+
+                          <button
+                            type="button"
+                            className="btn btn-xs btn-outline-secondary text-start"
+                            style={{ fontSize: "11px" }}
+                            onClick={() =>
+                              setMontoIngresado(
+                                prestamoSeleccionado.saldoPendienteTotal.toFixed(
+                                  2,
+                                ),
+                              )
+                            }
+                          >
+                            💸 <strong>Saldar Préstamo Completo:</strong> $
+                            {prestamoSeleccionado.saldoPendienteTotal.toLocaleString(
+                              "es-DO",
+                              { minimumFractionDigits: 2 },
+                            )}
+                          </button>
+                        </div>
+
+                        <div
+                          className="bg-light p-2 rounded-3 text-muted"
+                          style={{ fontSize: "11px" }}
+                        >
+                          <span className="fw-bold d-block text-dark mb-1">
+                            💡 Reglas de Distribución:
+                          </span>
+                          <ul className="ps-3 mb-0">
+                            <li>
+                              Montos inferiores al saldo cuota actúan como{" "}
+                              <strong>Abono</strong>.
+                            </li>
+                            <li>
+                              Montos exactos <strong>Saldan</strong> la cuota.
+                            </li>
+                            <li>
+                              Montos superiores <strong>Derraman</strong> el
+                              remanente en las siguientes cuotas en orden
+                              consecutivo.
+                            </li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Panel de Simulación Visual de Cascada en Tiempo Real */}
+                    <div className="col-12 col-lg-7">
+                      <div className="card border-0 shadow-sm rounded-3 p-3 bg-white h-100 w-100">
+                        <h4 className="h6 fw-bold text-secondary mb-3">
+                          Cuotas Afectas en el Pago
+                        </h4>
+
+                        {!simulacionPago ? (
+                          <div className="d-flex flex-column align-items-center justify-content-center text-muted h-100 py-4">
+                            <span className="small">
+                              <EmptyState
+                                title=""
+                                subtitle="Debes seleccionar un monto a pagar."
+                              />
+                            </span>
+                          </div>
+                        ) : (
+                          <div>
+                            {/* Resultados de la Simulación */}
+                            <div className="mb-3">
+                              <span className="badge bg-primary text-uppercase mb-2">
+                                Distribución del Pago
+                              </span>
+                              <div className="p-3 bg-primary-subtle rounded-3 text-primary border border-primary-subtle">
+                                <ul className="list-unstyled mb-0 small">
+                                  {simulacionPago.operacionesEfectuadas.map(
+                                    (op, idx) => (
+                                      <li
+                                        key={idx}
+                                        className="mb-1 d-flex gap-2"
+                                      >
+                                        <span>✔️</span>
+                                        <span>
+                                          {op.tipo === "SALDAR" ? (
+                                            <span>
+                                              <strong>
+                                                Saldada Cuota #{op.numero}
+                                              </strong>{" "}
+                                              por valor de{" "}
+                                              <strong>
+                                                $
+                                                {op.montoAplicado.toLocaleString(
+                                                  "es-DO",
+                                                  { minimumFractionDigits: 2 },
+                                                )}
+                                              </strong>
+                                            </span>
+                                          ) : (
+                                            <span>
+                                              <strong>
+                                                Abonada Cuota #{op.numero}
+                                              </strong>{" "}
+                                              con{" "}
+                                              <strong>
+                                                $
+                                                {op.montoAplicado.toLocaleString(
+                                                  "es-DO",
+                                                  { minimumFractionDigits: 2 },
+                                                )}
+                                              </strong>
+                                            </span>
+                                          )}
+                                        </span>
+                                      </li>
+                                    ),
+                                  )}
+                                  {simulacionPago.sobranteFavor > 0 && (
+                                    <li className="mt-2 text-danger fw-bold">
+                                      🚨 El pago excede el préstamo. Sobrante a
+                                      favor del cliente: $
+                                      {simulacionPago.sobranteFavor.toLocaleString(
+                                        "es-DO",
+                                        { minimumFractionDigits: 2 },
+                                      )}
+                                    </li>
+                                  )}
+                                </ul>
+                              </div>
+                            </div>
+
+                            {/* Vista Previa de la Lista Amortizada */}
+                            <span
+                              className="text-muted d-block font-monospace mb-2"
+                              style={{ fontSize: "10px" }}
+                            >
+                              Resultado Proyectado de Cuotas Clave:
+                            </span>
+                            <div
+                              className="d-flex flex-column gap-2 overflow-y-auto"
+                              style={{ maxHeight: "150px" }}
+                            >
+                              {simulacionPago.cuotasCalculadas.map((cuota) => {
+                                // Solo mostrar cuotas afectadas por el pago o la siguiente pendiente
+                                const fueAfectada =
+                                  cuota.nuevoMontoPagado !==
+                                  (cuota.montoPagado || 0);
+                                const esPendienteActual =
+                                  cuota.id === primerCuotaPendiente?.id;
+                                if (!fueAfectada && !esPendienteActual)
+                                  return null;
+
+                                const porcentaje =
+                                  (cuota.nuevoMontoPagado /
+                                    cuota.montoTotalCuota) *
+                                  100;
+
+                                return (
+                                  <div
+                                    key={cuota.id}
+                                    className="p-2 border rounded bg-light"
+                                    style={{ fontSize: "11px" }}
+                                  >
+                                    <div className="d-flex justify-content-between font-weight-bold mb-1">
+                                      <span>
+                                        Cuota #{cuota.numcuota} (
+                                        {cuota.fechavencimiento})
+                                      </span>
+                                      <span
+                                        className={
+                                          cuota.nuevoSaldoPendiente === 0
+                                            ? "text-success fw-bold"
+                                            : "text-primary font-weight-bold"
+                                        }
+                                      >
+                                        {cuota.nuevoSaldoPendiente === 0
+                                          ? "Saldará"
+                                          : `Abonará (Resta $${cuota.nuevoSaldoPendiente.toFixed(2)})`}
+                                      </span>
+                                    </div>
+                                    <div
+                                      className="progress"
+                                      style={{ height: "4px" }}
+                                    >
+                                      <div
+                                        className="progress-bar bg-primary"
+                                        role="progressbar"
+                                        style={{ width: `${porcentaje}%` }}
+                                      ></div>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="modal-footer bg-white border-top-0 p-3">
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-light text-secondary rounded-3 px-3 py-2"
+                    onClick={() => {
+                      setPrestamoSeleccionado(null);
+                      setTipoModal(null);
+                    }}
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    className="btn btn-sm btn-primary rounded-3 px-4 py-2"
+                    disabled={
+                      !montoIngresado || parseFloat(montoIngresado) <= 0
+                    }
+                  >
+                    Confirmar Cobro e Imprimir Recibo
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
 export default ShowPrestamos;
-const theme = createTheme({
-  palette: {
-    secondary: {
-      main: "#0EB582",
-    },
-  },
-});

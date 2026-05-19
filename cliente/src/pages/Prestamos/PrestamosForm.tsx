@@ -82,6 +82,7 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
   const [Seguro, setSeguro] = useState(0.0);
   const [Referencia, setReferencia] = useState("");
   const [comision, setComision] = useState(0);
+  const [montoPrestar, setMontoPrestar] = useState(0);
   const [coDeudorNombre, setCoDeudorNombre] = useState("");
   const [coDeudorIdentificador, setcoDeudorIdentificador] = useState("");
   const [coDeudorDireccion, setcoDeudorDireccion] = useState("");
@@ -92,7 +93,7 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
   const { dataCobrador } = useCobrador();
 
   const { data: DataEmpresa, isLoading } = useEmpresa();
-  console.log(DataEmpresa.gastolegal);
+
   const colors = {
     headerBlue: "#4A7BB7",
     teal: "#008B8B",
@@ -127,9 +128,9 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
       fechaprimer: new Date().toISOString().split("T")[0],
       fechaultimopago: new Date(),
       mora: 0.0,
-      gastolegal: limpiarMonto(gastosLegales),
-      comision: comision,
-      seguro: 0.0,
+      gastoslegal: limpiarMonto(gastosLegales) || 0,
+      comision: limpiarMonto(comision) || 0,
+      seguro: limpiarMonto(Seguro) || 0,
       tcuota: 0,
       codeudornombre: coDeudorNombre,
       codeudoridentificador: coDeudorIdentificador,
@@ -142,7 +143,7 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
   const Mcuota = useWatch({ control, name: "mcuota" });
   const MMInteres = useWatch({ control, name: "interes" });
   const Mcomision = useWatch({ control, name: "comision" });
-  const Mgastolegal = useWatch({ control, name: "gastolegal" });
+  const Mgastolegal = useWatch({ control, name: "gastoslegal" });
   const Mseguro = useWatch({ control, name: "seguro" });
 
   const handleChangeTab = (event: React.SyntheticEvent, newValue: string) => {
@@ -290,6 +291,11 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
     setCapital(e.target.value);
   };
 
+  const handleMontoPrestar = (e) => {
+    console.log(e.target.value);
+    setMontoPrestar(e.target.value);
+  };
+
   useEffect(() => {
     ClienteData();
     setValue("gastoslegal", DataEmpresa.gastolegal);
@@ -308,16 +314,15 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
       (Mcomision || 0) +
       (capitalValue || 0) +
       (limpiarMonto(Mgastolegal) || 0);
-    
+
     const interesDefecto = DataEmpresa?.interesdefecto;
-    
+
     const capital1 = monto;
-    
+
     const n = parseFloat(TCuotas);
     const p = parseFloat(Mcuota.toString().replace(/[^0-9.-]/g, ""));
-    
-    console.log(interesDefecto) 
 
+   
     setValue("montoprestar", monto);
     //setValue("mcuota", (monto / interesDefecto))
 
@@ -362,6 +367,7 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
   };
 
   const onSubmit = async (data: FieldValues) => {
+   
     const requestData = [
       {
         idclientes: idCliente,
@@ -369,6 +375,7 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
         referencia: Referencia,
         interes: MMInteres,
         capital: capitalValue,
+        montoprestar: montoPrestar,
         montointeres: capitalValue * (Number(MMInteres) / 100),
         frecuencia: Frecuencia,
         mcuota: Mcuota,
@@ -379,9 +386,9 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
         fechaprimer: dayjs(fechaPrimerPago),
         fechaultimopago: null,
         mora: 0.0,
-        gastoslegal: limpiarMonto(gastosLegales),
+        gastoslegal: data.gastoslegal,
         comision: limpiarMonto(comision),
-        seguro: limpiarMonto(Seguro),
+        seguro: data.seguro,
         idcobrador: Cobrador,
         tcuota: TCuotas,
         idcompany: idCompany,
@@ -713,7 +720,6 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
                   icon={DollarSign}
                   required
                   col="col-md-3"
-                  readOnly
                 >
                   <Controller
                     name="montoprestar"
@@ -737,11 +743,11 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
                           fixedDecimalScale={true}
                           className="form-control border-0 shadow-none fw-bold bg-success-subtle"
                           placeholder="DOP 0.00"
-                          readOnly
+                          style={{ fontSize: "0.8em" }}
                           onValueChange={(values) => {
+                            setMontoPrestar(values.floatValue || 0);
                             onChange(values.floatValue || 0);
                           }}
-                          style={{ fontSize: "0.8em" }}
                         />
 
                         {error && (
@@ -757,7 +763,6 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
                   />
                 </InputField>
 
-                
                 <InputField
                   label="Mora"
                   icon={Percent}
@@ -795,7 +800,7 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
                   icon={Percent}
                   required
                   col="col-md-3"
-                  readOnly
+                
                 >
                   <Controller
                     name="gastoslegal"
@@ -811,9 +816,9 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
                         fixedDecimalScale={true}
                         className="form-control border-0 shadow-none fw-bold bg-success-subtle"
                         placeholder="DOP 0.00"
-                        readOnly
+                
                         onValueChange={(values) => {
-                          // Actualiza el formulario (esto es ligero y no pierde el foco)
+                          setgastosLegales(values.floatValue || 0)
                           onChange(values.floatValue || 0);
                         }}
                         style={{ fontSize: "0.8em" }}
@@ -827,7 +832,7 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
                   icon={Percent}
                   required
                   col="col-md-3"
-                  readOnly
+                  
                 >
                   <Controller
                     name="seguro"
@@ -843,10 +848,14 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
                         fixedDecimalScale={true}
                         className="form-control border-0 shadow-none fw-bold bg-success-subtle"
                         placeholder="DOP 0.00"
-                        readOnly
+                     
                         onValueChange={(values) => {
+
+                           console.log(values.floatValue);
                           // Actualiza el formulario (esto es ligero y no pierde el foco)
+                          setSeguro(values.floatValue || 0)
                           onChange(values.floatValue || 0);
+                          
                         }}
                         style={{ fontSize: "0.8em" }}
                       />
@@ -854,6 +863,36 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
                   />
                 </InputField>
 
+                <InputField
+                  label="Otros Cargos"
+                  icon={Percent}
+                  required
+                  col="col-md-3"
+                >
+                  <Controller
+                    name="comision"
+                    control={control}
+                    render={({ field: { onChange, value, name, ref } }) => (
+                      <NumericFormat
+                        name={name}
+                        getInputRef={ref}
+                        value={value}
+                        thousandSeparator={true}
+                        prefix={"DOP "}
+                        decimalScale={2}
+                        fixedDecimalScale={true}
+                        className="form-control border-0 shadow-none fw-bold"
+                        placeholder="DOP 0.00"
+                        
+                        onValueChange={(values) => {
+                          setComision(values.floatValue || 0); // Actualiza el formulario (esto es ligero y no pierde el foco)
+                          onChange(values.floatValue || 0);
+                        }}
+                        style={{ fontSize: "0.8em" }}
+                      />
+                    )}
+                  />
+                </InputField>
 
                 <InputField label="Cuotas" icon={List} required col="col-md-3">
                   <div>
@@ -981,6 +1020,7 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
                   </select>
                 </InputField>
 
+                <SectionTitle title="Otros" />
                 <InputField
                   label="Nombre de Ruta"
                   icon={Map}
@@ -993,39 +1033,6 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
                     readOnly
                     className="form-control border-0 shadow-none bg-info-subtle fw-bold text-primary"
                     style={{ fontSize: "0.8em" }}
-                  />
-                </InputField>
-
-                <SectionTitle title="Otros" />
-
-                <InputField
-                  label="Otros Cargos"
-                  icon={Percent}
-                  required
-                  col="col-md-3"
-                >
-                  <Controller
-                    name="comision"
-                    control={control}
-                    render={({ field: { onChange, value, name, ref } }) => (
-                      <NumericFormat
-                        name={name}
-                        getInputRef={ref}
-                        value={value}
-                        thousandSeparator={true}
-                        prefix={"DOP "}
-                        decimalScale={2}
-                        fixedDecimalScale={true}
-                        className="form-control border-0 shadow-none fw-bold"
-                        placeholder="DOP 0.00"
-                        onChange={HandleComision}
-                        onValueChange={(values) => {
-                          // Actualiza el formulario (esto es ligero y no pierde el foco)
-                          onChange(values.floatValue || 0);
-                        }}
-                        style={{ fontSize: "0.8em" }}
-                      />
-                    )}
                   />
                 </InputField>
 

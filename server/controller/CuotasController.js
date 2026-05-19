@@ -1,63 +1,53 @@
-import CuotasModels from '../models/CuotasModels.js';
-import PrestaModels from '../models/PrestaModels.js';
+import CuotasModels from "../models/CuotasModels.js";
+import PrestaModels from "../models/PrestaModels.js";
 
 export const GetCuota = async (req, res) => {
   const { idprestamo } = req.params;
   const idNumerico = Number(idprestamo);
-
-
   try {
-    
     const cuotas = await CuotasModels.findAll({
       where: { idprestamo: idNumerico },
-      // logging: (sql) => {
-      //   console.log('4. SQL generado:', sql);
-      // },
-      // raw: true // Solo para debugging
+      order: [['numcuota', 'ASC']],
     });
-   
+
     if (!cuotas || cuotas.length === 0) {
-      console.log('6. No se encontraron resultados');
+      console.log("6. No se encontraron resultados");
       // Verificación adicional
       const existePrestamo = await PrestaModels.findByPk(idNumerico);
-      console.log('7. Existe préstamo?', !!existePrestamo);
-      
+      console.log("7. Existe préstamo?", !!existePrestamo);
+
       return res.status(404).json({
         success: false,
         message: `No se encontraron cuotas para el préstamo ${idNumerico}`,
-        existe_prestamo: !!existePrestamo
+        existe_prestamo: !!existePrestamo,
       });
     }
 
-    console.log('8. Resultado final:', JSON.stringify(cuotas, null, 2));
+    console.log("8. Resultado final:", JSON.stringify(cuotas, null, 2));
     res.json({ success: true, data: cuotas });
-
   } catch (error) {
-    console.error('9. Error completo:', error);
+    console.error("9. Error completo:", error);
     res.status(500).json({
       success: false,
-      message: 'Error en el servidor',
+      message: "Error en el servidor",
       error_details: {
         message: error.message,
-        stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
-      }
+        stack: process.env.NODE_ENV === "development" ? error.stack : undefined,
+      },
     });
   } finally {
-    console.log('=== DEBUG FIN ===');
+    console.log("=== DEBUG FIN ===");
   }
 };
 
 const validateCuotas = (cuotas) => {
-
   const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
 
-  return cuotas.every(cuota =>
-    dateRegex.test(cuota.fechapago) &&
-    dateRegex.test(cuota.fechavencimiento)
+  return cuotas.every(
+    (cuota) =>
+      dateRegex.test(cuota.fechapago) && dateRegex.test(cuota.fechavencimiento),
   );
 };
-
-
 
 export const getCuotas = async (req, res) => {
   try {
@@ -65,14 +55,14 @@ export const getCuotas = async (req, res) => {
     res.json(cuotas);
   } catch (error) {
     res.json({ message: error.message });
-  };
+  }
 };
 
 export const postCuotas = async (req, res) => {
   try {
     const cuotas = req.body;
     if (!validateCuotas(cuotas)) {
-      return res.status(400).json({ message: 'Formato de fecha incorrecto' });
+      return res.status(400).json({ message: "Formato de fecha incorrecto" });
     }
     await CuotasModels.bulkCreate(cuotas);
     res.json({ message: "!Registro Creado Correctamente" });
@@ -91,7 +81,7 @@ export const putCuotas = async (req, res) => {
   } catch (error) {
     res.json({ message: error.message });
   }
-}; 
+};
 
 export const deleteCuotas = async (req, res) => {
   try {
