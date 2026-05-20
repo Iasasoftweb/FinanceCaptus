@@ -41,6 +41,7 @@ import {
 } from "../../components/stuff/toolsComponents.tsx";
 import { simularDistribucionDePago } from "../../hooks/useSimularDistribucionDePago.tsx";
 import NoDatos from "../../components/stuff/NoDatos.tsx";
+import { ModalReciboComprobante } from "../../components/Recibos/ModalReciboComprobante.tsx";
 
 const ShowPrestamos = () => {
   const [PrestamoData, setPrestamoData] = useState([]);
@@ -59,7 +60,7 @@ const ShowPrestamos = () => {
   const [filtroEstado, setFiltroEstado] = useState("TODOS");
   const [prestamoSeleccionado, setPrestamoSeleccionado] = useState(null);
   const [tipoModal, setTipoModal] = useState(null); // 'pago' | 'detalle'
-  const [notificacion, setNotificacion] = useState(null);
+  const [notificacion, setNotificacion] = useState("");
   const [montoIngresado, setMontoIngresado] = useState("");
   const [reciboActivo, setReciboActivo] = useState(null);
 
@@ -287,15 +288,14 @@ const ShowPrestamos = () => {
     };
   });
 
-  const [prestamosData, setPrestamosData] = useState(prestamosConCuotas)
-  
+  const [prestamosData, setPrestamosData] = useState(prestamosConCuotas);
+
   const fechaHoySimulada = new Date("2026-05-17T12:00:00");
   const { prestamos: misPrestamos, totalesTabla } = usePrestamosCalculado(
     prestamosConCuotas,
     fechaHoySimulada,
   );
 
- 
   // Clonar y asegurar que cada cuota contenga sus propiedades de balance calculadas internamente
   const cuotasCalculadas = cuotas.map((c) => {
     const montoTotalCuota = (c.montocapital || 0) + (c.montointeres || 0);
@@ -322,6 +322,7 @@ const ShowPrestamos = () => {
             cuotas: p.cuotas.map((c) => {
               if (c.id === cuotaId) {
                 const nuevoEstado = !c.pagada;
+
                 mostrarAlerta(
                   `Cuota #${c.numero} de ${p.cliente} marcada como ${nuevoEstado ? "PAGADA" : "PENDIENTE"}`,
                 );
@@ -427,8 +428,6 @@ const ShowPrestamos = () => {
     return prestamoSeleccionado.cuotas.find((c) => c.pagada === "false");
   }, [prestamoSeleccionado]);
 
-  
-  
   // Simulación en tiempo real de cómo se distribuirá el pago a medida que se digita
   const simulacionPago = useMemo(() => {
     if (!prestamoSeleccionado || !montoIngresado) return null;
@@ -440,7 +439,7 @@ const ShowPrestamos = () => {
   }, [prestamoSeleccionado, montoIngresado]);
 
   // Aplicación definitiva del pago en el estado persistente
- const procesarCobroDefinitivo = async (e) => {
+  const procesarCobroDefinitivo = async (e) => {
     e.preventDefault();
     const monto = parseFloat(montoIngresado);
 
@@ -451,20 +450,21 @@ const ShowPrestamos = () => {
 
     try {
       // Envía la petición a tu backend Express
-      const response = await fetch('http://localhost:5000/prestamos/cobrar', {
-        method: 'POST',
+      const response = await fetch("http://localhost:5000/prestamos/cobrar", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           idprestamo: prestamoSeleccionado.id,
-          montoRecibido: monto
-        })
+          montoRecibido: monto,
+        }),
       });
 
       const data = await response.json();
-    
+
       if (data.success) {
+        console.log(data)
         // 1. Sincronizar el cliente en tu estado de React con los datos reales recalculados por Sequelize
         setPrestamosData((prevData) => {
           return prevData.map((p) => {
@@ -477,7 +477,7 @@ const ShowPrestamos = () => {
                 capitalpendiente: data.prestamoActualizado.capitalpendiente,
                 balancependiente: data.prestamoActualizado.balancependiente,
                 estado: data.prestamoActualizado.estado,
-                cuotas: data.prestamoActualizado.cuotas
+                cuotas: data.prestamoActualizado.cuotas,
               };
             }
             return p;
@@ -487,13 +487,16 @@ const ShowPrestamos = () => {
         // 2. Establecer el recibo activo devuelto del servidor para mostrar el modal de impresión
         setReciboActivo({
           ...data.recibo,
-          cliente: prestamoSeleccionado.tcliente?.nombre_completo || prestamoSeleccionado.cliente || "Cliente",
+          cliente:
+            prestamoSeleccionado.tcliente?.nombre_completo ||
+            prestamoSeleccionado.tcliente?.nombre_completo ||
+            "Cliente",
           cedula: prestamoSeleccionado.tcliente.dni || "N/D",
-          zona: prestamoSeleccionado.tcliente.tbzona.nombreruta || "N/D"
+          zona: prestamoSeleccionado.tcliente.tbzona.nombreruta || "N/D",
         });
 
         mostrarAlerta(`Cobro registrado con éxito en la base de datos.`);
-        
+
         // Cerrar modal de caja y limpiar input
         setPrestamoSeleccionado(null);
         setTipoModal(null);
@@ -2070,10 +2073,33 @@ const ShowPrestamos = () => {
       )}
 
       {notificacion && (
-  <div className="alert alert-success position-fixed top-0 end-0 m-3" style={{ zIndex: 1100 }}>
-    {notificacion}
-  </div>
-)}
+        <div
+          className="position-fixed top-0 end-0 m-3 bg-dark text-white shadow-lg rounded-pill d-flex align-items-center px-4 py-2 border border-secondary"
+          style={{
+            zIndex: 1100,
+            backdropFilter: "blur(10px)",
+            backgroundColor: "rgba(33, 37, 41, 0.95)",
+          }}
+        >
+          <span
+            className="bg-success rounded-circle me-2"
+            style={{ width: "10px", height: "10px", display: "inline-block" }}
+          ></span>
+          <span style={{ fontSize: "0.9rem", fontWeight: "500" }}>
+            {notificacion}
+          </span>
+        </div>
+      )}
+
+
+
+      {reciboActivo && (
+      <ModalReciboComprobante 
+        recibo={reciboActivo} 
+        empresa={dataEmpresa}
+        onClose={() => setReciboActivo(null)} 
+      />
+    )}
     </div>
   );
 };

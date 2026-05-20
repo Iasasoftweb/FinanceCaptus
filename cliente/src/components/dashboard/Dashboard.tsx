@@ -330,18 +330,18 @@ const Dashboard = () => {
           <MapFront clientes={listaDeClientes} />
         )}
       </div>
-      <div className="row p-2 mx-1">
+      {/* <div className="row p-2 mx-1">
         <div
           className="col-md-6 border shadow-lg overflow-x-scroll d-flex justify-content-center align-items-center"
           style={{ height: "450px", overflowY: "auto" }}
         >
           <table className="table table-striped table-hover table-responsive text-center">
-            {/* <div className="text-center">
+            <div className="text-center">
               <img src={FindPng} alt="" width={100} />
               <p className="text-center clFont">No Existe Datos</p>
               <BeatLoader color="#008080" size={15} className="text-center" />
-            </div> */}
-            {/* <thead className="">
+            </div> *
+            <thead className="">
               <tr className="clFont">
                 <th scope="col" className="text-muted " style={{fontSize:"0.9em"}}>Id</th>
                 <th scope="col" className="text-muted " style={{fontSize:"0.9em"}}>Cliente</th>
@@ -350,9 +350,9 @@ const Dashboard = () => {
                 <th scope="col" className="text-muted " style={{fontSize:"0.9em"}}>Monto Pagado</th>
                 <th scope="col" className="text-muted " style={{fontSize:"0.9em"}}>Cuotas en Atrasos</th>
               </tr>
-            </thead> */}
+            </thead>
 
-            {/* <tbody>
+            <tbody>
                  
               <tr className="clFont">
                  
@@ -366,7 +366,7 @@ const Dashboard = () => {
               </tr>
                   
               
-            </tbody> */}
+            </tbody>
           </table>
         </div>
         <div className="col-md-6">
@@ -392,9 +392,9 @@ const Dashboard = () => {
             </BarChart>
           </ResponsiveContainer>
         </div>
-      </div>
+      </div> */}
 
-      <div className="charts">
+      {/* <div className="charts">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart
             width={500}
@@ -443,7 +443,7 @@ const Dashboard = () => {
             <Line type="monotone" dataKey="uv" stroke="#82ca9d" />
           </LineChart>
         </ResponsiveContainer>
-      </div>
+      </div> */}
     </main>
   );
 };
