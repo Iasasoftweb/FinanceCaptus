@@ -109,6 +109,7 @@ const ShowClienteCards = () => {
 
   const URIs = "http://localhost:5000/clientes/";
   const UrisImg = "http://localhost:5000/uploads/clientes/avata/";
+  
 
   const prestamosInf = (id) => {
     const TotaPrestamos = DataPrestamos.filter((c) => c.idclientes === id);

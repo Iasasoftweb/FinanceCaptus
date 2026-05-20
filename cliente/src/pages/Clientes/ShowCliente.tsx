@@ -57,7 +57,7 @@ const ShowClientes = () => {
   };
 
   const URIs = "http://localhost:5000/clientes/";
-  const UrisImg = "http://localhost:5000/uploads/";
+  const UrisImg = "http://localhost:5000/uploads/clientes/avata/";
 
   useEffect(() => {
     setModoEdicion(modoEdicion);
@@ -70,14 +70,14 @@ const ShowClientes = () => {
   const datosCliente = () => {
     try {
       setTimeout(() => {
-        AllClient().then((allClientes) => {
+        (AllClient().then((allClientes) => {
           setClientes(allClientes);
           setClienteData(allClientes);
           setTotalItems(allClientes.length);
           setIsLoading(false);
           console.log(allClientes);
         }),
-          10000;
+          10000);
       });
     } catch (error) {
       console.error("Error de Coneccion", error);
@@ -323,7 +323,10 @@ const ShowClientes = () => {
                     {_DATA.currentData().map((item) => (
                       <tr key={item.id}>
                         <td className="clFont align-middle">{item.id}</td>
-                        <td className="clFont align-middle justify-content-center" width={50}>
+                        <td
+                          className="clFont align-middle justify-content-center"
+                          width={50}
+                        >
                           {
                             <Avatar
                               src={`${UrisImg}${item.imgFOTOS}`}

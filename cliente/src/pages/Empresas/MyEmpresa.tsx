@@ -40,7 +40,7 @@ const MyEmpresa = ({ open }) => {
   const [vpais, setVpais] = useState("");
   const [isAplicaMora, setIsAplicaMora] = useState("");
   const [isImprimilo, setIsimprimelogo] = useState("");
-  const UriImg = "http://localhost:5000/uploadEmpresa/";
+  const UriImg = "http://localhost:5000/uploads/clientes/empresa/";
   const URIEmpresas = "http://localhost:5000/empresas/estado/";
   const UriMoneda = "http://localhost:5000/moneda/";
   const navigate = useNavigate();

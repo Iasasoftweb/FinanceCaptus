@@ -63,7 +63,9 @@ function ShowUsuarios() {
   const [isEdit, setIsEdit] = useState(false);
   const [reload, setReload] = useState(false);
 
-  const UriImg = "http://localhost:5000/uploadusers/";
+  const UriImg = "http://localhost:5000/uploads/clientes/avatauser/";
+  
+
 
   // const handleChangePage = (event, newPage) => {
   //   setPage(newPage);
