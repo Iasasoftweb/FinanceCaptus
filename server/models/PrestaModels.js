@@ -42,6 +42,7 @@ const PrestaModels = db.define("tbprestamos", {
   codeudordireccion: { type: DataTypes.STRING },
   estado: { type: DataTypes.STRING, defaultValue: "VIGENTE" },
   modo: { type: DataTypes.STRING, defaultValue: "activo" },
+  situacion: { type: DataTypes.STRING, defaultValue: "EVALUACION" },
   createdAt: {
     type: DataTypes.DATE,
     timestamps: false,

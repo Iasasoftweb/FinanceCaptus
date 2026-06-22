@@ -5,7 +5,7 @@ import { Table, useStepContext } from "@mui/material";
 import { formatCurrency } from "../../components/UtilsStuff";
 import limpiarMonto from "../../components/stuff/LimpiarMonto";
 import axios from "axios";
-import FechaCorta from "../../components/stuff/fechaCorta";
+
 
 interface AmortizaData {
   idprestamo: number;

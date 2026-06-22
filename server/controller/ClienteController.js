@@ -122,6 +122,8 @@ export const CreateClientes = async (req, res) => {
 };
 
 //Actualidar Registro
+
+
 export const updateCliente = async (req, res) => {
   try {
     await ClientesModel.update(req.body, {

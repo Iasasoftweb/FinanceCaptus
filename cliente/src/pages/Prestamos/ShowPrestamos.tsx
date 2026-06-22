@@ -13,14 +13,18 @@ import {
   Briefcase,
   ChevronLeft,
   ChevronRight,
+  ClipboardPen,
+  Cuboid,
   Eye,
   FileSpreadsheet,
   FileText,
   HandCoins,
   Landmark,
+  MapPinCheckInside,
   Printer,
   RefreshCw,
   Search,
+  Tags,
   TrendingUp,
   TriangleAlert,
   Users,
@@ -42,8 +46,10 @@ import {
 import { simularDistribucionDePago } from "../../hooks/useSimularDistribucionDePago.tsx";
 import NoDatos from "../../components/stuff/NoDatos.tsx";
 import { ModalReciboComprobante } from "../../components/Recibos/ModalReciboComprobante.tsx";
+import { ShowDetalleSolicitud } from "./showDetalleSolicitud.tsx";
+import ModiSolicitud from "./ModiSolicitud.tsx";
 
-const ShowPrestamos = () => {
+const ShowPrestamos = ({ situacion }) => {
   const [PrestamoData, setPrestamoData] = useState([]);
   const [DataPrestamo, setDataPrestamo] = useState([]);
   const [dataRutas, setDataRutas] = useState([]);
@@ -72,9 +78,7 @@ const ShowPrestamos = () => {
   const UrisImgEmpresa = "http://localhost:5000/uploads/clientes/empresa/";
 
   const { data: dataEmpresa, isLoading } = useEmpresa();
-
   const Navigate = useNavigate();
-
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
@@ -414,7 +418,18 @@ const ShowPrestamos = () => {
     const cumpleEstado =
       filtroEstado === "TODOS" || item.estado === filtroEstado;
 
-    return coincideZona && coincideBusqueda && coincideActivo && cumpleEstado;
+    const coincideSituacion =
+      situacion === "prestamos"
+        ? item.situacion === "prestamo"
+        : item.situacion === "EVALUACION";
+
+    return (
+      coincideZona &&
+      coincideBusqueda &&
+      coincideActivo &&
+      cumpleEstado &&
+      coincideSituacion
+    );
   });
 
   const indexOfLastItem = currentPage * itemsPerPage;
@@ -464,7 +479,7 @@ const ShowPrestamos = () => {
       const data = await response.json();
 
       if (data.success) {
-        console.log(data)
+        console.log(data);
         // 1. Sincronizar el cliente en tu estado de React con los datos reales recalculados por Sequelize
         setPrestamosData((prevData) => {
           return prevData.map((p) => {
@@ -682,14 +697,21 @@ const ShowPrestamos = () => {
               height: "45px",
             }}
           >
-            <Landmark size={20} />
+            {situacion === "prestamos" ? (
+              <Landmark size={20} />
+            ) : (
+              <Cuboid size={20} />
+            )}
           </div>
           <div>
             <h5 className="fw-bold mb-0" style={{ color: "#2c3e50" }}>
-              Préstamos
+              {situacion === "prestamos" ? "Préstamos" : "Solicitudes"}
             </h5>
             <p className="text-muted mb-0 " style={{ fontSize: "0.8em" }}>
-              Control de Préstamos Emitidos
+              Control de{" "}
+              {situacion === "prestamos"
+                ? "Préstamos Emitidos"
+                : "Solicitudes de Préstamo"}
             </p>
           </div>
         </div>
@@ -700,66 +722,70 @@ const ShowPrestamos = () => {
 
       <Paper>
         <div className="container-fluid max-width-xxl mx-auto">
-          <div className="row g-3 mb-4">
-            <div className="col-12 col-md-4">
-              <div className="card border-0 shadow-sm p-3 h-100">
-                <div className="d-flex align-items-center gap-3">
-                  <div className="rounded-3 p-2 bg-success bg-opacity-10 text-success">
-                    <TrendingUp size={24} />
+          {situacion === "prestamos" && (
+            <div className="row g-3 mb-4">
+              <div className="col-12 col-md-4">
+                <div className="card border-0 shadow-sm p-3 h-100">
+                  <div className="d-flex align-items-center gap-3">
+                    <div className="rounded-3 p-2 bg-success bg-opacity-10 text-success">
+                      <TrendingUp size={24} />
+                    </div>
+                    <div>
+                      <p
+                        className="text-uppercase text-muted mb-0 fw-bold"
+                        style={{ fontSize: "0.7rem", letterSpacing: "1px" }}
+                      >
+                        Capital Total
+                      </p>
+                      <h4 className="fw-bold mb-0 text-dark">
+                        {formatCurrency(totalCapital.toFixed(2))}
+                      </h4>
+                    </div>
                   </div>
-                  <div>
-                    <p
-                      className="text-uppercase text-muted mb-0 fw-bold"
-                      style={{ fontSize: "0.7rem", letterSpacing: "1px" }}
-                    >
-                      Capital Total
-                    </p>
-                    <h4 className="fw-bold mb-0 text-dark">
-                      {formatCurrency(totalCapital.toFixed(2))}
-                    </h4>
+                </div>
+              </div>
+              <div className="col-12 col-md-4">
+                <div className="card border-0 shadow-sm p-3 h-100">
+                  <div className="d-flex align-items-center gap-3">
+                    <div className="rounded-3 p-2 bg-danger bg-opacity-10 text-danger">
+                      <AlertCircle size={24} />
+                    </div>
+                    <div>
+                      <p
+                        className="text-uppercase text-muted mb-0 fw-bold"
+                        style={{ fontSize: "0.7rem", letterSpacing: "1px" }}
+                      >
+                        Mora Acumulada
+                      </p>
+                      <h4 className="fw-bold mb-0 text-dark">
+                        {formatCurrency(totalMora.toFixed(2))}
+                      </h4>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="col-12 col-md-4">
+                <div className="card border-0 shadow-sm p-3 h-100">
+                  <div className="d-flex align-items-center gap-3">
+                    <div className="rounded-3 p-2 bg-primary bg-opacity-10 text-primary">
+                      <Users size={24} />
+                    </div>
+                    <div>
+                      <p
+                        className="text-uppercase text-muted mb-0 fw-bold"
+                        style={{ fontSize: "0.7rem", letterSpacing: "1px" }}
+                      >
+                        Clientes Activos
+                      </p>
+                      <h4 className="fw-bold mb-0 text-dark">
+                        {filtrar.length}
+                      </h4>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-            <div className="col-12 col-md-4">
-              <div className="card border-0 shadow-sm p-3 h-100">
-                <div className="d-flex align-items-center gap-3">
-                  <div className="rounded-3 p-2 bg-danger bg-opacity-10 text-danger">
-                    <AlertCircle size={24} />
-                  </div>
-                  <div>
-                    <p
-                      className="text-uppercase text-muted mb-0 fw-bold"
-                      style={{ fontSize: "0.7rem", letterSpacing: "1px" }}
-                    >
-                      Mora Acumulada
-                    </p>
-                    <h4 className="fw-bold mb-0 text-dark">
-                      {formatCurrency(totalMora.toFixed(2))}
-                    </h4>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="col-12 col-md-4">
-              <div className="card border-0 shadow-sm p-3 h-100">
-                <div className="d-flex align-items-center gap-3">
-                  <div className="rounded-3 p-2 bg-primary bg-opacity-10 text-primary">
-                    <Users size={24} />
-                  </div>
-                  <div>
-                    <p
-                      className="text-uppercase text-muted mb-0 fw-bold"
-                      style={{ fontSize: "0.7rem", letterSpacing: "1px" }}
-                    >
-                      Clientes Activos
-                    </p>
-                    <h4 className="fw-bold mb-0 text-dark">{filtrar.length}</h4>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          )}
         </div>
         <div className="card-body p-3 bg-white border-bottom">
           <div className="row g-3 align-items-center">
@@ -770,10 +796,10 @@ const ShowPrestamos = () => {
                   <input
                     type="text"
                     className="form-control bg-light border-0 shadow-none ps-2"
-                    placeholder="Buscar Préstamos..."
+                    placeholder={`${situacion === "prestamos" ? "Buscar Préstamos..." : "Buscar Solicitudes..."}`}
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    style={{ fontSize: "0.85rem" }}
+                    style={{ fontSize: "0.7rem" }}
                   />
 
                   <span className="input-group-text bg-white border-start-0 d-flex align-items-center justify-content-center">
@@ -791,12 +817,12 @@ const ShowPrestamos = () => {
             {/* Selector de Zonas */}
             <div className="col-12 col-md-4 col-lg-2">
               <div className="input-group input-group-sm">
-                <InputField label="" col="" icon={Briefcase}>
+                <InputField label="" col="" icon={MapPinCheckInside}>
                   <select
                     className="form-select bg-light border-0 shadow ps-2"
                     value={searchZonas}
                     onChange={(e) => setSearchZonas(e.target.value)}
-                    style={{ fontSize: "0.85rem" }}
+                    style={{ fontSize: "0.7rem" }}
                   >
                     <option value="">Seleccione una Zona</option>
                     {dataRutas.map((ruta) => (
@@ -822,64 +848,68 @@ const ShowPrestamos = () => {
             </div>
 
             {/* Botones de Acción Derecha */}
-            <div className="col text-end d-flex justify-content-end align-items-center gap-2">
-              <button
-                className="btn  btn-sm px-3 fw-semibold text-white shadow-sm d-flex align-items-center gap-2"
-                style={{ background: MisColores.headerBlue }}
-                onClick={handlePrint}
-              >
-                <Printer size={16} /> Imprimir Reporte
-              </button>
-              <div
-                className="vr mx-1 d-none d-md-block"
-                style={{ height: "24px" }}
-              ></div>
-              <button
-                className="btn btn-outline-success btn-sm border-0 d-flex align-items-center gap-1"
-                onClick={exportarExcel}
-              >
-                <FileSpreadsheet size={18} />{" "}
-                <span className="d-none d-xl-inline">Excel</span>
-              </button>
-              <button
-                className="btn btn-outline-danger btn-sm border-0 d-flex align-items-center gap-1"
-                onClick={exportarPDF}
-              >
-                <FileText size={18} />{" "}
-                <span className="d-none d-xl-inline">PDF</span>
-              </button>
-              <div className="form-check form-switch ms-2">
-                <input
-                  className="form-check-input shadow-none cursor-pointer"
-                  type="checkbox"
-                  checked={checked}
-                  onChange={() => setChecked(!checked)}
-                />
-                <label className="form-check-label small fw-bold text-muted">
-                  Activos
-                </label>
+            {situacion === "prestamos" && (
+              <div className="col text-end d-flex justify-content-end align-items-center gap-2">
+                <button
+                  className="btn  btn-sm px-3 fw-semibold text-white shadow-sm d-flex align-items-center gap-2"
+                  style={{ background: MisColores.headerBlue }}
+                  onClick={handlePrint}
+                >
+                  <Printer size={16} /> Imprimir Reporte
+                </button>
+                <div
+                  className="vr mx-1 d-none d-md-block"
+                  style={{ height: "24px" }}
+                ></div>
+                <button
+                  className="btn btn-outline-success btn-sm border-0 d-flex align-items-center gap-1"
+                  onClick={exportarExcel}
+                >
+                  <FileSpreadsheet size={18} />{" "}
+                  <span className="d-none d-xl-inline">Excel</span>
+                </button>
+                <button
+                  className="btn btn-outline-danger btn-sm border-0 d-flex align-items-center gap-1"
+                  onClick={exportarPDF}
+                >
+                  <FileText size={18} />{" "}
+                  <span className="d-none d-xl-inline">PDF</span>
+                </button>
+                <div className="form-check form-switch ms-2">
+                  <input
+                    className="form-check-input shadow-none cursor-pointer"
+                    type="checkbox"
+                    checked={checked}
+                    onChange={() => setChecked(!checked)}
+                  />
+                  <label className="form-check-label small fw-bold text-muted">
+                    Activos
+                  </label>
+                </div>
               </div>
-            </div>
+            )}
 
-            <div className="col-12 col-md-12 d-flex justify-content-end">
-              <div className="btn-group rounded-3" role="group">
-                {["TODOS", "AL DÍA", "ATRASADO"].map((est) => (
-                  <button
-                    key={est}
-                    type="button"
-                    onClick={() => setFiltroEstado(est)}
-                    className={`btn btn-sm px-3 fw-bold text-uppercase ${
-                      filtroEstado === est
-                        ? "btn-warning"
-                        : "btn-light text-muted border-0"
-                    }`}
-                    style={{ fontSize: "11px" }}
-                  >
-                    {est}
-                  </button>
-                ))}
+            {situacion === "prestamos" && (
+              <div className="col-12 col-md-12 d-flex justify-content-end">
+                <div className="btn-group rounded-3" role="group">
+                  {["TODOS", "AL DÍA", "ATRASADO"].map((est) => (
+                    <button
+                      key={est}
+                      type="button"
+                      onClick={() => setFiltroEstado(est)}
+                      className={`btn btn-sm px-3 fw-bold text-uppercase ${
+                        filtroEstado === est
+                          ? "btn-warning"
+                          : "btn-light text-muted border-0"
+                      }`}
+                      style={{ fontSize: "11px" }}
+                    >
+                      {est}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
 
@@ -916,6 +946,14 @@ const ShowPrestamos = () => {
                     >
                       Interés
                     </th>
+
+                    <th
+                      className="py-3 border-0 text-muted text-uppercase fw-bold text-end"
+                      style={{ fontSize: "0.7rem" }}
+                    >
+                      Monto Cuota
+                    </th>
+
                     <th
                       className="py-3 border-0 text-muted text-uppercase fw-bold text-center"
                       style={{ fontSize: "0.7rem" }}
@@ -929,19 +967,22 @@ const ShowPrestamos = () => {
                       Zona
                     </th>
 
-                    <th
-                      className="py-3 border-0 text-muted text-uppercase fw-bold"
-                      style={{ fontSize: "0.7rem" }}
-                    >
-                      Atrasadas
-                    </th>
-
-                    <th
-                      className="py-3 border-0 text-muted text-uppercase fw-bold text-center"
-                      style={{ fontSize: "0.7rem" }}
-                    >
-                      Estado
-                    </th>
+                    {situacion === "prestamos" && (
+                      <th
+                        className="py-3 border-0 text-muted text-uppercase fw-bold text-center"
+                        style={{ fontSize: "0.7rem" }}
+                      >
+                        Atrasadas
+                      </th>
+                    )}
+                    {situacion === "prestamos" && (
+                      <th
+                        className="py-3 border-0 text-muted text-uppercase fw-bold text-center"
+                        style={{ fontSize: "0.7rem" }}
+                      >
+                        Estado
+                      </th>
+                    )}
                     <th
                       className="pe-4 py-3 border-0 text-muted text-uppercase fw-bold text-center"
                       style={{ fontSize: "0.7rem" }}
@@ -1002,12 +1043,21 @@ const ShowPrestamos = () => {
                             minimumFractionDigits: 2,
                           })}
                         </td>
+                        <td className="text-end text-muted">
+                          $
+                          {item.mcuota.toLocaleString("en-US", {
+                            minimumFractionDigits: 2,
+                          })}
+                        </td>
+
                         <td className="text-center">
                           <span
                             className="border px-2 py-1 rounded-pill fw-bold text-secondary"
                             style={{ fontSize: "0.75rem" }}
                           >
-                            {item.cuotasPagadas} / {item.tcuota}
+                            {situacion === "prestamos"
+                              ? `${item.cuotasPagadas} / ${item.tcuota}`
+                              : `${item.tcuota}`}
                           </span>
                         </td>
                         <td>
@@ -1018,77 +1068,142 @@ const ShowPrestamos = () => {
                             {item.tcliente.tbzona.nombrerutas}
                           </span>
                         </td>
-
-                        <td>
-                          <span className="text-muted fw-medium">
-                            <span className={circleClasses} style={circleStyle}>
-                              {item.cantidadAtrasadas}
+                        {situacion === "prestamos" && (
+                          <td>
+                            <span className="text-muted fw-medium">
+                              <span
+                                className={circleClasses}
+                                style={circleStyle}
+                              >
+                                {item.cantidadAtrasadas}
+                              </span>
+                              <span
+                                className="px-1"
+                                style={{ fontSize: "0.8em" }}
+                              >
+                                Cuotas
+                              </span>
                             </span>
+                          </td>
+                        )}
+
+                        {situacion === "prestamos" && (
+                          <td className="text-center">
                             <span
-                              className="px-1"
-                              style={{ fontSize: "0.8em" }}
+                              className={`badge rounded-pill text-uppercase px-3 py-1.5 fw-bold  ${
+                                item.estado === "AL DÍA"
+                                  ? "bg-success-subtle text-success border border-success-subtle"
+                                  : "bg-danger-subtle text-danger border border-danger-subtle"
+                              }`}
+                              style={{
+                                fontSize: "10px",
+                                letterSpacing: "0.05em",
+                              }}
                             >
-                              Cuotas
+                              {item.estado}
                             </span>
-                          </span>
-                        </td>
+                          </td>
+                        )}
 
-                        <td className="text-center">
-                          <span
-                            className={`badge rounded-pill text-uppercase px-3 py-1.5 fw-bold  ${
-                              item.estado === "AL DÍA"
-                                ? "bg-success-subtle text-success border border-success-subtle"
-                                : "bg-danger-subtle text-danger border border-danger-subtle"
-                            }`}
-                            style={{
-                              fontSize: "10px",
-                              letterSpacing: "0.05em",
-                            }}
-                          >
-                            {item.estado}
-                          </span>
-                        </td>
                         <td className="pe-4 text-center">
                           <div className="btn-group">
-                            <button
-                              className="btn btn-outline-primary btn-sm border-0 rounded-3 p-1 mx-1"
-                              title="Cobrar"
-                              onClick={() => {
-                                setPrestamoSeleccionado(item);
-                                setTipoModal("pagodirecto");
-                                setMontoIngresado("");
-                              }}
-                            >
-                              <HandCoins size={18} />
-                            </button>
-                            <button
-                              className="btn btn-outline-secondary btn-sm border-0 rounded-3 p-1 mx-1"
-                              title="Ver"
-                              onClick={() => {
-                                setPrestamoSeleccionado(item);
-                                setTipoModal("detalle");
-                              }}
-                            >
-                              <Eye size={18} />
-                            </button>
-                            <button
-                              className="btn btn-outline-primary btn-sm border-0 rounded-3 p-1 mx-1"
-                              title="Ver"
-                              onClick={() => {
-                                setPrestamoSeleccionado(item);
-                                setTipoModal("pago");
-                              }}
-                            >
-                              <BanknoteArrowDown size={18} />
-                            </button>
+                            {situacion === "prestamos" && (
+                              <button
+                                className="btn btn-outline-primary btn-sm border-0 rounded-3 p-1 mx-1"
+                                title="Cobrar"
+                                onClick={() => {
+                                  setPrestamoSeleccionado(item);
+                                  setTipoModal("pagodirecto");
+                                  setMontoIngresado("");
+                                }}
+                              >
+                                <HandCoins size={18} />
+                              </button>
+                            )}
+                            {situacion === "prestamos" && (
+                              <button
+                                className="btn btn-outline-secondary btn-sm border-0 rounded-3 p-1 mx-1"
+                                title="Ver"
+                                onClick={() => {
+                                  setPrestamoSeleccionado(item);
+                                  setTipoModal("detalle");
+                                }}
+                              >
+                                <Eye size={18} />
+                              </button>
+                            )}
 
-                            <button
-                              className="btn btn-outline-success btn-sm border-0 rounded-3 p-1 mx-1"
-                              title="Ver"
-                              // onClick={''}
-                            >
-                              <Printer size={18} />
-                            </button>
+                            {situacion === "solicitudes" && (
+                              <button
+                                className="btn btn-outline-secondary btn-sm border-0 rounded-3 p-1 mx-1"
+                                title="Resumen de Prestamos"
+                                onClick={() => {
+                                  // handleDetail(item.id);
+
+                                  setPrestamoSeleccionado(item);
+                                  setTipoModal("detalle");
+                                }}
+                              >
+                                <Eye size={18} />
+                              </button>
+                            )}
+                            {situacion === "prestamos" && (
+                              <button
+                                className="btn btn-outline-primary btn-sm border-0 rounded-3 p-1 mx-1"
+                                title="Detalle del Préstamo"
+                                onClick={() => {
+                                  setPrestamoSeleccionado(item);
+                                  setTipoModal("pago");
+                                }}
+                              >
+                                <BanknoteArrowDown size={18} />
+                              </button>
+                            )}
+
+
+                             {situacion === "solicitudes" && (
+                              <button
+                                className="btn btn-outline-success btn-sm border-0 rounded-3 p-1 mx-1"
+                                title="Cuotas Generadas"
+                                onClick={() => {
+                                  setPrestamoSeleccionado(item);
+                                  setTipoModal("cuotas");                                  
+                                }}
+                              >
+                                <Tags size={18} />
+                              </button>
+
+                              
+                            )}
+
+                            {situacion === "solicitudes" && (
+                              <button
+                                className="btn btn-outline-danger btn-sm border-0 rounded-3 p-1 mx-1"
+                                title="Cuotas Generadas"
+                                onClick={() => {
+                                  setPrestamoSeleccionado(item);
+                                  setTipoModal("modificasolicitud");
+                                  
+                                }}
+                              >
+                                <ClipboardPen size={18} />
+                                
+                              </button>
+
+                              
+                            )}
+
+                           
+
+                            {situacion === "prestamos" && (
+                              <button
+                                className="btn btn-outline-success btn-sm border-0 rounded-3 p-1 mx-1"
+                                title="Ver"
+                                // onClick={''}
+                              >
+                                <Printer size={18} />
+                              </button>
+                            )}
                           </div>
                         </td>
                       </tr>
@@ -1182,6 +1297,41 @@ const ShowPrestamos = () => {
           </nav>
         </div>
       </Paper>
+
+      {prestamoSeleccionado && tipoModal === "cuotas" && (
+        <div
+          className="modal fade show d-block"
+          tabIndex="-1"
+          style={{
+            backgroundColor: "rgba(0,0,0,0.5)",
+            overflowX: "hidden",
+            overflowY: "auto", // Permite el scroll correcto en la pantalla general
+          }}
+        >
+          <ShowDetalleSolicitud cuotas={prestamoSeleccionado} onClose={()=>{
+            setPrestamoSeleccionado(null);
+            setTipoModal(null)
+          }} />
+        </div>
+      )}
+
+ {prestamoSeleccionado && tipoModal === "modificasolicitud" && (
+        <div
+          className="modal fade show d-block"
+          tabIndex="-1"
+          style={{
+            backgroundColor: "rgba(0,0,0,0.5)",
+            overflowX: "hidden",
+            overflowY: "auto", // Permite el scroll correcto en la pantalla general
+          }}
+        >
+          <ModiSolicitud dataInicial={prestamoSeleccionado} onClose={()=>{
+            setPrestamoSeleccionado(null);
+            setTipoModal(null)
+          }} />
+        </div>
+      )}
+
 
       {/* ==========================================
           MODAL: REGISTRAR PAGO (BOOTSTRAP STYLE)
@@ -2091,15 +2241,13 @@ const ShowPrestamos = () => {
         </div>
       )}
 
-
-
       {reciboActivo && (
-      <ModalReciboComprobante 
-        recibo={reciboActivo} 
-        empresa={dataEmpresa}
-        onClose={() => setReciboActivo(null)} 
-      />
-    )}
+        <ModalReciboComprobante
+          recibo={reciboActivo}
+          empresa={dataEmpresa}
+          onClose={() => setReciboActivo(null)}
+        />
+      )}
     </div>
   );
 };

@@ -18,7 +18,7 @@ function NavAvatar() {
   const [user, setUser] = useState(null);
 
   const userURI = "http://localhost:5000/usuarios/";
-  const UriImg = "http://localhost:5000/uploadusers/";
+  const UriImg = "http://localhost:5000/uploads/clientes/avatauser/";
 
   const handleLogout = (e) => {
     e.preventDefault();

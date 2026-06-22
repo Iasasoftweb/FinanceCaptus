@@ -45,7 +45,7 @@ const ClienteDo = ({ Id, open, handleClose, dataInitial }) => {
     formState: { errors, isSubmitting },
     reset,
   } = useForm({ defaultValues: { idcliente: Id } });
-
+   console.log(dataInitial, "dataInitial");
   const [clienteData, setClienteData] = useState([]);
   const [tIems, setItems] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);

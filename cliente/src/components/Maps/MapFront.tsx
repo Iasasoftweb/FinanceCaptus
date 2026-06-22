@@ -31,7 +31,7 @@ const MapFront = ({ clientes = [] }) => {
       return !isNaN(lat) && !isNaN(lng) && lat !== 0 && lng !== 0;
     });
   }, [clientes]);
-
+ 
   // Acceso seguro al Token de Mapbox
   const getSafeToken = () => {
     try {
@@ -46,6 +46,7 @@ const MapFront = ({ clientes = [] }) => {
   };
 
   const MAPBOX_TOKEN = getSafeToken();
+  
 
   // Vista de error si no hay Token configurado
   if (!MAPBOX_TOKEN) {
@@ -145,8 +146,8 @@ const MapFront = ({ clientes = [] }) => {
                   alt="Avatar"
                 />
                 <div className="user-info">
-                  <h3>Juan Mendez</h3>
-                  <p>ID: 010-0022566-2</p>
+                  <h3>{popupInfo.nombres} {popupInfo.apellidos}</h3>
+                  <p>{popupInfo.dni}</p>
                 </div>
               </div>
 

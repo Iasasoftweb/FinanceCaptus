@@ -93,3 +93,15 @@ export const deleteCuotas = async (req, res) => {
     res.json({ message: error.message });
   }
 };
+
+export const deleteAllCuotas = async (req, res) => {
+  try {
+    // Cambiamos 'id' por 'idprestamo' para limpiar todas las cuotas de ese préstamo
+    await CuotasModels.destroy({
+      where: { idprestamo: req.params.idprestamos }, 
+    });
+    res.status(200).json({ message: "¡Cuotas del préstamo eliminadas correctamente!" });
+  } catch (error) {
+    res.status(500).json({ message: error.message }); // Buenísima práctica poner status 500 si hay error
+  }
+};

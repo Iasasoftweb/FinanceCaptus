@@ -30,7 +30,7 @@ import {
 import { Footer } from "antd/es/layout/layout";
 import { icon } from "leaflet";
 import { useAuth } from "../components/Roles/AuthProvider.tsx";
-import { Building2, Hotel, MapPinPlus, ToolCase } from "lucide-react";
+import { Building2, HandCoins, Hotel, MapPinPlus, Tag, ToolCase, User2 } from "lucide-react";
 
 const { Header, Content, Sider } = Layout;
 
@@ -51,25 +51,7 @@ const HomeLayout: React.FC = () => {
       ),
     },
 
-    {
-      key: "prestamos",
-      icon: <BankOutlined className="fs-4" />,
-      disabled: !(
-        role === "ADMINISTRADOR" ||
-        role === "SUPERVISOR" ||
-        role === "OPERADOR"
-      ),
-
-      label:
-        role === "ADMINISTRADOR" || role === "SUPERVISOR" ? (
-          <Link to={"/prestamos"} className="text-decoration-none mx-1">
-            Préstamos
-          </Link>
-        ) : (
-          <span className="mx-1">Préstamos</span>
-        ),
-    },
-    {
+     {
       key: "clientes",
       icon: <UsergroupAddOutlined className="fs-4" />,
       disabled: !(role === "ADMINISTRADOR" || role === "SUPERVISOR"),
@@ -87,8 +69,65 @@ const HomeLayout: React.FC = () => {
     },
 
     {
+      key: "Solicitudes",
+
+      icon:  <Tag />,
+      disabled: !(
+        role === "ADMINISTRADOR" ||
+        role === "SUPERVISOR" ||
+        role === "OPERADOR"
+      ),
+
+      label:
+        role === "ADMINISTRADOR" || role === "SUPERVISOR" ? (
+          <Link to={"/solicitudes/"} className="text-decoration-none mx-1">
+            Solicitudes
+          </Link>
+        ) : (
+          <span className="mx-1">Solicitudes</span>
+        ),
+    },
+      
+
+    {
+      key: "prestamos",
+      icon: <BankOutlined className="fs-4" />,
+      disabled: !(
+        role === "ADMINISTRADOR" ||
+        role === "SUPERVISOR" ||
+        role === "OPERADOR"
+      ),
+
+      label:
+        role === "ADMINISTRADOR" || role === "SUPERVISOR" ? (
+          <Link to={"/prestamos/"} className="text-decoration-none mx-1">
+            Préstamos
+          </Link>
+        ) : (
+          <span className="mx-1">Préstamos</span>
+        ),
+    },
+   
+ {
+      key: "pagos",
+      
+      icon: <HandCoins className="fs-4" />,
+      disabled: !(role === "ADMINISTRADOR" || role === "SUPERVISOR"),
+      label:
+        role === "ADMINISTRADOR" || role === "SUPERVISOR" ? (
+          <Link
+            to=""
+            style={{ textDecoration: "none", color: "inherit" }}
+          >
+            Pagos
+          </Link>
+        ) : (
+          <span>Pagos</span>
+        ),
+    },
+    {
       key: "1l",
-      icon: <UserOutlined />,
+      icon: <User2/>,
       label: "Usuarios",
       children: [
         // Submenú
@@ -102,17 +141,7 @@ const HomeLayout: React.FC = () => {
         
       ],
     },
-    {
-      key: "2",
-      icon: <LaptopOutlined />,
-      label: "Préstamos",
-    },
-    {
-      key: "3",
-      icon: <NotificationOutlined />,
-      label: "Notificaciones",
-    },
-
+   
     {
       key: "Util",
       icon: <ToolCase />,

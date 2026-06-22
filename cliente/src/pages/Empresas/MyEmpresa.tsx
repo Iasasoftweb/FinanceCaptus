@@ -28,9 +28,22 @@ import { NumericFormat } from "react-number-format";
 import limpiarMonto from "../../components/stuff/LimpiarMonto.tsx";
 import { MisColores } from "../../components/stuff/MisColores.tsx";
 import { InputField } from "../../components/stuff/InputField.tsx";
-import { Rocket, X, Building2 } from "lucide-react";
+import {
+  Rocket,
+  X,
+  Building2,
+  User,
+  Building,
+  Mail,
+  User2,
+  MapPinHouse,
+  Phone,
+  MapPlus,
+  MapPinSearch,
+  ClockCheck,
+  Percent,
+} from "lucide-react";
 import { SectionTitle } from "../../components/stuff/SectionTitle.tsx";
-
 
 const MyEmpresa = ({ open }) => {
   const [isModalOpen, setIsModalOpen] = useState(open);
@@ -38,7 +51,7 @@ const MyEmpresa = ({ open }) => {
   const [Idempresas, setIdempresas] = useState([]);
   const [tipoN, setTipoN] = useState("");
   const [vpais, setVpais] = useState("");
-  const [isAplicaMora, setIsAplicaMora] = useState("");
+  const [isAplicaMora, setIsAplicaMora] = useState("false");
   const [isImprimilo, setIsimprimelogo] = useState("");
   const UriImg = "http://localhost:5000/uploads/clientes/empresa/";
   const URIEmpresas = "http://localhost:5000/empresas/estado/";
@@ -74,11 +87,13 @@ const MyEmpresa = ({ open }) => {
   } = useForm({
     defaultValues: {
       isactivo: "true",
+
       pais: "",
       seguro: 0.0,
       gastolegal: 0.0,
       prorrogamora: 0,
       prorrogacuota: 0,
+      aplicarmora: "false",
     },
   });
 
@@ -91,7 +106,7 @@ const MyEmpresa = ({ open }) => {
       const datosEmpresa = await axios.get(`${URIEmpresas}`);
 
       const getEmpresas = datosEmpresa?.data.data || datosEmpresa.data;
-   
+
       setIsData(getEmpresas);
       reset(datosEmpresa.data[0]);
       setIdempresas(getEmpresas[0].id);
@@ -120,7 +135,7 @@ const MyEmpresa = ({ open }) => {
     try {
       const res = await axios.post(
         "http://localhost:5000/uploadEmpresa/",
-        formatdata
+        formatdata,
       );
       console.log(res.data.fileName);
       cargaNameImg(res.data.fileName);
@@ -144,7 +159,6 @@ const MyEmpresa = ({ open }) => {
     setIsModalOpen(open);
     getData();
     GetMoneda();
-
   }, [open]);
 
   const handletiponegocio = (e) => {
@@ -194,7 +208,13 @@ const MyEmpresa = ({ open }) => {
   };
 
   return (
-    <div className="container-fluid min-vh-100 p-4" style={{ backgroundColor: MisColores.bgGray, fontFamily: 'Segoe UI, Roboto, Helvetica, Arial, sans-serif' }}>
+    <div
+      className="container-fluid min-vh-100 p-4"
+      style={{
+        backgroundColor: MisColores.bgGray,
+        fontFamily: "Segoe UI, Roboto, Helvetica, Arial, sans-serif",
+      }}
+    >
       <Modal
         open={isModalOpen}
         onClose={handleClose}
@@ -217,10 +237,10 @@ const MyEmpresa = ({ open }) => {
             },
 
             maxHeight: {
-              xs: "650px",
-              sm: "600px",
-              md: "800px",
-              lg: "820px",
+              xs: "710px",
+              sm: "660px",
+              md: "860px",
+              lg: "880px",
             },
             transform: "translate(-50%, -50%)",
             width: {
@@ -233,23 +253,32 @@ const MyEmpresa = ({ open }) => {
             boxShadow: 24,
           }}
         >
-
           <div className="card-header border-bottom bg-white p-4 d-flex justify-content-between align-items-center">
-          <div className="d-flex align-items-center gap-3">
-            <div className="p-2 rounded-3 text-white d-flex align-items-center justify-content-center shadow-sm" 
-                 style={{ backgroundColor: MisColores.headerBlue, width: '45px', height: '45px' }}>
-              <Building2 size={20} />
+            <div className="d-flex align-items-center gap-3">
+              <div
+                className="p-2 rounded-3 text-white d-flex align-items-center justify-content-center shadow-sm"
+                style={{
+                  backgroundColor: MisColores.headerBlue,
+                  width: "45px",
+                  height: "45px",
+                }}
+              >
+                <Building2 size={20} />
+              </div>
+              <div>
+                <h5 className="fw-bold mb-0" style={{ color: "#2c3e50" }}>
+                  Mi Empresa
+                </h5>
+                <p className="text-muted mb-0 " style={{ fontSize: "0.8em" }}>
+                  Configuración de Empresa
+                </p>
+              </div>
             </div>
-            <div>
-              <h5 className="fw-bold mb-0" style={{ color: '#2c3e50' }}>Mi Empresa</h5>
-              <p className="text-muted mb-0 " style={{fontSize:"0.8em"}}>Configuración de Empresa</p>
-            </div>
+            <button className="btn btn-light rounded-circle p-2 text-secondary">
+              <X size={20} onClick={handleClose} />
+            </button>
           </div>
-          <button className="btn btn-light rounded-circle p-2 text-secondary">
-            <X size={20} onClick={handleClose} />
-          </button>
-        </div>
-          
+
           <div className="p-4 ">
             <div className="justify-content-center align-items-center mb-2">
               <div
@@ -275,7 +304,7 @@ const MyEmpresa = ({ open }) => {
                 </div>
               </div>
               <div className="d-flex justify-content-center">
-                <span className="" style={{fontSize:"0.7em"}} >
+                <span className="" style={{ fontSize: "0.7em" }}>
                   Click en imgen para Subir Imagen
                 </span>
               </div>
@@ -306,529 +335,344 @@ const MyEmpresa = ({ open }) => {
             </div>
             <SectionTitle title="Datos Generales" />
 
-            <form onSubmit={handleSubmit(onSubmit)}>
-              <div className="row g-3">
-                <div className="col-12 col-sm-6 col-md-4  mt-4">
-                  <TextField
-                    label="Nombre de la Empresa"
-                    {...register("empresa", {
-                      required: "Este campo es obligatorio",
-                    })}
-                    fullWidth
-                    InputLabelProps={{ style: { fontSize: "0.8em" } }}
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        borderRadius: "10px",
-                        fontSize: "12px", // Controla el radio de borde
-                        width: "100%",
-                      },
-                    }}
-                  />
+            <form onSubmit={handleSubmit(onSubmit)} className="row g-2">
+              <InputField
+                label="Nombre de la Empresa"
+                icon={Building}
+                requerid
+                col="col-md-4"
+              >
+                <input
+                  type="text"
+                  {...register("empresa", {
+                    required: "Este campo es obligatorio",
+                  })}
+                  className="form-control border-0 shadow-none"
+                  style={{ fontSize: "0.8em" }}
+                />
+              </InputField>
+              {errors.empresa && (
+                <span className="text-danger clFont">
+                  {errors.empresa.message}
+                </span>
+              )}
 
-                  {errors.empresa && (
-                    <span className="text-danger clFont">
-                      {errors.empresa.message}
-                    </span>
-                  )}
-                </div>
-                <div className="col-12 col-sm-6 col-md-4  mt-4">
-                  <TextField
-                    label="Correo Empresarial"
-                    {...register("correo")}
-                    fullWidth
-                    InputLabelProps={{ style: { fontSize: "0.8em" } }}
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        borderRadius: "10px",
-                        fontSize: "12px", // Controla el radio de borde
-                        width: "100%",
-                      },
-                    }}
-                  />
-                </div>
-                <div className="col-12 col-sm-6 col-md-4 mt-4">
-                  <TextField
-                    label="Numero RNC"
-                    fullWidth
-                    {...register("rnc")}
-                    InputLabelProps={{ style: { fontSize: "0.8em" } }}
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        borderRadius: "10px",
-                        fontSize: "12px", // Controla el radio de borde
-                        width: "100%",
-                      },
-                    }}
-                  />
-                </div>
-              </div>
+              <InputField
+                label="Correo Empresarial"
+                icon={Mail}
+                requerid
+                col="col-md-4"
+              >
+                <input
+                  type="text"
+                  {...register("correo")}
+                  className="form-control border-0 shadow-none"
+                  style={{ fontSize: "0.8em" }}
+                />
+              </InputField>
 
-              <div className="row g-3 mt-1">
-                <div className="col-12 col-sm-6 col-md-4  mt-4">
-                  <TextField
-                    label="Direccion"
-                    {...register("direccion", {
-                      required: "Este campo es obligatorio",
-                    })}
-                    fullWidth
-                    InputLabelProps={{ style: { fontSize: "0.8em" } }}
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        borderRadius: "10px",
-                        fontSize: "12px", // Controla el radio de borde
-                        width: "100%",
-                      },
-                    }}
-                  />
-                  {errors.direccion && (
-                    <p className="text-danger clFont">
-                      {" "}
-                      {errors.direccion.message}{" "}
-                    </p>
-                  )}
-                </div>
-                <div className="col-12 col-sm-6 col-md-4  mt-4">
-                  <TextField
-                    label="Nombre del Gerente"
-                    {...register("gerente", {
-                      required: "Este campo es obligatorio",
-                    })}
-                    fullWidth
-                    InputLabelProps={{ style: { fontSize: "0.8em" } }}
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        borderRadius: "10px",
-                        fontSize: "12px", // Controla el radio de borde
-                        width: "100%",
-                      },
-                    }}
-                  />
-                  {errors.gerente && (
-                    <p className="text-danger clFont">
-                      {" "}
-                      {errors.gerente.message}{" "}
-                    </p>
-                  )}
-                </div>
-                <div className="col-12 col-sm-6 col-md-4  mt-4">
-                  <TextField
-                    label="Tipo de Negocio"
-                    {...register("tiponegocio", {
-                      required: "Este campo es obligatorio",
-                    })}
-                    fullWidth
-                    select
-                    value={tipoN}
-                    onChange={handletiponegocio}
-                    InputLabelProps={{ style: { fontSize: "0.8em" } }}
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        borderRadius: "10px",
-                        fontSize: "12px", // Controla el radio de borde
-                        width: "100%",
-                      },
-                    }}
-                  >
-                    {tipoNegocios.map((item) => (
-                      <MenuItem key={item.id} value={item.tipo}>
-                        <span className="clFont">{item.tipo}</span>
-                      </MenuItem>
-                    ))}
-                  </TextField>
-                  {errors.tiponegocio && (
-                    <p className="text-danger clFont">
-                      {" "}
-                      {errors.tiponegocio.message}{" "}
-                    </p>
-                  )}
-                </div>
-              </div>
-              <div className="row g-3 mt-1">
-                <div className="col-12 col-sm-6 col-md-4  mt-4">
-                  <TextField
-                    label="Telefono 1"
-                    {...register("telefono1", {
-                      required: "Este campo es obligatorio",
-                    })}
-                    fullWidth
-                    InputLabelProps={{ style: { fontSize: "0.8em" } }}
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        borderRadius: "10px",
-                        fontSize: "12px", // Controla el radio de borde
-                        width: "100%",
-                      },
-                    }}
-                  />
-                  {errors.telefono1 && (
-                    <p className="text-danger clFont">
-                      {" "}
-                      {errors.telefono1.message}{" "}
-                    </p>
-                  )}
-                </div>
-                <div className="col-12 col-sm-6 col-md-4  mt-4">
-                  <TextField
-                    label="Telefono 2"
-                    {...register("telefono2")}
-                    fullWidth
-                    InputLabelProps={{ style: { fontSize: "0.8em" } }}
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        borderRadius: "10px",
-                        fontSize: "12px", // Controla el radio de borde
-                        width: "100%",
-                      },
-                    }}
-                  />
-                </div>
-                <div className="col-12 col-sm-6 col-md-4  mt-4">
-                  <TextField
-                    label="Wathsapp"
-                    {...register("wathsapp", {
-                      required: "Este campo es obligatorio",
-                    })}
-                    fullWidth
-                    InputLabelProps={{ style: { fontSize: "0.8em" } }}
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        borderRadius: "10px",
-                        fontSize: "12px", // Controla el radio de borde
-                        width: "100%",
-                      },
-                    }}
-                  />
-                  {errors.wathsapp && (
-                    <p className="text-danger clFont">
-                      {" "}
-                      {errors.wathsapp.message}{" "}
-                    </p>
-                  )}
-                </div>
-              </div>
-              <div className="row g-3 mt-1">
-                <div className="col-12 col-sm-6 col-md-3  mt-4">
-                  <TextField
-                    label="Pais"
-                    {...register("pais", {
-                      required: "Este campo es obligatorio",
-                    })}
-                    fullWidth
-                    select
-                    value={vpais}
-                    onChange={handlePais}
-                    InputLabelProps={{ style: { fontSize: "0.8em" } }}
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        borderRadius: "10px",
-                        fontSize: "12px", // Controla el radio de borde
-                        width: "100%",
-                      },
-                    }}
-                  >
-                    {Pais.map((item) => (
-                      <MenuItem key={item.id} value={item.name}>
+              <InputField
+                label="Numero RNC / Cedula"
+                icon={Mail}
+                col="col-md-4"
+              >
+                <input
+                  type="text"
+                  {...register("rnc")}
+                  className="form-control border-0 shadow-none"
+                  style={{ fontSize: "0.8em" }}
+                />
+              </InputField>
+              <InputField
+                label="Nombre del Gerente"
+                icon={User2}
+                col="col-md-4"
+              >
+                <input
+                  type="text"
+                  {...register("gerente")}
+                  className="form-control border-0 shadow-none"
+                  style={{ fontSize: "0.8em" }}
+                />
+              </InputField>
+
+              <InputField label="Dreccion" icon={MapPinHouse} col="col-md-8">
+                <input
+                  type="text"
+                  {...register("direccion")}
+                  className="form-control border-0 shadow-none"
+                  style={{ fontSize: "0.8em" }}
+                />
+              </InputField>
+
+              <InputField label="Telefono 1 " icon={Phone} col="col-md-4">
+                <input
+                  type="text"
+                  {...register("telefono1")}
+                  className="form-control border-0 shadow-none"
+                  style={{ fontSize: "0.8em" }}
+                />
+              </InputField>
+
+              <InputField label="Telefono 2" icon={Phone} col="col-md-4">
+                <input
+                  type="text"
+                  {...register("telefono2")}
+                  className="form-control border-0 shadow-none"
+                  style={{ fontSize: "0.8em" }}
+                />
+              </InputField>
+
+              <InputField label="Wathsapp" icon={Phone} col="col-md-4">
+                <input
+                  type="text"
+                  {...register("whatsapp")}
+                  className="form-control border-0 shadow-none"
+                  style={{ fontSize: "0.8em" }}
+                />
+              </InputField>
+
+              <InputField label="Pais" icon={MapPlus} col="col-md-4">
+                <select
+                  {...register("pais")}
+                  className="form-control border-0 shadow-none"
+                  style={{ fontSize: "0.8em" }}
+                  value={vpais}
+                  onChange={handlePais}
+                >
+                  <option value="">Seleccione un país</option>
+                  {Pais &&
+                    Pais.map((item) => (
+                      <option key={item.id} value={item.name}>
                         <span className="clFont">{item.name}</span>
-                      </MenuItem>
+                      </option>
                     ))}
-                  </TextField>
-                  {errors.pais && (
-                    <p className="text-danger clFont">
-                      {" "}
-                      {errors.pais.message}{" "}
-                    </p>
-                  )}
-                </div>
-
-                <div className="col-12 col-sm-6 col-md-3  mt-4">
-                  <TextField
-                    label="Tipo de Moneda"
-                    {...register("tipomoneda", {
-                      required: "Este campo es obligatorio",
-                    })}
-                    fullWidth
-                    select
-                    value={tipoMoneda}
-                    onChange={handleMoneda}
-                    InputLabelProps={{ style: { fontSize: "0.8em" } }}
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        borderRadius: "10px",
-                        fontSize: "12px", // Controla el radio de borde
-                        width: "100%",
-                      },
-                    }}
-                  >
-                    {moneda.map((item) => (
-                      <MenuItem key={item.id} value={item.tipomoneda}>
+                </select>
+              </InputField>
+              <InputField label="Tipo de Moneda" icon={MapPlus} col="col-md-2">
+                <select
+                  {...register("tipomoneda")}
+                  className="form-control border-0 shadow-none"
+                  style={{ fontSize: "0.8em" }}
+                  value={tipoMoneda}
+                  onChange={handleMoneda}
+                >
+                  <option value="">Seleccione un tipo de moneda</option>
+                  {moneda &&
+                    moneda.map((item) => (
+                      <option key={item.id} value={item.tipomoneda}>
                         <span className="clFont">{item.tipomoneda}</span>
-                      </MenuItem>
+                      </option>
                     ))}
-                  </TextField>
-                  {errors.pais && (
-                    <p className="text-danger clFont">
-                      {" "}
-                      {errors.tipomoneda.message}{" "}
-                    </p>
-                  )}
-                </div>
+                </select>
+              </InputField>
 
-                <div className="col-12 col-sm-6 col-md-3  mt-4">
-                  <TextField
-                    label="Longitud"
-                    {...register("longitud")}
-                    fullWidth
-                    InputLabelProps={{ style: { fontSize: "0.8em" } }}
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        borderRadius: "10px",
-                        fontSize: "12px", // Controla el radio de borde
-                        width: "100%",
-                      },
-                    }}
-                  />
-                </div>
-                <div className="col-12 col-sm-6 col-md-3  mt-4">
-                  <TextField
-                    label="Latitud"
-                    {...register("latitud")}
-                    fullWidth
-                    InputLabelProps={{ style: { fontSize: "0.8em" } }}
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        borderRadius: "10px",
-                        fontSize: "12px", // Controla el radio de borde
-                        width: "100%",
-                      },
-                    }}
-                  />
-                </div>
-              </div>
+              <InputField label="Latitud" icon={MapPinSearch} col="col-md-3">
+                <input
+                  type="text"
+                  {...register("latitud")}
+                  className="form-control border-0 shadow-none"
+                  style={{ fontSize: "0.8em" }}
+                />
+              </InputField>
+
+              <InputField label="Longitud" icon={MapPinSearch} col="col-md-3">
+                <input
+                  type="text"
+                  {...register("longitud")}
+                  className="form-control border-0 shadow-none"
+                  style={{ fontSize: "0.8em" }}
+                />
+              </InputField>
 
               <SectionTitle title="Opciones de Negocios" />
 
-              <div className="row g-3 mt-1">
-                <div className="col-12 col-sm-6 col-md-3  mt-4">
-                  <TextField
-                    label="Aplicar Mora ?"
-                    {...register("aplicarmora")}
-                    fullWidth
-                    select
-                    value={isAplicaMora}
-                    onChange={handleMora}
-                    InputLabelProps={{ style: { fontSize: "0.8em" } }}
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        borderRadius: "10px",
-                        fontSize: "12px", // Controla el radio de borde
-                        width: "100%",
-                      },
-                    }}
-                  >
-                    <MenuItem value="SI">
-                      <span className="clFont">Si</span>
-                    </MenuItem>
-                    <MenuItem value="NO">
-                      <span className="clFont">No</span>
-                    </MenuItem>
-                  </TextField>
-                </div>
-                <div className="col-12 col-sm-6 col-md-3  mt-4">
-                  <TextField
-                    label="Imprimir Logo?"
-                    {...register("imprimirlogo")}
-                    fullWidth
-                    select
-                    value={isImprimilo}
-                    onChange={handleLogo}
-                    InputLabelProps={{ style: { fontSize: "0.8em" } }}
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        borderRadius: "10px",
-                        fontSize: "12px", // Controla el radio de borde
-                        width: "100%",
-                      },
-                    }}
-                  >
-                    <MenuItem value="SI">
-                      <span className="clFont">Si</span>
-                    </MenuItem>
-                    <MenuItem value="NO">
-                      <span className="clFont">No</span>
-                    </MenuItem>
-                  </TextField>
-                </div>
-                <div className="col-12 col-sm-6 col-md-3 mt-4">
-                  <TextField
-                    label="Porcentaje Mora"
-                    {...register("modoporcentaje")}
-                    fullWidth
-                    InputLabelProps={{ style: { fontSize: "0.8em" } }}
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        borderRadius: "10px",
-                        fontSize: "12px", // Controla el radio de borde
-                        width: "100%",
-                      },
-                    }}
-                  />
-                </div>
-                <div className="col-12 col-sm-6 col-md-3  mt-4">
-                  <TextField
-                    label="Interes por Defecto"
-                    {...register("interesdefecto")}
-                    fullWidth
-                    InputLabelProps={{ style: { fontSize: "0.8em" } }}
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        borderRadius: "10px",
-                        fontSize: "12px", // Controla el radio de borde
-                        width: "100%",
-                      },
-                    }}
-                  />
-                </div>
-              </div>
-
-              <div className="row g-3 mt-1">
-                <div className="col-12 col-sm-6 col-md-3  mt-4">
-                  <Controller
-                    name="gastolegal"
-                    control={control}
-                    render={({ field }) => (
-                      <NumericFormat
-                        {...field}
-                        customInput={TextField} // Usa TextField de Material-UI
-                        label="Gasto Legal"
-                        variant="outlined"
-                        fullWidth
-                        thousandSeparator=","
-                        decimalSeparator="."
-                        prefix="DOP "
-                        fixedDecimalScale
-                        decimalScale={2}
-                        allowNegative={false}
-                        value={GastoLegal}
-                        onChange={handleGastolegal}
-                        // disabled={!capitalValue}
-
-                        onValueChange={(values) => {
-                          field.onChange(values.floatValue || 0.0); // Actualiza el valor en react-hook-form
-                        }}
-                        InputLabelProps={{ style: { fontSize: "0.9rem" } }}
-                        InputProps={{
-                          style: {
-                            fontSize: "0.8rem",
-                            borderRadius: "10px",
-                            color: "GrayText",
-                            backgroundColor: "white",
-                          }, // Cambia el tamaño de letra
-                        }}
-                        sx={{
-                          "& input::placeholde": {
-                            fontSize: "0.8rem", // Cambia el tamaño de letra del placeholder
-                            color: "GrayText", // Opcional: color del placeholder
-                          },
-                        }}
-                        className="clFont"
-                      />
-                    )}
-                  />
-                </div>
-                <div className="col-12 col-sm-6 col-md-3  mt-4">
-                  <Controller
-                    name="seguro"
-                    control={control}
-                    render={({ field }) => (
-                      <NumericFormat
-                        {...field}
-                        customInput={TextField} // Usa TextField de Material-UI
-                        label="Seguro"
-                        variant="outlined"
-                        fullWidth
-                        thousandSeparator=","
-                        decimalSeparator="."
-                        prefix="DOP "
-                        fixedDecimalScale
-                        decimalScale={2}
-                        allowNegative={false}
-                        value={Seguro}
-                        onChange={handleSeguro}
-                        onValueChange={(values) => {
-                          field.onChange(values.floatValue || 0.0); // Actualiza el valor en react-hook-form
-                        }}
-                        InputLabelProps={{ style: { fontSize: "0.9rem" } }}
-                        InputProps={{
-                          style: {
-                            fontSize: "0.8rem",
-                            borderRadius: "10px",
-                            color: "GrayText",
-                            backgroundColor: "white",
-                          }, // Cambia el tamaño de letra
-                        }}
-                        sx={{
-                          "& input::placeholde": {
-                            fontSize: "0.8rem", // Cambia el tamaño de letra del placeholder
-                            color: "GrayText", // Opcional: color del placeholder
-                          },
-                        }}
-                        className="clFont"
-                      />
-                    )}
-                  />
-                </div>
-
-                <div className="col-12 col-sm-6 col-md-3  mt-4">
-                  <TextField
-                    label="Prorroga Mora (Dias)"
-                    {...register("prorrogamora")}
-                    fullWidth
-                    InputLabelProps={{ style: { fontSize: "0.8em" } }}
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        borderRadius: "10px",
-                        fontSize: "12px", // Controla el radio de borde
-                        width: "100%",
-                      },
-                    }}
-                  />
-                </div>
-
-                <div className="col-12 col-sm-6 col-md-3  mt-4">
-                  <TextField
-                    label="Prorroga Pago Cuota"
-                    {...register("prorrogacuota")}
-                    fullWidth
-                    InputLabelProps={{ style: { fontSize: "0.8em" } }}
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        borderRadius: "10px",
-                        fontSize: "12px", // Controla el radio de borde
-                        width: "100%",
-                      },
-                    }}
-                  />
-                </div>
-              </div>
-
-              <div className="mt-5 d-flex justify-content-center">
-                <button
-                  className=" btn me-3 text-white"
-                  style={{ fontSize: "0.8em", backgroundColor:MisColores.teal }}
-                  type="submit"
-                  
+              <InputField
+                label="Aplicar Mora?"
+                icon={ClockCheck}
+                col="col-md-3"
+              >
+                <select
+                  {...register("aplicarmora")}
+                  className="form-control border-0 shadow-none"
+                  style={{ fontSize: "0.8em" }}
+                  value={isAplicaMora}
+                  onChange={handleMora}
                 >
-                  {" "}
-                  Guardar
-                </button>
+                  <option value="">Seleccione una opción</option>
+                  <option value="true">Sí</option>
+                  <option value="false">No</option>
+                </select>
+              </InputField>
+              <InputField
+                label="Imprimir Logo?"
+                icon={ClockCheck}
+                col="col-md-3"
+              >
+                <select
+                  {...register("imprimirlogo")}
+                  className="form-control border-0 shadow-none"
+                  style={{ fontSize: "0.8em" }}
+                  value={isImprimilo}
+                  onChange={handleLogo}
+                >
+                  <option value="">Seleccione una opción</option>
+                  <option value="true">Sí</option>
+                  <option value="false">No</option>
+                </select>
+              </InputField>
+
+              <InputField label="Porcentaje Mora" icon={Percent} col="col-md-3">
+                <input
+                  type="text"
+                  {...register("modoporcentaje")}
+                  className="form-control border-0 shadow-none"
+                  style={{ fontSize: "0.8em" }}
+                />
+              </InputField>
+
+              <InputField
+                label="Interes por Defecto"
+                icon={Percent}
+                col="col-md-3"
+              >
+                <input
+                  type="text"
+                  {...register("interesdefecto")}
+                  className="form-control border-0 shadow-none"
+                  style={{ fontSize: "0.8em" }}
+                />
+              </InputField>
+
+              <InputField label="Gasto Legal" icon={Percent} col="col-md-3">
+                <Controller
+                  name="gastolegal"
+                  control={control}
+                  render={({
+                    field: { onChange, value, name, ref },
+                    fieldState: { error },
+                  }) => (
+                    <>
+                      <NumericFormat
+                        name={name}
+                        getInputRef={ref}
+                        value={value}
+                        thousandSeparator={true}
+                        prefix={"DOP "}
+                        decimalScale={2}
+                        fixedDecimalScale={true}
+                        className="form-control border-0 shadow-none fw-bold "
+                        placeholder="DOP 0.00"
+                        style={{ fontSize: "0.8em" }}
+                        
+                        onValueChange={(values) => {
+                          setGastoLegal(values.floatValue || 0);
+                          onChange(values.floatValue || 0);
+                        }}
+                      />
+
+                      {error && (
+                        <span
+                          className="text-danger ps-2"
+                          style={{ fontSize: "0.7em" }}
+                        >
+                          {error.message}
+                        </span>
+                      )}
+                    </>
+                  )}
+                />
+              </InputField>
+
+               <InputField label="Seguro" icon={Percent} col="col-md-3">
+                <Controller
+                  name="seguro"
+                  control={control}
+                  render={({
+                    field: { onChange, value, name, ref },
+                    fieldState: { error },
+                  }) => (
+                    <>
+                      <NumericFormat
+                        name={name}
+                        getInputRef={ref}
+                        value={value}
+                        thousandSeparator={true}
+                        prefix={"DOP "}
+                        decimalScale={2}
+                        fixedDecimalScale={true}
+                        className="form-control border-0 shadow-none fw-bold "
+                        placeholder="DOP 0.00"
+                        style={{ fontSize: "0.8em" }}
+                        
+                        onValueChange={(values) => {
+                          setSeguro(values.floatValue || 0);
+                          onChange(values.floatValue || 0);
+                        }}
+                      />
+
+                      {error && (
+                        <span
+                          className="text-danger ps-2"
+                          style={{ fontSize: "0.7em" }}
+                        >
+                          {error.message}
+                        </span>
+                      )}
+                    </>
+                  )}
+                />
+              </InputField>
+
+               <InputField
+                label="Prorroga Mora (Dias)"
+                icon={ClockCheck}
+                col="col-md-3"
+              >
+                <input
+                  type="text"
+                  {...register("prorrogamora")}
+                  className="form-control border-0 shadow-none"
+                  style={{ fontSize: "0.8em" }}
+                />
+              </InputField>
+
+              <InputField
+                label="Prorroga Pago Cuota"
+                icon={ClockCheck}
+                col="col-md-3"
+              >
+                <input
+                  type="text"
+                  {...register("prorrogacuota")}
+                  className="form-control border-0 shadow-none"
+                  style={{ fontSize: "0.8em" }}
+                />
+              </InputField>
+
+             
+
+              <div className="mt-1 d-flex justify-content-center p-1 " style={{ width: "100%" , gap: "10px", backgroundColor: MisColores.bgGray}}>
+               
                 <button
-                  className="btn, border-1 p-2 rounded-3 border-dark-subtle"
-                  style={{ fontSize: "0.8em", backgroundColor:"white" }}
+                  className="btn, border-1 p-2 rounded-3 border-light me-4"
+                  style={{ fontSize: "0.8em", backgroundColor: MisColores.bgGray }}
                   onClick={handleClose}
-                  
                 >
                   {" "}
                   Cancelar
+                </button>
+
+                 <button
+                  className=" btn me-3 text-white"
+                  style={{
+                    fontSize: "0.8em",
+                    backgroundColor: MisColores.headerBlue,
+                  }}
+                  type="submit"
+                >
+                  {" "}
+                  Guardar
                 </button>
               </div>
             </form>

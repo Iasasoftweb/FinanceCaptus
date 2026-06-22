@@ -32,6 +32,9 @@ import {
   Files,
   X,
   Navigation,
+  MapPinned,
+  MapPlus,
+  HandCoins,
 } from "lucide-react";
 
 import { toast, ToastContainer } from "react-toastify";
@@ -45,18 +48,6 @@ import "mapbox-gl/dist/mapbox-gl.css";
 import { StyleMap } from "../../components/Maps/StyleMap.tsx";
 import { useEmpresa } from "../../hooks/useEmpresas.tsx";
 import { InputField } from "../../components/stuff/InputField.tsx";
-import InputAdornment from "@mui/material/InputAdornment";
-
-// Componente para re-centrar el mapa cuando cambian las coordenadas
-
-const ITEM_HEIGHT = 48;
-const menuOptions = [
-  "Editar",
-  "Eliminar",
-  "Documentos",
-  "Crear Prestamos",
-  "Consultar",
-];
 
 const ShowClienteCards = () => {
   const [clients, setClientes] = useState([]);
@@ -83,6 +74,11 @@ const ShowClienteCards = () => {
   const [openMapa, setOpenMapa] = useState(false);
   const [clienteSeleccionado, setClienteSeleccionado] = useState(null);
   const [estiloActual, setEstiloActual] = useState(StyleMap.calles);
+  const [addLocation, setAddLocation] = useState(false);
+  const [selectCliente, setSelectCliente] = useState([]);
+  const [modalType, setModalType] = useState(null);
+  const [coordinates, setCoordinates] = useState({ latitud: "", longitud: "" });
+  const [notificaciones, setNotificaciones] = useState([]);
 
   const { DataPrestamos } = useDataPrestamos();
 
@@ -109,7 +105,7 @@ const ShowClienteCards = () => {
 
   const URIs = "http://localhost:5000/clientes/";
   const UrisImg = "http://localhost:5000/uploads/clientes/avata/";
-  
+  const API_BASE_URL = "http://localhost:5000/clientes";
 
   const prestamosInf = (id) => {
     const TotaPrestamos = DataPrestamos.filter((c) => c.idclientes === id);
@@ -178,12 +174,8 @@ const ShowClienteCards = () => {
   };
 
   const CaptureDnI = (id) => {
-    // getCliente();
     setIdRow(id);
-    setTipoModal(true);
-    setIsModalDoc(true);
-    handleMenuClose();
-    console.log(idRow);
+    setModalType("docs");
   };
 
   const handleCloseModal = () => {
@@ -213,6 +205,14 @@ const ShowClienteCards = () => {
     if (pageNumber >= 1 && pageNumber <= totalPages) {
       setCurrentPage(pageNumber);
     }
+  };
+
+  const showToast = (mensaje, tipo = "success") => {
+    const id = Date.now();
+    setNotificaciones((prev) => [...prev, { id, mensaje, tipo }]);
+    setTimeout(() => {
+      setNotificaciones((prev) => prev.filter((n) => n.id !== id));
+    }, 4500);
   };
 
   const deleteClientes = async (id) => {
@@ -270,7 +270,7 @@ const ShowClienteCards = () => {
     setIsModalOpen(false);
   };
   const HandleModalPrestamoClose = () => {
-    setIsModalPrestamos(false);
+    setModalType(null);
   };
 
   const clientShow = (valor) => {
@@ -292,6 +292,96 @@ const ShowClienteCards = () => {
     // Abrimos el modal
   };
 
+  const handleGetDeviceLocation = () => {
+    if (!navigator.geolocation) {
+      showToast(
+        "Tu navegador o dispositivo no soporta la Geolocalización.",
+        "danger",
+      );
+      return;
+    }
+    showToast("Capturando coordenadas satelitales...", "info");
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setCoordinates({
+          latitud: position.coords.latitude.toFixed(6),
+          longitud: position.coords.longitude.toFixed(6),
+        });
+        showToast("¡Coordenadas GPS obtenidas con éxito!", "success");
+      },
+      (error) => {
+        showToast(
+          "Error al obtener ubicación. Asegúrate de dar permisos de GPS.",
+          "warning",
+        );
+      },
+      { enableHighAccuracy: true, timeout: 8000 },
+    );
+  };
+
+  const handleSaveLocation = async () => {
+    if (!selectCliente) return;
+
+    try {
+      // Hacemos el fetch PUT a tu endpoint 'updateCliente'
+      const response = await fetch(`${API_BASE_URL}/${selectCliente.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          latitud: coordinates.latitud,
+          longitud: coordinates.longitud,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // Si Sequelize actualizó el registro en la base de datos con éxito
+        setClientes((prev) =>
+          prev.map((c) => {
+            if (c.id === selectCliente.id) {
+              return {
+                ...c,
+                latitud: coordinates.latitud,
+                longitud: coordinates.longitud,
+              };
+            }
+            return c;
+          }),
+        );
+        showToast(
+          `Ubicación guardada con éxito en la base de datos para ${selectCliente.nombres} ${selectCliente.apellidos}`,
+          "success",
+        );
+      } else {
+        throw new Error(data.message || "Error al guardar en base de datos");
+      }
+    } catch (error) {
+      // Fallback para pruebas en memoria si tu backend Express no está iniciado
+      setClientes((prev) =>
+        prev.map((c) => {
+          if (c.id === selectCliente.id) {
+            return {
+              ...c,
+              latitud: coordinates.latitud,
+              longitud: coordinates.longitud,
+            };
+          }
+          return c;
+        }),
+      );
+      showToast(
+        "Guardado local temporal. Asegúrate de iniciar tu servidor Node.js.",
+        "warning",
+      );
+    } finally {
+      setModalType(null);
+      setSelectCliente(null);
+    }
+  };
+
   return (
     <div
       className="container-fluid min-vh-100 p-4"
@@ -306,16 +396,6 @@ const ShowClienteCards = () => {
           updateList={datosCliente}
         />
       )}
-
-      {isModalPrestamos && (
-        <PrestamosForm
-          ModoEdicion={!isModalEdit}
-          idCliente={idClient}
-          open={true}
-          handleClose={HandleModalPrestamoClose}
-        />
-      )}
-
       <Dialog
         open={openMapa}
         onClose={() => setOpenMapa(false)}
@@ -412,7 +492,6 @@ const ShowClienteCards = () => {
           )}
         </DialogContent>
       </Dialog>
-
       <div className="row align-items-center mb-4">
         <div className="col-md-6 d-flex align-items-center">
           <div
@@ -544,11 +623,9 @@ const ShowClienteCards = () => {
                           Nombres
                         </th>
                         <th className="py-3 text-secondary small fw-bold">
-                          Ciudad
+                          Ciudad / Telefono
                         </th>
-                        <th className="py-3 text-secondary small fw-bold">
-                          Teléfonos
-                        </th>
+
                         <th className="py-3 text-secondary small fw-bold">
                           Ruta
                         </th>
@@ -574,22 +651,23 @@ const ShowClienteCards = () => {
                           <tr key={cliente.id} className="border-bottom">
                             <td className="text-center">
                               <div
-                                className="rounded-circle bg-light d-inline-flex align-items-center justify-center border border-2 border-white shadow-sm"
+                                className="rounded-circle bg-light d-flex align-items-center justify-content-center border border-2 border-white shadow-sm overflow-hidden"
                                 style={{ width: "40px", height: "40px" }}
                               >
                                 {cliente.imgFOTOS ? (
                                   <img
                                     src={`${UrisImg}${cliente.imgFOTOS}`}
                                     alt=""
-                                    style={{ width: "40px", height: "40px" }}
+                                    className="w-100 h-100 object-cover"
+                                    style={{ display: "block" }}
                                   />
                                 ) : (
                                   //  <User size={18} className="text-muted w-100" />
                                   <div className="w-100">
-                                    <h5 className="mb-0  text-muted fs-6">
+                                    <h6 className="mb-0  text-muted fs-6 fw-bold">
                                       {cliente.nombres.charAt(0)}
                                       {cliente.apellidos.charAt(0)}
-                                    </h5>
+                                    </h6>
                                   </div>
                                 )}
                               </div>
@@ -598,14 +676,22 @@ const ShowClienteCards = () => {
                             <td className="fw-bold text-dark small">
                               {cliente.nombres} {cliente.apellidos}
                             </td>
-                            <td className="text-muted small">
-                              {cliente.ciudad}
+                            <td className="py-3 px-3">
+                              <div className="small">
+                                <span className="fw-bold text-secondary d-block">
+                                  {cliente.ciudad || "N/A"}
+                                </span>
+                                <span
+                                  className="text-muted d-block"
+                                  style={{ fontSize: "0.75rem" }}
+                                >
+                                  {cliente.telefono1}
+                                </span>
+                              </div>
                             </td>
-                            <td className="text-muted small">
-                              {cliente.telefono1}
-                            </td>
+
                             <td>
-                              <div className="d-flex align-items-center text-primary fw-medium small">
+                              <div className="d-flex align-items-center fw-medium small fw-bold">
                                 <MapPin size={12} className="me-1" />{" "}
                                 {cliente.tbzona.nombrerutas}
                               </div>
@@ -613,14 +699,12 @@ const ShowClienteCards = () => {
 
                             <td className="text-center">
                               <span
-                                className="badge rounded-1 px-3 py-2 fw-bold shadow-sm text-white"
-                                style={{
-                                  backgroundColor:
+                                className={`badge rounded-pill text-uppercase px-3 py-1.5 fw-bold 
+                                  ${
                                     cliente.estado === "ACTIVO"
-                                      ? MisColores.teal
-                                      : "#95a5a6",
-                                  fontSize: "9px",
-                                }}
+                                      ? "bg-success-subtle text-success border border-success-subtle"
+                                      : "bg-danger-subtle text-danger border border-danger-subtle"
+                                  }`}
                               >
                                 {cliente.estado.toUpperCase()}
                               </span>
@@ -631,7 +715,7 @@ const ShowClienteCards = () => {
                                 style={{
                                   width: "28px",
                                   height: "28px",
-                                  backgroundColor: MisColores.lightTeal,
+                                  backgroundColor: MisColores.headerBlue,
                                   fontSize: "11px",
                                   lineHeight: "1", // Ayuda a que el texto no se desplace hacia abajo
                                   padding: "0", // Elimina paddings internos que puedan empujar el número
@@ -644,7 +728,7 @@ const ShowClienteCards = () => {
                               {role === "ADMINISTRADOR" ||
                               role === "OPERADOR" ||
                               role === "SUPERVISOR" ? (
-                                <button className="btn btn-outline-secondary btn-sm border-0 text-success btn-edit-custom">
+                                <button className="btn btn-outline-primary btn-sm border-0 rounded-3 p-1 mx-1">
                                   <Link
                                     to=""
                                     className=" text-decoration-none text-reset"
@@ -652,7 +736,10 @@ const ShowClienteCards = () => {
                                     {" "}
                                     <Files
                                       size={20}
-                                      onClick={() => CaptureDnI(cliente.id)}
+                                      onClick={() => {
+                                        CaptureDnI(cliente.id);
+                                        setSelectCliente(cliente);
+                                      }}
                                     />{" "}
                                   </Link>
                                 </button>
@@ -668,15 +755,17 @@ const ShowClienteCards = () => {
                             <td className="text-center">
                               <div className="d-flex justify-content-center gap-2">
                                 <button
-                                  className="btn btn-sm text-white px-3 py-2 shadow-sm border-0 d-flex flex-column align-items-center justify-center"
+                                  className="btn btn-sm text-white px-3 py-2 shadow-sm border-0 d-flex flex-column align-items-center justify-center rounded-4"
                                   style={{
-                                    backgroundColor: MisColores.actionRed,
+                                    backgroundColor: MisColores.rojoPastel,
                                     minWidth: "105px",
                                     lineHeight: "1.2",
                                   }}
-                                  onClick={() =>
-                                    HandlInserPrestamos(cliente.id)
-                                  }
+                                  onClick={() => {
+                                    setSelectCliente(cliente);
+                                    setModalType("crearPedido");
+                                    // HandlInserPrestamos(cliente.id)
+                                  }}
                                 >
                                   <PlusCircle size={12} className="mb-1" />
                                   <span
@@ -685,14 +774,34 @@ const ShowClienteCards = () => {
                                       fontWeight: "800",
                                     }}
                                   >
-                                    CREAR PRÉSTAMOS
+                                    CREAR SOLICITUD <br />
+                                    PRÉSTAMOS
                                   </span>
                                 </button>
                                 <button
-                                  className="btn btn-outline-secondary btn-sm border-0 text-info btn-edit-custom"
+                                  className="btn btn-outline-primary btn-sm border-0 text-primary btn-edit-custom"
                                   onClick={() => handleVerMapa(cliente)}
                                 >
-                                  <MapPin size={20} />
+                                  <MapPin size={16} />
+                                </button>
+
+                                <button
+                                  onClick={() => {
+                                    setSelectCliente(cliente);
+                                    setCoordinates({
+                                      latitud: cliente.latitud || "",
+                                      longitud: cliente.longitud || "",
+                                    });
+                                    setModalType("location");
+                                  }}
+                                  className={`btn btn-sm border-0 rounded-3 p-2 ${
+                                    cliente.latitud && cliente.longitud
+                                      ? "bg-success-subtle text-success"
+                                      : "text-secondary hover-bg-light"
+                                  }`}
+                                  title="Establecer Geolocalización (Latitud/Longitud)"
+                                >
+                                  <MapPinned size={16} />
                                 </button>
                                 <button
                                   className="btn btn-outline-secondary border-0 p-2 btn-edit-custom"
@@ -802,14 +911,21 @@ const ShowClienteCards = () => {
                           fontSize: "11px", // Bajamos un punto para asegurar que el texto no rompa
                           whiteSpace: "nowrap", // Evita que el texto salte de línea
                         }}
-                        onClick={() => HandlInserPrestamos(cliente.id)}
+                        onClick={() => {
+                          setSelectCliente(cliente);
+                          setModalType("crearPedido");
+                          // HandlInserPrestamos(cliente.id)
+                        }}
                       >
                         <PlusCircle size={16} className="me-2" /> Crear Préstamo
                       </button>
 
                       <button
                         className="btn btn-outline-secondary border shadow-sm flex-shrink-0"
-                        onClick={handleRol}
+                         onClick={() => {
+                                        CaptureDnI(cliente.id);
+                                        setSelectCliente(cliente);
+                                      }}
                       >
                         <Files size={18} />
                       </button>
@@ -826,416 +942,6 @@ const ShowClienteCards = () => {
               );
             })
           )}
-
-          <div
-            className=" d-flex justify-content-between w-100  rounded-5"
-            style={{ backgroundColor: "" }}
-          >
-            <div className="m-2 d-flex align-content-center">
-              {/* <div className="p-1">
-                        <div
-                          className=" p-2 d-flex align-items-center rounded-3 "
-                          onClick={handlePrint}
-                          style={{
-                            backgroundColor: "#4682b4",
-                            cursor: "pointer",
-                            color: "white",
-                            fontSize: "0.9em",
-                          }}
-                        >
-                          <TfiPrinter className="me-2" /> Imprimir Reporte{" "}
-                        </div>
-                      </div>
-
-                      <div className="p-1">
-                        <PDFDownloadLink
-                          document={<ListadoClientes />}
-                          fileName="Listdo_Clintes_Activos.pdf"
-                          style={{ textDecoration: "none" }}
-                        >
-                          <div
-                            className=" p-2 d-flex align-items-center rounded-3"
-                            style={{
-                              backgroundColor: "#008b8b",
-                              cursor: "pointer",
-                              textDecoration: "none",
-                              color: "white",
-                              fontSize: "0.9em",
-                            }}
-                          >
-                            <GoDownload className="me-2" /> Descargar Reporte{" "}
-                          </div>
-                        </PDFDownloadLink>
-                      </div> */}
-            </div>
-
-            {/* <div className="d-flex justify-content-center align-items-center">
-            <div className="me-4">
-              {isCardShow ? (
-                <RxListBullet
-                  className="fs-3 text-secondary"
-                  onClick={() => clientShow(false)}
-                />
-              ) : (
-                <MdGridView
-                  className="fs-3 text-secondary"
-                  onClick={() => clientShow(true)}
-                />
-              )}
-            </div>
-
-            {role === "ADMINISTRADOR" || role === "SUPERVISOR" ? (
-              <AiOutlinePlus
-                className="text-white  rounded-circle p-2 m-1 shadow"
-                style={{
-                  fontSize: "3rem",
-                  backgroundColor: "lightcoral",
-                  cursor: "pointer",
-                }}
-                onClick={FormInsert}
-              />
-            ) : (
-              <AiOutlinePlus
-                className="text-secundary  rounded-circle shadow"
-                style={{ fontSize: "3rem", backgroundColor: "GrayText" }}
-              />
-            )}
-          </div> */}
-          </div>
-          {/* {isLoading ? (
-          <BeatLoader color="#008080" size={15} className="text-center" />
-        ) : (
-          <div>
-            {isCardShow ? (
-              <div
-                style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}
-                className="p-3"
-              >
-                {_DATA.currentData().map((items) => (
-                  <Card
-                    key={items.id}
-                    sx={{
-                      width: 300,
-                      lineHeight: 1,
-                      height: 110,
-                      fontSize: 10,
-                    }}
-                    className="shadow"
-                  >
-                    {items.estado === 1 ? (
-                      <div
-                        className="w-100 p-2 d-flex justify-content-between"
-                        style={{ height: 22, backgroundColor: "steelblue" }}
-                      >
-                        <div className="clFont text-white">Activo</div>
-                        <div className="clFont text-white">
-                          <LiaMapMarkedAltSolid
-                            className=""
-                            style={{ fontSize: 10 }}
-                          />{" "}
-                          {items.tbzona.nombrerutas}{" "}
-                        </div>
-                      </div>
-                    ) : (
-                      <div
-                        className="w-100 p-2 d-flex justify-content-between"
-                        style={{
-                          height: 22,
-                          backgroundColor: "lightcoral",
-                        }}
-                      >
-                        <div className="clFont text-white">Inactivo</div>
-                        <div className="clFont text-white">
-                          <LiaMapMarkedAltSolid
-                            className=""
-                            style={{ fontSize: 10 }}
-                          />{" "}
-                          {items.tbzona.nombrerutas}{" "}
-                        </div>
-                      </div>
-                    )}
-
-                    <CardHeader
-                      avatar={
-                        <Avatar
-                          aria-label="recipe"
-                          sx={{ width: 60, height: 60 }}
-                          src={`${UrisImg}${items.imgFOTOS}`}
-                        />
-                      }
-                      action={
-                        <IconButton
-                          aria-label="settings"
-                          onClick={(event) => handleClickMenu(event, items.id)}
-                        >
-                          <MoreVertIcon />
-                        </IconButton>
-                      }
-                      title={`${items.nombres} ${items.apellidos}`}
-                      subheader={items.dni}
-                    />
-
-                    <Menu
-                      id="long-menu"
-                      MenuListProps={{
-                        "aria-labelledby": "long-button",
-                      }}
-                      anchorEl={anchorEl}
-                      open={open}
-                      onClose={handleMenuClose}
-                      slotProps={{
-                        paper: {
-                          style: {
-                            maxHeight: ITEM_HEIGHT * 4.5,
-                            width: "20ch",
-                          },
-                        },
-                      }}
-                    >
-                      <MenuItem onClick={() => handleEdit(idClient)}>
-                        <ListItemIcon>
-                          <CiEdit className="fs-5" />
-                        </ListItemIcon>
-                        <Typography variant="inherit" className="clFont">
-                          Editar
-                        </Typography>
-                      </MenuItem>
-
-                      {role === "ADMINISTRADOR" ? (
-                        <MenuItem onClick={() => deleteClientes(idClient)}>
-                          <ListItemIcon>
-                            <RiDeleteBin6Line className="fs-5" />
-                          </ListItemIcon>
-                          <Typography variant="inherit" className="clFont">
-                            Eliminar
-                          </Typography>
-                        </MenuItem>
-                      ) : (
-                        <MenuItem>
-                          <ListItemIcon>
-                            <RiDeleteBin6Line className="fs-5" />
-                          </ListItemIcon>
-                          <Typography variant="inherit" className="clFont">
-                            Eliminar
-                          </Typography>
-                        </MenuItem>
-                      )}
-
-                      <MenuItem onClick={() => CaptureDnI(idClient)}>
-                        <ListItemIcon>
-                          <PiUploadSimpleFill className="fs-5" />
-                        </ListItemIcon>
-                        <Typography variant="inherit" className="clFont">
-                          Documentos
-                        </Typography>
-                      </MenuItem>
-
-                      <MenuItem onClick={handleMenuClose}>
-                        <ListItemIcon>
-                          <GiTakeMyMoney className="fs-5" />
-                        </ListItemIcon>
-                        <Typography variant="inherit" className="clFont">
-                          Crear Prestamos
-                        </Typography>
-                      </MenuItem>
-                    </Menu>
-                    <CardContent
-                      sx={{ justifyItems: "center", padding: 0, margin: 0 }}
-                    ></CardContent>
-                  </Card>
-                ))}
-              </div>
-            ) : (
-              <div className="p-4 text-center">
-                <Table className="mi-tabla">
-                  <thead>
-                    <tr className="clFont text-center ">
-                      <th className="clFont text-center"> FOTO</th>
-                      <th className="clFont text-center" style={{ width: 125 }}>
-                        DNI
-                      </th>
-                      <th className="clFont text-center">NOMBRES</th>
-                      <th className="clFont text-center" style={{ width: 125 }}>
-                        SECTOR
-                      </th>
-                      <th className="clFont text-center" style={{ width: 115 }}>
-                        TELÉFONOS
-                      </th>
-                      <th className="clFont text-center">Nombre de Ruta</th>
-                      <th className="clFont text-center" style={{ width: 115 }}>
-                        ESTADO
-                      </th>
-                      <th className="clFont text-center ">PRÉSTAMOS</th>
-
-                      <th className="clFont text-center" style={{ width: 100 }}>
-                        DOCUMENTOS
-                      </th>
-                      <th
-                        className="clFont text-center"
-                        style={{ width: 140 }}
-                      ></th>
-                      <th className="clFont text-center">ACCIÓN</th>
-                    </tr>
-                  </thead>
-                  <tbody className="">
-                    {currentClientes.map((item) => {
-                      const { resultTotal } = prestamosInf(item.id);
-                      return (
-                        <tr key={item.id}>
-                          <td
-                            className="clFont align-middle justify-content-center"
-                            width={50}
-                          >
-                            {
-                              <Avatar
-                                src={`${UrisImg}${item.imgFOTOS}`}
-                                sx={{ width: 40, height: 40 }}
-                              />
-                            }{" "}
-                          </td>
-                          <td className="clFont align-middle">{item.dni}</td>
-                          <td
-                            className="clFont align-middle"
-                            style={{ width: "200px" }}
-                          >
-                            {item.nombres} {item.apellidos}
-                          </td>
-
-                          <td className="clFont align-middle">{item.ciudad}</td>
-                          <td className="clFont align-middle">
-                            {item.telefono1}
-                          </td>
-                          <td
-                            className="clFont align-middle"
-                            style={{ width: "150px" }}
-                          >
-                            <span>
-                              {" "}
-                              <FaRoute className="mx-2 text-primary" />
-                            </span>
-                            {item.tbzona.nombrerutas}
-                          </td>
-                          <td className="clFont align-middle p-1">
-                            {item.estado === 1 ? (
-                              <p
-                                className="rounded-1 text-center w-100 shadow text-white p-1"
-                                style={{ backgroundColor: "#157394" }}
-                              >
-                                {" "}
-                                Activo
-                              </p>
-                            ) : (
-                              <p
-                                className="text-white rounded-1 text-center shadow p-1"
-                                style={{ backgroundColor: "#e17070" }}
-                              >
-                                {" "}
-                                Inactivo
-                              </p>
-                            )}
-                          </td>
-                          <td
-                            className=" align-middle clFont"
-                            style={{ width: "20px" }}
-                          >
-                            {" "}
-                            <span
-                              className=" text-white rounded-5 text-center p-2 "
-                              style={{ backgroundColor: "#589cb4" }}
-                            >
-                              <span className="m-2">{resultTotal}</span>
-                            </span>
-                          </td>
-
-                          <td className="text-center align-middle">
-                            {role === "ADMINISTRADOR" ||
-                            role === "OPERADOR" ||
-                            role === "SUPERVISOR" ? (
-                              <Link to="">
-                                <LiaCloudUploadAltSolid
-                                  className="me-3 text-primary fs-3 align-middle"
-                                  onClick={() => CaptureDnI(item.id)}
-                                />
-                              </Link>
-                            ) : (
-                              <LiaFileUploadSolid
-                                className="me-3 fs-3 align-middle"
-                                style={{
-                                  color: "GrayText",
-                                  cursor: "pointer",
-                                }}
-                              />
-                            )}
-                          </td>
-                          <td
-                            className="clFont text-center align-middle"
-                            style={{ width: "140px" }}
-                          >
-                            {" "}
-                            <div
-                              className="text-center text-white p-1 rounded-3"
-                              style={{ backgroundColor: "#dc4c4c" }}
-                              onClick={() => HandlInserPrestamos(item.id)}
-                            >
-                              <GiTakeMyMoney className="fs-5" /> Crear Prestamos
-                            </div>{" "}
-                          </td>
-
-                          <td
-                            className="text-center align-middle "
-                            style={{ width: "300px" }}
-                          >
-                            {role === "ADMINISTRADOR" ? (
-                              <AiOutlineDelete
-                                className="text-danger  fs-4 m-4"
-                                onClick={() => deleteClientes(item.id)}
-                              />
-                            ) : (
-                              <AiOutlineDelete
-                                className="me-4 fs-4"
-                                style={{ color: "GrayText" }}
-                              />
-                            )}
-
-                            {role === "ADMINISTRADOR" ? (
-                              <CiEdit
-                                className="text-primary fs-4 me-4"
-                                onClick={() => handleEdit(item.id)}
-                              />
-                            ) : (
-                              <CiEdit
-                                className="fs-5"
-                                style={{ color: "GrayText" }}
-                              />
-                            )}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </Table>
-              </div>
-            )}
-
-            <ThemeProvider theme={theme}>
-              <div className="d-flex align-items-center ">
-                <Pagination
-                  count={countpage}
-                  size="large"
-                  page={page}
-                  color="secundary"
-                  onChange={handlePageChance}
-                />
-
-                <div>
-                  <p className="clFont m-auto">
-                    Total de Clientes : {totalItems}
-                  </p>
-                </div>
-              </div>
-            </ThemeProvider>
-          </div>
-        )} */}
         </div>
       ) : (
         <EmptyState
@@ -1243,8 +949,7 @@ const ShowClienteCards = () => {
           subtitle="En cuanto se cree una nueva cliente, aparecerá aquí."
         />
       )}
-
-      {currentClientes.length > 0 ? (
+      {currentClientes.length > 0 && (
         <div className="d-flex flex-column flex-sm-row justify-content-between align-items-center bg-white p-3 rounded-3 shadow-sm mt-4 border">
           <div className="text-muted small mb-3 mb-sm-0">
             Mostrando registros del <b>{indexOfFirstItem + 1}</b> al{" "}
@@ -1303,22 +1008,268 @@ const ShowClienteCards = () => {
             </ul>
           </nav>
         </div>
-      ) : (
-        <></>
       )}
+      ;
+      {/* ================= MODALES DEL SISTEMA (Estilizados con Bootstrap) ================= */}
+      {modalType && (
+        <div
+          className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center p-3"
+          style={{
+            backgroundColor: "rgba(33, 37, 41, 0.4)",
+            backdropFilter: "blur(4px)",
+            zIndex: 1060,
+          }}
+        >
+          {modalType === "docs" &&
+            selectCliente &&
+            (console.log(selectCliente, "selectCliente en modal") || (
+              <ClienteDo
+                Id={idRow}
+                open={true}
+                handleClose={() => setModalType(null)}
+                dataInitial={selectCliente}
+              />
+            ))}
 
-      {isModalDoc && (
-        <ClienteDo
-          Id={idRow}
-          open={isModalDoc}
-          handleClose={handleCloseModal}
-          dataInitial={DataCliente}
-        />
+          {modalType === "crearPedido" && selectCliente && (
+            <div
+              className="card shadow-lg border-0 w-100 animate-in fade-in zoom-in-95 w-100"
+              style={{ maxWidth: "1000px", borderRadius: "16px" }}
+            >
+              <div className="card-header">
+                <div className="card-header border-bottom bg-white p-4 d-flex justify-content-between align-items-center">
+                  <div className="d-flex align-items-center gap-3">
+                    <div
+                      className="p-2 rounded-3 text-white d-flex align-items-center justify-content-center shadow-sm"
+                      style={{
+                        backgroundColor: MisColores.headerBlue,
+                        width: "45px",
+                        height: "45px",
+                      }}
+                    >
+                      <HandCoins size={20} />
+                    </div>
+                    <div>
+                      <h2
+                        className="fw-bold mb-0"
+                        style={{ color: "#2c3e50", fontSize: "1.5rem" }}
+                      >
+                        Nuevo Préstamo
+                      </h2>
+                      <p className="text-muted mb-0 small">
+                        Finance Cactus - Gestión de Cartera
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    className="btn btn-light rounded-circle p-2 text-secondary hover:bg-danger hover:text-white transition-all"
+                    onClick={() => setModalType(null)}
+                  >
+                    <X size={20} />
+                  </button>
+                </div>
+              </div>
+
+              <PrestamosForm
+                ModoEdicion={false}
+                idCliente={selectCliente.id}
+                open={true}
+                handleClose={HandleModalPrestamoClose}
+              />
+            </div>
+          )}
+
+          {/* MODAL: ESTABLECER UBICACIÓN GEOGRÁFICA */}
+          {modalType === "location" && selectCliente && (
+            <div
+              className="card shadow-lg border-0 w-100 animate-in fade-in zoom-in-95"
+              style={{ maxWidth: "420px", borderRadius: "16px" }}
+            >
+              <div
+                className="card-header bg-dark text-white p-4 border-0 d-flex align-items-center justify-content-between"
+                style={{ borderRadius: "16px 16px 0 0" }}
+              >
+                <div>
+                  <h3 className="h6 fw-bold m-0">Ubicación de Cobro GPS</h3>
+                  <p className="small text-success-subtle m-0 mt-1">
+                    Cliente: {selectCliente.nombres} {selectCliente.apellidos}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setModalType(null)}
+                  className="btn-close btn-close-white border-0"
+                ></button>
+              </div>
+
+              <div className="card-body p-4">
+                {/* Botón Inteligente para capturar la ubicación real */}
+                <button
+                  type="button"
+                  onClick={handleGetDeviceLocation}
+                  className="btn btn-light border-secondary-subtle text-dark fw-bold w-full p-2.5 mb-3 rounded-3 d-flex align-items-center justify-content-center gap-2"
+                  style={{ fontSize: "0.82rem", width: "100%" }}
+                >
+                  <MapPlus size={18} color={MisColores.rojoPastel} />
+                  OBTENER MI UBICACIÓN ACTUAL (GPS)
+                </button>
+
+                <div className="row g-3 mb-3">
+                  <div className="col-6">
+                    <label
+                      className="text-uppercase text-muted fw-bold small mb-1"
+                      style={{ fontSize: "0.7rem" }}
+                    >
+                      Latitud
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Ej. 18.4523"
+                      value={coordinates.latitud}
+                      onChange={(e) =>
+                        setCoordinates({
+                          ...coordinates,
+                          latitud: e.target.value,
+                        })
+                      }
+                      className="form-control fw-bold bg-light"
+                    />
+                  </div>
+                  <div className="col-6">
+                    <label
+                      className="text-uppercase text-muted fw-bold small mb-1"
+                      style={{ fontSize: "0.7rem" }}
+                    >
+                      Longitud
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Ej. -70.7324"
+                      value={coordinates.longitud}
+                      onChange={(e) =>
+                        setCoordinates({
+                          ...coordinates,
+                          longitud: e.target.value,
+                        })
+                      }
+                      className="form-control fw-bold bg-light"
+                    />
+                  </div>
+                </div>
+
+                {/* Previsualización en Google Maps si existen coordenadas */}
+                {coordinates.latitud && coordinates.longitud && (
+                  <div className="bg-success-subtle border border-success-subtle p-3 rounded-3 text-center">
+                    <a
+                      href={`https://www.google.com/maps/search/?api=1&query=${coordinates.latitud},${coordinates.longitud}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="small fw-bold text-success text-decoration-none d-inline-flex align-items-center gap-2"
+                    >
+                      <i className="bi bi-box-arrow-up-right"></i>
+                      Ver punto exacto en Google Maps
+                    </a>
+                  </div>
+                )}
+              </div>
+
+              <div
+                className="card-footer bg-light p-3 border-top-0 d-flex justify-content-end gap-2"
+                style={{ borderRadius: "0 0 16px 16px" }}
+              >
+                <button
+                  onClick={() => setModalType(null)}
+                  className="btn btn-outline-secondary border-0 fw-semibold px-4 rounded-3"
+                  style={{ fontSize: "0.9em" }}
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleSaveLocation}
+                  className="btn fw-semibold px-4 rounded-3 text-white"
+                  style={{
+                    backgroundColor: MisColores.headerBlue,
+                    fontSize: "0.9em",
+                  }}
+                >
+                  Guardar Ubicación
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
       )}
+      {/* ================= TOASTS DE ACCIÓN ================= */}
+      <div
+        className="position-fixed top-0 end-0 p-4"
+        style={{
+          zIndex: 1080,
+          maxWidth: "350px",
+          width: "100%",
+          pointerEvents: "none",
+        }}
+      >
+        {notificaciones.map((toast) => {
+          const config = {
+            success: {
+              bg: "rgba(209, 250, 229, 0.9)",
+              border: "1px solid rgba(16, 185, 129, 0.2)",
+              text: "#065f46",
+              icon: "bi-check-circle-fill",
+            },
+            danger: {
+              bg: "rgba(254, 226, 226, 0.9)",
+              border: "1px solid rgba(239, 68, 68, 0.2)",
+              text: "#991b1b",
+              icon: "bi-x-circle-fill",
+            },
+            warning: {
+              bg: "rgba(254, 243, 199, 0.9)",
+              border: "1px solid rgba(245, 158, 11, 0.2)",
+              text: "#92400e",
+              icon: "bi-exclamation-triangle-fill",
+            },
+            info: {
+              bg: "rgba(219, 234, 254, 0.9)",
+              border: "1px solid rgba(59, 130, 246, 0.2)",
+              text: "#1e40af",
+              icon: "bi-info-circle-fill",
+            },
+          };
+          const style = config[toast.tipo] || config.success;
 
-      <ToastContainer />
+          return (
+            <div
+              key={toast.id}
+              className="toast show d-flex align-items-center p-3 border-0 shadow mb-3 pointer-events-auto"
+              role="alert"
+              style={{
+                background: style.bg,
+                backdropFilter: "blur(10px)",
+                WebkitBackdropFilter: "blur(10px)",
+                color: style.text,
+                border: style.border,
+                borderRadius: "12px",
+              }}
+            >
+              <i className={`bi ${style.icon} me-2 fs-5`}></i>
+              <div className="toast-body p-0 flex-grow-1 small fw-bold">
+                {toast.mensaje}
+              </div>
+              <button
+                type="button"
+                onClick={() =>
+                  setNotificaciones((prev) =>
+                    prev.filter((n) => n.id !== toast.id),
+                  )
+                }
+                className="btn-close ms-auto"
+                style={{ filter: "contrast(0.5)" }}
+              ></button>
+            </div>
+          );
+        })}
+      </div>
     </div>
-    //
   );
 };
 

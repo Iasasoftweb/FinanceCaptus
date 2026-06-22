@@ -60,6 +60,38 @@ export const calcularTasaEfectiva = (monto, cuotas, pagoCuota) => {
   };
   
 
+ export  const calculateFrenchCuota = (capital, term, ratePercent) => {
+    const r = ratePercent / 100;
+    if (r <= 0) return capital / term;
+    return (capital * r) / (1 - Math.pow(1 + r, -term));
+  };
+
+
+  export  const solveRateForFrench = (capital, term, desiredCuota) => {
+    if (capital <= 0 || term <= 0 || desiredCuota <= (capital / term)) return 0;
+    
+    let low = 0;
+    let high = 5.0; // Soporta tasas periódicas de hasta el 500% semanal/quincenal/mensual
+    let tolerance = 0.000001;
+    let maxIterations = 100;
+
+    for (let i = 0; i < maxIterations; i++) {
+      let mid = (low + high) / 2;
+      let calculatedCuota = (capital * mid) / (1 - Math.pow(1 + mid, -term));
+
+      if (Math.abs(calculatedCuota - desiredCuota) < tolerance) {
+        return parseFloat((mid * 100).toFixed(4));
+      }
+
+      if (calculatedCuota > desiredCuota) {
+        high = mid;
+      } else {
+        low = mid;
+      }
+    }
+    return parseFloat((((low + high) / 2) * 100).toFixed(4));
+  };
+
 
 
 

@@ -37,6 +37,7 @@ const getAmortizaData = ({
 }: AmortizaProps): AmortizaData[] => {
   const tabla: AmortizaData[] = [];
 
+  console.log(tabla);
   const capital = limpiarMonto(ccapital);
 
   let saldoPendiente = capital;
@@ -54,52 +55,40 @@ const getAmortizaData = ({
   // 4% mensual = 0.04
   const tasa = loan / 100;
 
-  if (tipo === "Cuota Fija" && fre === "SEMANAL") {
-    for (let i = 0; i < tc; i++) {
-      // INTERÉS SOBRE SALDO
-      const interes = saldoPendiente * tasa;
+  if (tipo === "Cuota Fija") {
+    // Definimos cuántos días sumar según la frecuencia elegida
+    let diasASumar = 7;
+    if (fre === "QUINCENAL") diasASumar = 15;
+    if (fre === "MENSUAL") diasASumar = 30; // O usar addMonths(fecha, 1) de date-fns
 
-      // CAPITAL PAGADO
+    for (let i = 0; i < tc; i++) {
+      const interes = saldoPendiente * tasa;
       let capitalPagado = cuotaFija - interes;
 
-      // EVITAR QUE LA ÚLTIMA CUOTA SE PASE
       if (capitalPagado > saldoPendiente) {
         capitalPagado = saldoPendiente;
       }
 
-      // NUEVO SALDO
       saldoPendiente -= capitalPagado;
-
-      if (saldoPendiente < 0) {
-        saldoPendiente = 0;
-      }
+      if (saldoPendiente < 0) saldoPendiente = 0;
 
       tabla.push({
         numcuota: i + 1,
-
         fechapago: fecha.toISOString().split("T")[0],
-
         fechavencimiento: addDays(fecha, prorrogaCuotas)
           .toISOString()
           .split("T")[0],
-
         montocuota: parseFloat((cuotaFija + seguroMonto).toFixed(2)),
-
         montocapital: parseFloat(capitalPagado.toFixed(2)),
-
         montointeres: parseFloat(interes.toFixed(2)),
-
         seguro: parseFloat(seguroMonto.toFixed(2)),
-
         saldoPendiente: parseFloat(saldoPendiente.toFixed(2)),
-
         estado: "normal",
-
         pagada: "false",
       });
 
-      // SIGUIENTE SEMANA
-      fecha = addDays(fecha, 7);
+      // Avanzar la fecha según la frecuencia dinámica
+      fecha = addDays(fecha, diasASumar);
     }
   }
 

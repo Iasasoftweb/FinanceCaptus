@@ -17,6 +17,7 @@ import Company from "./pages/Companies/Company.tsx";
 import axios from "axios";
 import PrestamoDetail from "./pages/Prestamos/PrestamoDetail.tsx";
 import PagosCuotas from "./pages/pagos/PagosCuotas.tsx";
+import ShowPedidos from "./pages/Prestamos/ShowPedidos.tsx";
 
 function App() {
   const [openSidebarToggle, setOpenSidebarToggle] = useState(false);
@@ -119,7 +120,8 @@ function App() {
             }
           />
           <Route path="/prestamodetail/:id" element={<PrestamoDetail />} />
-          <Route path="/prestamos" element={<ShowPrestamos />} />
+          <Route path="/prestamos/" element={<ShowPrestamos situacion="prestamos" />} />
+          <Route path="/solicitudes/" element={<ShowPrestamos situacion="solicitudes" />} />
           <Route path="/company" element={<Company />} />
         </Route>
       </Routes>

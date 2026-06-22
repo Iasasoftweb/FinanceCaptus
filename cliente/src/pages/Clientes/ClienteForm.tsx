@@ -35,7 +35,30 @@ import { TbBorderRadius } from "react-icons/tb";
 import { IoIosSearch } from "react-icons/io";
 import BeatLoader from "react-spinners/BeatLoader";
 import { MisColores } from "../../components/stuff/MisColores.tsx";
-import { ArrowLeftFromLine, Building, User2, X } from "lucide-react";
+import {
+  ArrowLeftFromLine,
+  Building,
+  Building2,
+  Calendar,
+  DollarSign,
+  FileUser,
+  Funnel,
+  GraduationCap,
+  House,
+  IdCard,
+  MailPlus,
+  MapPinHouse,
+  MessageCircleCheck,
+  Phone,
+  Route,
+  TrafficCone,
+  User,
+  User2,
+  VenusAndMars,
+  X,
+} from "lucide-react";
+import { SectionTitle } from "../../components/stuff/SectionTitle.tsx";
+import { InputField } from "../../components/stuff/InputField.tsx";
 
 type FormValues = {
   sueldo: number;
@@ -88,6 +111,7 @@ const ClienteForm = ({
   const [fileToUpload, setFileToUpload] = useState<File | null>(null);
   const [longitud, setLongitud] = useState("18.45310764759655");
   const [latitud, setLatitud] = useState("-70.73452937006576");
+  const [SueldoLimite, setSueldoLimite] = useState(0);
 
   const theme = createTheme({
     components: {
@@ -157,7 +181,7 @@ const ClienteForm = ({
       tipo_dni: 1,
       fecha_nac: new Date(),
       idrutas: 1,
-      estado: 'Activo',
+      estado: "Activo",
       sueldo: 0.0,
       longitud: "-70.123456", // Valor por defecto inicial
       latitud: "18.456789",
@@ -297,7 +321,7 @@ const ClienteForm = ({
       setValue("nombres", newNombre);
 
       setValorApellidos(newApellidos);
-      console.log(newNombre || newApellidos);
+      
     } else {
       setValorNombre("");
       setValue("nombres", "");
@@ -526,7 +550,6 @@ const ClienteForm = ({
       <Modal
         open={isModalOpen}
         onClose={CloseModal}
-        //  style={{ zIndex: 1900 }}
         BackdropProps={{
           timeout: 500, // Duración de la transición del backdrop
           onClick: (event) => {
@@ -561,7 +584,7 @@ const ClienteForm = ({
             boxShadow: 24,
           }}
         >
-          <div className="card-header border-bottom bg-white p-4 d-flex justify-content-between align-items-center">
+          <div className="card-header border-bottom bg-white p-3 d-flex justify-content-between align-items-center">
             <div className="d-flex align-items-center gap-3">
               <div
                 className="p-2 rounded-3 text-white d-flex align-items-center justify-content-center shadow-sm"
@@ -597,10 +620,10 @@ const ClienteForm = ({
 
           <form
             onSubmit={handleSubmit(onSubmit)}
-            className="border-1 border-light-subtle "
+            className="border-1 border-light-subtle row g-3 mx-2"
             onKeyDown={handleKeyDown}
           >
-            <div className=" d-flex justify-content-between align-items-center ">
+            <div className=" d-flex justify-content-between align-items-center mb-0 ">
               <div className="d-flex align-items-center">
                 <input
                   type="file"
@@ -619,7 +642,7 @@ const ClienteForm = ({
                 <div
                   className="d-flex justify-content-center p-1 mx-3 "
                   onClick={() => inputFileRef.current.click()}
-                  style={{ cursor:"pointer"}}
+                  style={{ cursor: "pointer" }}
                 >
                   {preview ? (
                     <Avatar
@@ -653,662 +676,435 @@ const ClienteForm = ({
                     </div>
                   )}
                 </div>
-                <span className="bg-warning-subtle p-2 rounded-4 fw-semibold animar-resalte" style={{ fontSize:"0.8em"}}><ArrowLeftFromLine size={18} className="mx-1" />Click para seleccionar Imagen</span>
+                <span
+                  className="bg-warning-subtle p-2 rounded-4 fw-semibold animar-resalte"
+                  style={{ fontSize: "0.8em" }}
+                >
+                  <ArrowLeftFromLine size={18} className="mx-1" />
+                  Click para seleccionar Imagen
+                </span>
               </div>
+            </div>
 
-             
+            <div className="card-body ">
+              <SectionTitle title="Datos Personales" />
+            </div>
 
+            <InputField
+              label="Número de Cédula"
+              readOnly
+              required
+              icon={IdCard}
               
-            </div>
-            <div className="mt-2 mx-4">
-              <span className="fs-6 fw-medium text-info">Datos Personales</span>
-            </div>
-            <div className="mx-4">
-              <div className="row ">
-                <div className="col-12 col-sm-6 col-md-4  p-2 ">
-                  <div className="">
-                    <TextField
-                      {...register("tipo_dni", {
-                        required: "Este campo es obligatorio",
-                      })}
-                      label="Documento de Identificacion"
-                      select
-                      value={tipodoc}
-                      fullWidth
-                      onChange={handleTipoDoc}
-                      InputLabelProps={{ style: { fontSize: "0.9em" } }}
-                      sx={{
-                        "& .MuiOutlinedInput-root": {
-                          borderRadius: "10px",
-                          fontSize: "12px", // Controla el radio de borde
-                          width: "100%",
-                          color: "GrayText",
-                        },
-                      }}
-                    >
-                      {tipoDocs.map((options) => (
-                        <MenuItem key={options.id} value={options.id}>
-                          <span className="clFont">{options.tipodoc}</span>
-                        </MenuItem>
-                      ))}
-                    </TextField>
-                    {errors.tipo_dni && (
-                      <p className="errorColor"> {errors.tipo_dni.message} </p>
-                    )}
-                  </div>
-                </div>
+              col="col-md-3"
 
-                <div className="col-12 col-sm-6 col-md-4  p-2 ">
-                  <div>
-                    <TextField
-                      label="Nomero de Documento *"
-                      fullWidth
-                      {...register("dni", {
-                        required: "Este campo es obligatorio",
-                        minLength: {
-                          value: 13,
-                          message: "El DNI no debe tener menos 13 caracateres",
-                        },
+            >
+              <select
+                className="form-control form-control-sm clFont"
+                {...register("tipo_dni", {
+                  required: "Este campo es obligatorio",
+                })}
+                value={tipodoc}
+                onChange={handleTipoDoc}
+              >
+                <option value="">Seleccione...</option>
+                {tipoDocs.map((options) => (
+                  <option key={options.id} value={options.id}>
+                    <span className="clFont">{options.tipodoc}</span>
+                  </option>
+                ))}
+              </select>
+            </InputField>
 
-                        maxLength: {
-                          value: 13,
-                          message: "El DNI no debe tener mas de 13 caracteres",
-                        },
-                      })}
-                      onChange={handleDNIChange}
-                      InputLabelProps={{ style: { fontSize: "0.9em" } }}
-                      InputProps={{
-                        endAdornment: (
-                          <InputAdornment position="end">
-                            <span>
-                              <IconButton
-                                onClick={() => {
-                                  const dniValue = watch("dni"); // Obtiene el valor actual del campo "dni"
-                                  buscarPersonas(`${dniValue}`);
-                                }}
-                              >
-                                {isLoading ? (
-                                  <BeatLoader color="#008080" size={15} />
-                                ) : (
-                                  <IoIosSearch
-                                    className="fs-3"
-                                    style={{ color: "#008080" }}
-                                  />
-                                )}
-                              </IconButton>
-                            </span>
-                          </InputAdornment>
-                        ),
-                      }}
-                      sx={{
-                        "& .MuiOutlinedInput-root": {
-                          borderRadius: "10px",
-                          fontSize: "12px", // Controla el radio de borde
-                          width: "100%",
-                          color: "GrayText",
-                        },
-                      }}
-                    />
-                    {errors.dni && (
-                      <p className="errorColor">{errors.dni.message}</p>
-                    )}
-                  </div>
-                </div>
+            <InputField
+              label="Número de Cédula"
+              icon={IdCard}
+              endIcon={Funnel}
+              onEndIconClick={() => buscarPersonas(watch("dni"))}
+              col="col-md-3"
+              required
+              error={errors.dni?.message}
+            >
+              <input
+                type="text"
+                className="form-control form-control-sm clFont"
+                {...register("dni", {
+                  required: "Este campo es obligatorio",
+                  minLength: {
+                    value: 13,
+                    message: "El DNI no debe tener menos 13 caracateres",
+                  },
+                  maxLength: {
+                    value: 13,
+                    message: "El DNI no debe tener mas de 13 caracteres",
+                  },
+                })}
+                onChange={handleDNIChange}
+                value={watch("dni")}
+              />
+            </InputField>
 
-                <div className="col-12 col-sm-6 col-md-4  p-2 ">
-                  <div className="">
-                    <TextField
-                      label="Nombres *"
-                      fullWidth
-                      value={valorNombre}
-                      onInput={handleInputChangeNombres}
-                      {...register("nombres", {
-                        required: "Este Campo es Obligado",
-                      })}
-                      InputLabelProps={{ style: { fontSize: "0.9em" } }}
-                      sx={{
-                        "& .MuiOutlinedInput-root": {
-                          borderRadius: "10px",
-                          fontSize: "12px", // Controla el radio de borde
-                          width: "100%",
-                          color: "GrayText",
-                        },
-                      }}
-                    />
-                    {errors.nombres && (
-                      <p className="errorColor"> {errors.nombres.message} </p>
-                    )}
-                  </div>
-                </div>
-              </div>
+            <InputField
+              label="Nombres"
+              icon={User2}
+              col="col-md-3"
+              required
+              error={errors.nombres?.message}
+            >
+              <input
+                type="text"
+                className="form-control form-control-sm clFont"
+                {...register("nombres", {
+                  required: "Este campo es obligatorio",
+                })}
+                onInput={handleInputChangeNombres}
+              />
+            </InputField>
 
-              <div className="row ">
-                <div className="col-12 col-sm-6 col-md-4  p-2 ">
-                  <div className="">
-                    <TextField
-                      label="Apellidos *"
-                      fullWidth
-                      value={valorApellidos}
-                      onInput={handleInputChangeApellidos}
-                      {...register("apellidos", {
-                        required: "Este campo es obligatorio",
-                      })}
-                      InputLabelProps={{ style: { fontSize: "0.9em" } }}
-                      sx={{
-                        "& .MuiOutlinedInput-root": {
-                          borderRadius: "10px",
-                          fontSize: "12px", // Controla el radio de borde
-                          width: "100%",
-                          color: "GrayText",
-                        },
-                      }}
-                    />
+            <InputField
+              label="Apellidos"
+              icon={User2}
+              col="col-md-3"
+              required
+              error={errors.apellidos?.message}
+            >
+              <input
+                type="text"
+                className="form-control form-control-sm clFont"
+                {...register("apellidos", {
+                  required: "Este campo es obligatorio",
+                })}
+                onInput={handleInputChangeApellidos}
+              />
+            </InputField>
 
-                    {errors.apellidos && (
-                      <p className="errorColor"> {errors.apellidos.message} </p>
-                    )}
-                  </div>
-                </div>
+            <InputField label="Apodo" icon={User} col="col-md-3">
+              <input
+                type="text"
+                className="form-control form-control-sm clFont"
+                {...register("apodo")}
+                onInput={handleInputChange}
+              />
+            </InputField>
 
-                <div className="col-12 col-sm-6 col-md-4  p-2 ">
-                  <TextField
-                    label="Apodo "
-                    fullWidth
-                    onInput={handleInputChange}
-                    {...register("apodo")}
-                    InputLabelProps={{ style: { fontSize: "0.9em" } }}
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        borderRadius: "10px",
-                        fontSize: "12px", // Controla el radio de borde
-                        width: "100%",
-                        color: "GrayText",
-                      },
-                    }}
+            <InputField label="Estado Civil" icon={FileUser} col="col-md-3">
+              <select
+                className="form-control form-control-sm clFont"
+                {...register("estadocivil")}
+                onChange={handleEstdoCivil}
+              >
+                <option value="">Seleccione...</option>
+                <option value="SOLTERO">Soltero</option>
+                <option value="CASADA">Casado</option>
+                <option value="UNIONLIBRE">Unión Libre</option>
+              </select>
+            </InputField>
+
+            <InputField label="Sexo" icon={VenusAndMars} col="col-md-3">
+              <select
+                className="form-control form-control-sm clFont"
+                {...register("sexo")}
+                value={Sexo}
+                onChange={handleSexo}
+              >
+                <option value="">Seleccione...</option>
+                <option value="M">Masculino</option>
+                <option value="F">Femenino</option>
+              </select>
+            </InputField>
+
+            <InputField label="Fecha" icon={Calendar} required col="col-md-3">
+              <input
+                type="date"
+                className="form-control border-0 shadow-none clFont"
+                style={{ fontSize: "0.8em" }}
+                {...register("fecha_nac")}
+                onChange={handleFechaNac}
+                value={FechaNac}
+              />
+            </InputField>
+
+            <InputField label="Escolaridad" icon={GraduationCap} col="col-md-3">
+              <select
+                className="form-control border-0 shadow-none clFont"
+                style={{ fontSize: "0.8em" }}
+                {...register("escolaridad")}
+                value={Escolaridad}
+                onChange={handleEscolaridad}
+              >
+                <option value="">Seleccione...</option>
+                <option value="PRIMARIA">Primaria</option>
+                <option value="SECUNDARIA">Secundaria</option>
+                <option value="SUPERIOR">Superior</option>
+                <option value="NINGUNO">Ninguno</option>
+              </select>
+            </InputField>
+
+            <InputField label="Nacionalidad" icon={MapPinHouse} col="col-md-3">
+              <select
+                className="form-control border-0 shadow-none clFont"
+                style={{ fontSize: "0.8em" }}
+                {...register("nacionalidad")}
+                value={Nacionalidad}
+                onChange={handleNacionalidad}
+              >
+                <option value="">Seleccione...</option>
+                {Paises.map((paises) => (
+                  <option
+                    value={paises.name}
+                    key={paises.id}
                     className="clFont"
-                  />
-                </div>
-                <div className="col-12 col-sm-6 col-md-4  p-2 ">
-                  <TextField
-                    label="Estado Civil"
-                    fullWidth
-                    {...register("estadocivil")}
-                    InputLabelProps={{ style: { fontSize: "0.9em" } }}
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        borderRadius: "10px",
-                        fontSize: "12px", // Controla el radio de borde
-                        width: "100%",
-                        color: "GrayText",
-                      },
-                    }}
-                    select
-                    onChange={handleEstdoCivil}
-                    value={estadoCivil}
-                  >
-                    <MenuItem className="clFont" value="SOLTERO">
-                      SOLTERO
-                    </MenuItem>
-                    <MenuItem className="clFont" value="CASADA">
-                      CASADO
-                    </MenuItem>
-                    <MenuItem className="clFont" value="CASADA">
-                      UNION LIBRE
-                    </MenuItem>
-                  </TextField>
-                </div>
-              </div>
-
-              <div className="row">
-                <div className="col-12 col-sm-6 col-md-2  p-2 ">
-                  <TextField
-                    label="Sexo"
-                    {...register("sexo")}
-                    fullWidth
-                    select
-                    InputLabelProps={{ style: { fontSize: "0.9em" } }}
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        borderRadius: "10px",
-                        fontSize: "12px", // Controla el radio de borde
-                        width: "100%",
-                        color: "GrayText",
-                      },
-                    }}
-                    value={Sexo}
-                    onChange={handleSexo}
-                  >
-                    <MenuItem value="M" className="clFont">
-                      MASCULINO
-                    </MenuItem>
-                    <MenuItem value="F" className="clFont">
-                      FEMENINO
-                    </MenuItem>
-                  </TextField>
-                </div>
-                <div className="col-12 col-sm-6 col-md-3  p-2 ">
-                  <TextField
-                    label="Fecha de Nacimiento"
-                    type="Date"
-                    value={FechaNac}
-                    fullWidth
-                    onChange={handleFechaNac}
-                    InputLabelProps={{
-                      style: { fontSize: "0.9em" },
-                      shrink: true,
-                    }}
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        borderRadius: "10px",
-                        fontSize: "12px", // Controla el radio de borde
-                        width: "100%",
-                        color: "GrayText",
-                      },
-                    }}
-                  />
-                </div>
-                <div className="col-12 col-sm-6 col-md-3  p-2 ">
-                  <TextField
-                    label="Escolaridad"
-                    {...register("escolaridad")}
-                    value={Escolaridad}
-                    onChange={handleEscolaridad}
-                    select
-                    fullWidth
-                    InputLabelProps={{
-                      style: { fontSize: "0.9em" },
-                      shrink: true,
-                    }}
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        borderRadius: "10px",
-                        fontSize: "12px", // Controla el radio de borde
-                        width: "100%",
-                        color: "GrayText",
-                      },
-                    }}
-                  >
-                    <MenuItem className="clFont" value="PRIMARIA">
-                      PRIMARIA
-                    </MenuItem>
-                    <MenuItem className="clFont" value="BACHILLER">
-                      BACHILLER
-                    </MenuItem>
-                    <MenuItem className="clFont" value="UNIVERSITARIO">
-                      UNIVERSITARIO
-                    </MenuItem>
-                    <MenuItem className="clFont" value="NINGUNO">
-                      NINGUNO
-                    </MenuItem>
-                  </TextField>
-                </div>
-                <div className="col-12 col-sm-6 col-md-4  p-2 ">
-                  <TextField
-                    label="Nacionalidad"
-                    fullWidth
-                    {...register("nacionalidad")}
-                    select
-                    InputLabelProps={{ style: { fontSize: "0.9em" } }}
-                    value={Nacionalidad}
-                    onChange={handleNacionalidad}
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        borderRadius: "10px",
-                        fontSize: "12px", // Controla el radio de borde
-                        width: "100%",
-                        color: "GrayText",
-                      },
-                    }}
-                  >
-                    {Paises.map((paises) => (
-                      <MenuItem
-                        value={paises.name}
-                        key={paises.id}
-                        className="clFont"
-                      >
-                        {" "}
-                        {paises.name}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-                </div>
-              </div>
-              <div className="mt-2 mx-1">
-                <span className="fs-6 fw-medium text-info">Contacto</span>
-              </div>
-              <div className="row">
-                <div className="col-12 col-sm-6 col-md-5  p-2 ">
-                  <TextField
-                    label="Direccion *"
-                    {...register("direccion", { required: "Campo requerido" })}
-                    fullWidth
-                    onInput={handleInputChange}
-                    InputLabelProps={{
-                      style: { fontSize: "0.9em" },
-                      shrink: true,
-                    }}
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        borderRadius: "10px",
-                        fontSize: "12px", // Controla el radio de borde
-                        width: "100%",
-                        color: "GrayText",
-                      },
-                    }}
-                  />
-                  {errors.direccion && (
-                    <p className="errorColor"> {errors.direccion.message} </p>
-                  )}
-                </div>
-                <div className="col-12 col-sm-6 col-md-3  p-2 ">
-                  <TextField
-                    label="Ciudad"
-                    fullWidth
-                    {...register("ciudad")}
-                    select
-                    InputLabelProps={{ style: { fontSize: "0.9em" } }}
-                    value={Ciudad}
-                    onChange={handleCiudad}
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        borderRadius: "10px",
-                        fontSize: "12px", // Controla el radio de borde
-                        width: "100%",
-                        color: "GrayText",
-                      },
-                    }}
-                  >
-                    {Provincias.map((provincia) => (
-                      <MenuItem
-                        value={provincia.name}
-                        key={provincia.code}
-                        className="clFont"
-                      >
-                        {" "}
-                        {provincia.name}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-                </div>
-                <div className="col-12 col-sm-6 col-md-2  p-2 ">
-                  <TextField
-                    label="Telefono 1 *"
-                    {...register("telefono1", { required: "Campo requerido" })}
-                    fullWidth
-                    InputLabelProps={{ style: { fontSize: "0.9em" } }}
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        borderRadius: "10px",
-                        fontSize: "12px", // Controla el radio de borde
-                        width: "100%",
-                        color: "GrayText",
-                      },
-                    }}
-                    onChange={handleTelefono1Change}
-                  />
-                  {errors.telefono1 && (
-                    <p className="errorColor">{errors.telefono1.message}</p>
-                  )}
-                </div>
-                <div className="col-12 col-sm-6 col-md-2  p-2 ">
-                  <TextField
-                    label="Telefono 2"
-                    {...register("telefono2")}
-                    fullWidth
-                    InputLabelProps={{ style: { fontSize: "0.8em" } }}
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        borderRadius: "10px",
-                        fontSize: "12px", // Controla el radio de borde
-                        width: "100%",
-                        color: "GrayText",
-                      },
-                    }}
-                    onChange={handleTelefono2Change}
-                  />
-                </div>
-              </div>
-
-              <div className="row">
-                <div className="col-12 col-sm-6 col-md-6  p-2 ">
-                  <TextField
-                    label="Referencia"
-                    {...register("referencia")}
-                    fullWidth
-                    onInput={handleInputChange}
-                    InputLabelProps={{ style: { fontSize: "0.8em" } }}
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        borderRadius: "10px",
-                        fontSize: "12px", // Controla el radio de borde
-                        width: "100%",
-                        color: "GrayText",
-                      },
-                    }}
-                    // onChange={handleTelefono2Change}
-                  />
-                </div>
-                <div className="col-12 col-sm-6 col-md-6  p-2 ">
-                  <TextField
-                    label="@ Email"
-                    {...register("email")}
-                    fullWidth
-                    InputLabelProps={{ style: { fontSize: "0.8em" } }}
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        borderRadius: "10px",
-                        fontSize: "12px", // Controla el radio de borde
-                        width: "100%",
-                        color: "GrayText",
-                      },
-                    }}
-                    // onChange={handleTelefono2Change}
-                  />
-                </div>
-              </div>
-              <div className="mt-2 mx-1">
-                <span className="fs-6 fw-medium text-info">Datos Laboral</span>
-              </div>
-              <div className="row">
-                <div className="col-12 col-sm-6 col-md-3  p-2 ">
-                  <TextField
-                    label="Ocupacion"
-                    {...register("ocupacion")}
-                    onInput={handleInputChange}
-                    fullWidth
-                    InputLabelProps={{ style: { fontSize: "0.8em" } }}
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        borderRadius: "10px",
-                        fontSize: "12px", // Controla el radio de borde
-                        width: "100%",
-                        color: "GrayText",
-                      },
-                    }}
                   >
                     {" "}
-                  </TextField>
-                </div>
-                <div className="col-12 col-sm-6 col-md-3  p-2 ">
-                  <TextField
-                    label="Telefono del Tabajo"
-                    {...register("telefonotrabajo")}
-                    fullWidth
-                    InputLabelProps={{ style: { fontSize: "0.8em" } }}
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        borderRadius: "10px",
-                        fontSize: "12px", // Controla el radio de borde
-                        width: "100%",
-                        color: "GrayText",
-                      },
-                    }}
-                  />
-                </div>
-                <div className="col-12 col-sm-6 col-md-3  p-2 ">
-                  <TextField
-                    label="Fecha Ingreso Trabajo"
-                    type="Date"
-                    value={FechaTranajo}
-                    fullWidth
-                    onChange={handleFechaIngresoTrabajo}
-                    InputLabelProps={{
-                      style: { fontSize: "0.9em" },
-                      shrink: true,
-                    }}
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        borderRadius: "10px",
-                        fontSize: "12px", // Controla el radio de borde
-                        width: "100%",
-                        color: "GrayText",
-                      },
-                    }}
-                  />
-                </div>
-                <div className="col-12 col-sm-6 col-md-3  p-2 ">
+                    {paises.name}
+                  </option>
+                ))}
+              </select>
+            </InputField>
+
+            <InputField
+              label="Teléfono 1"
+              icon={Phone}
+              col="col-md-3"
+              required
+              error={errors.telefono1?.message}
+            >
+              <input
+                type="text"
+                className="form-control border-0 shadow-none clFont"
+                {...register("telefono1", { required: "Campo requerido" })}
+                onChange={handleTelefono1Change}
+              />
+            </InputField>
+
+            <InputField label="Teléfono 1" icon={Phone} col="col-md-3">
+              <input
+                type="text"
+                className="form-control border-0 shadow-none clFont"
+                {...register("telefono2")}
+                onChange={handleTelefono2Change}
+              />
+            </InputField>
+
+            <InputField label="Ciudad" icon={Building2} col="col-md-3">
+              <select
+                className="form-control border-0 shadow-none clFont"
+                style={{ fontSize: "0.8em" }}
+                {...register("ciudad", { required: "Campo requerido" })}
+                value={Ciudad}
+                onChange={handleCiudad}
+              >
+                <option value="">Seleccione...</option>
+                {Provincias.map((provincias) => (
+                  <option
+                    value={provincias.name}
+                    key={provincias.id}
+                    className="clFont"
+                  >
+                    {" "}
+                    {provincias.name}
+                  </option>
+                ))}
+              </select>
+            </InputField>
+
+            <InputField
+              label="Dirección"
+              icon={Building}
+              col="col-md-9"
+              error={errors.direccion?.message}
+              required
+            >
+              <input
+                type="text"
+                className="form-control border-0 shadow-none clFont"
+                style={{ fontSize: "0.8em" }}
+                {...register("direccion", { required: "Campo requerido" })}
+                onInput={handleInputChange}
+              />
+            </InputField>
+
+            <InputField
+              label="Referencia"
+              icon={MessageCircleCheck}
+              col="col-md-6"
+            >
+              <input
+                type="text"
+                className="form-control border-0 shadow-none clFont"
+                style={{ fontSize: "0.8em" }}
+                {...register("referencia")}
+                onInput={handleInputChange}
+              />
+            </InputField>
+
+            <InputField label="@ Email" icon={MailPlus} col="col-md-6">
+              <input
+                type="email"
+                className="form-control border-0 shadow-none clFont"
+                style={{ fontSize: "0.8em" }}
+                {...register("email")}
+                onInput={handleInputChange}
+              />
+            </InputField>
+
+            <div className="card-body ">
+              <SectionTitle title="Otros Datos" />
+            </div>
+
+            <InputField label="Ocupación" icon={TrafficCone} col="col-md-3">
+              <input
+                type="text"
+                className="form-control border-0 shadow-none clFont"
+                {...register("ocupacion")}
+                onInput={handleInputChange}
+              />
+            </InputField>
+
+            <InputField label="Telefono de Trabajo" icon={Phone} col="col-md-3">
+              <input
+                type="text"
+                className="form-control border-0 shadow-none clFont"
+                {...register("telefonotrabajo")}
+                onChange={handleTelefono3Change}
+              />
+            </InputField>
+
+            <InputField
+              label="Fecha de Ingreso al Trabajo"
+              icon={Calendar}
+              required
+              col="col-md-3"
+            >
+              <input
+                type="date"
+                className="form-control border-0 shadow-none clFont"
+                style={{ fontSize: "0.8em" }}
+                {...register("fechaingresotrabajo")}
+                value={FechaTranajo}
+                onChange={handleFechaIngresoTrabajo}
+              />
+            </InputField>
+
+
+            <InputField label="Sueldo" icon={DollarSign} col="col-md-3">
                   <Controller
                     name="sueldo"
                     control={control}
-                    render={({ field }) => (
-                      <NumericFormat
-                        {...field}
-                        customInput={TextField} // Usa TextField de Material-UI
-                        label="Sueldo"
-                        variant="outlined"
-                        fullWidth
-                        thousandSeparator=","
-                        decimalSeparator="."
-                        prefix="DOP "
-                        fixedDecimalScale
-                        decimalScale={2}
-                        allowNegative={false}
-                        onValueChange={(values) => {
-                          field.onChange(values.floatValue || 0.0); // Actualiza el valor en react-hook-form
-                        }}
-                        InputLabelProps={{ style: { fontSize: "0.8rem" } }}
-                        InputProps={{
-                          style: {
-                            fontSize: "0.8rem",
-                            borderRadius: "10px",
-                            color: "GrayText",
-                          }, // Cambia el tamaño de letra
-                        }}
-                        sx={{
-                          "& input::placeholde": {
-                            fontSize: "0.8rem", // Cambia el tamaño de letra del placeholder
-                            color: "GrayText", // Opcional: color del placeholder
-                          },
-                        }}
-                        className="clFont"
-                      />
+                    defaultValue=""
+                    render={({
+                      field: { onChange, value, name, ref },
+                      fieldState: { error },
+                    }) => (
+                      <>
+                        <NumericFormat
+                          name={name}
+                          getInputRef={ref}
+                          value={value}
+                          thousandSeparator={true}
+                          prefix={"DOP "}
+                          decimalScale={2}
+                          fixedDecimalScale={true}
+                          className="form-control border-0 shadow-none fw-bold"
+                          placeholder="DOP 0.00"
+                          onChange={(e) => handleSueldoChange(e.target.value)}
+                          onValueChange={(values) => {
+                            // Actualiza el formulario (esto es ligero y no pierde el foco)
+                            onChange(values.floatValue || 0);
+                          }}
+                          style={{ fontSize: "0.8em" }}
+                        />
+
+                        {error && (
+                          <span
+                            className="text-danger ps-2"
+                            style={{ fontSize: "0.7em" }}
+                          >
+                            {error.message}
+                          </span>
+                        )}
+                      </>
                     )}
                   />
-                </div>
-              </div>
-              <div className="row">
-                <div className="col-12 col-sm-6 col-md-4  p-2 ">
-                  <TextField
-                    label="Tipo de Vivienda"
+                </InputField>
+
+                <InputField label="Tipo de Vivienda" icon={House} col="col-md-3">
+                  <select
+                    className="form-control border-0 shadow-none clFont"
+                    style={{ fontSize: "0.8em" }}
                     {...register("vivienda")}
-                    select
-                    fullWidth
-                    InputLabelProps={{ style: { fontSize: "0.8em" } }}
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        borderRadius: "10px",
-                        fontSize: "12px", // Controla el radio de borde
-                        width: "100%",
-                        color: "GrayText",
-                      },
-                    }}
                     value={Viviendas}
                     onChange={handleViviendas}
                   >
-                    <MenuItem value="ALQUILADA" className="clFont">
-                      ALQUILADA
-                    </MenuItem>
-                    <MenuItem value="PROPIA" className="clFont">
-                      PROPIA
-                    </MenuItem>
-                    <MenuItem value="PRESTADO" className="clFont">
-                      PRESTADA
-                    </MenuItem>
-                  </TextField>
-                </div>
-                <div className="col-12 col-sm-6 col-md-4  p-2 ">
-                  <TextField
-                    label="Ruta Asignada"
-                    {...register("idrutas", { required: "Campo requerido" })}
-                    select
-                    fullWidth
-                    InputLabelProps={{ style: { fontSize: "0.8em" } }}
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        borderRadius: "10px",
-                        fontSize: "12px", // Controla el radio de borde
-                        width: "100%",
-                        color: "GrayText",
-                      },
-                    }}
-                    onChange={handleIdRutas}
-                    value={idRutas}
-                  >
-                    {Rutas.map((itemruta) => (
-                      <MenuItem
+                    <option value="">Seleccione...</option>
+                    <option value="ALQUILADA">Alquilada</option>
+                    <option value="PROPIA">Propia </option>
+                    <option value="PRESTADA">Prestada</option>
+                  </select>
+                </InputField>
+
+                <InputField label="Rutas" icon={Route} col="col-md-3" requerido error={errors.idrutas?.message}>
+                   <select className="form-control border-0 shadow-none clFont"
+                     {...register("idrutas", { required: "Campo requerido" })}
+                     value={idRutas}
+                     onChange={handleIdRutas} 
+                    style={{ fontSize: "0.8em" }}>
+                     <option value="">Seleccione...</option>
+                      {Rutas.map((itemruta) => (
+                      <option
                         value={itemruta.id}
                         key={itemruta.id}
                         className="clFont"
                       >
                         {itemruta.nombrerutas}
-                      </MenuItem>
+                      </option>
                     ))}
-                  </TextField>
-                  {errors.idrutas && (
-                    <p className="errorColor">{errors.idrutas.message}</p>
-                  )}
-                </div>
-                <div className="col-12 col-sm-6 col-md-4  p-2 ">
+                   </select>
+                 </InputField>
+
+
+                 <InputField label="Límite de Crédito" icon={DollarSign} col="col-md-3" requerido error={errors.limitecredito?.message}>
                   <Controller
                     name="limitecredito"
                     control={control}
-                    render={({ field }) => (
-                      <NumericFormat
-                        {...field}
-                        customInput={TextField} // Usa TextField de Material-UI
-                        label="Limite Credito"
-                        variant="outlined"
-                        fullWidth
-                        thousandSeparator=","
-                        decimalSeparator="."
-                        prefix="DOP "
-                        fixedDecimalScale
-                        decimalScale={2}
-                        allowNegative={false}
-                        onValueChange={(values) => {
-                          field.onChange(values.floatValue || 0.0); // Actualiza el valor en react-hook-form
-                        }}
-                        InputLabelProps={{ style: { fontSize: "0.8rem" } }}
-                        InputProps={{
-                          style: {
-                            fontSize: "0.8rem",
-                            borderRadius: "10px",
-                            color: "GrayText",
-                          }, // Cambia el tamaño de letra
-                        }}
-                        sx={{
-                          "& input::placeholde": {
-                            fontSize: "0.8rem", // Cambia el tamaño de letra del placeholder
-                            color: "GrayText", // Opcional: color del placeholder
-                          },
-                        }}
-                        className="clFont"
-                      />
+                    defaultValue=""
+                    render={({
+                      field: { onChange, value, name, ref },
+                      fieldState: { error },
+                    }) => (
+                      <>
+                        <NumericFormat
+                          name={name}
+                          getInputRef={ref}
+                          value={value}
+                          thousandSeparator={true}
+                          prefix={"DOP "}
+                          decimalScale={2}
+                          fixedDecimalScale={true}
+                          className="form-control border-0 shadow-none fw-bold"
+                          placeholder="DOP 0.00"
+                          onChange={(e) => handleLimiteCreditoChange(e.target.value)}
+                          onValueChange={(values) => {
+                            // Actualiza el formulario (esto es ligero y no pierde el foco)
+                            onChange(values.floatValue || 0);
+                          }}
+                          style={{ fontSize: "0.8em" }}
+                        />
+
+                        {error && (
+                          <span
+                            className="text-danger ps-2"
+                            style={{ fontSize: "0.7em" }}
+                          >
+                            {error.message}
+                          </span>
+                        )}
+                      </>
                     )}
                   />
-                </div>
-              </div>
-            </div>
+                </InputField>
+
+            
             <div className=" bg-body-secondary d-flex justify-content-center align-items-center p-3 ">
               <div className=" d-flex justify-content-end p-2">
                 <button
