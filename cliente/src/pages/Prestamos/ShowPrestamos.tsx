@@ -401,15 +401,15 @@ const ShowPrestamos = ({ situacion }) => {
     const coincideZona = searchZonas
       ? (item.tcliente.tbzona.nombrerutas || '')
           .toLowerCase()
-          .includes(searchZonas.toLowerCase())
+          .includes((searchZonas || '').toLowerCase())
       : true;
 
     // 2. Filtro por Texto (Nombre o DNI)
     const coincideBusqueda =
       (item.tcliente.nombre_completo || '')
         .toLowerCase()
-        .includes(search.toLowerCase()) ||
-      (item.tcliente.dni || "").toLowerCase().includes(search.toLowerCase());
+        .includes((search || '').toLowerCase()) ||
+      (item.tcliente.dni || "").toLowerCase().includes((search || '').toLowerCase());
     // 3. Filtro por Estado (ACTIVO  E INACTIVO)
     const coincideActivo = checked
       ? (item.modo || '').toLowerCase() === "activo"
