@@ -409,7 +409,7 @@ const ShowPrestamos = ({ situacion }) => {
       (item.tcliente.nombre_completo || '')
         .toLowerCase()
         .includes((search || '').toLowerCase()) ||
-      (item.tcliente.dni || "").toLowerCase().includes((search || '').toLowerCase());
+      (item.tcliente.dni || '').toLowerCase().includes((search || '').toLowerCase());
     // 3. Filtro por Estado (ACTIVO  E INACTIVO)
     const coincideActivo = checked
       ? (item.modo || '').toLowerCase() === "activo"

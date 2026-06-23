@@ -56,7 +56,7 @@ const ShowClientes = () => {
     _DATA.jump(p);
   };
 
-  const URIs =`${import.meta.env.VITE_API_URL}/clientes/`;
+  const URIs = `${import.meta.env.VITE_API_URL}/clientes/`;
   const UrisImg = `${import.meta.env.VITE_API_URL}/uploads/clientes/avata/`;
 
   useEffect(() => {
@@ -127,32 +127,37 @@ const ShowClientes = () => {
   };
 
   const filtrar = (condicionesFiltrar) => {
+    // Convertimos el término de búsqueda una sola vez afuera para optimizar rendimiento
+    const termino = (condicionesFiltrar || "").toLowerCase();
+
     const resultados = clienteDatos?.filter((elementos) => {
-      if (
-        elementos.dni
-          .toString()
-          .toLowerCase()
-          .includes((condicionesFiltrar || '').toLowerCase()) ||
-        elementos.nombres
-          .toString()
-          .toLowerCase()
-          .includes((condicionesFiltrar || '').toLowerCase()) ||
-        elementos.apellidos
-          .toString()
-          .toLowerCase()
-          .includes((condicionesFiltrar || '').toLowerCase()) ||
-        elementos.tbzona.nombrerutas
-          .toString()
-          .toLowerCase()
-          .includes((condicionesFiltrar || '').toLowerCase())
-      ) {
-        return elementos;
-      }
+      // Convertimos cada campo a String de forma segura. Si es null o undefined, se vuelve ''
+      const dniStr = elementos.dni
+        ? elementos.dni.toString().toLowerCase()
+        : "";
+      const nombresStr = elementos.nombres
+        ? elementos.nombres.toString().toLowerCase()
+        : "";
+      const apellidosStr = elementos.apellidos
+        ? elementos.apellidos.toString().toLowerCase()
+        : "";
+
+      // Aquí usamos el operador '?.' para que si tbzona es null, no explote el sistema
+      const rutaStr = elementos.tbzona?.nombrerutas
+        ? elementos.tbzona.nombrerutas.toString().toLowerCase()
+        : "";
+
+      // Ahora comparamos con total seguridad de que ninguno es null
+      return (
+        dniStr.includes(termino) ||
+        nombresStr.includes(termino) ||
+        apellidosStr.includes(termino) ||
+        rutaStr.includes(termino)
+      );
     });
 
-    setClientes(resultados);
+    setClientes(resultados || []);
   };
-
   const deleteClientes = async (id) => {
     Swal.fire({
       title: "Esta seguro?",
