@@ -406,7 +406,7 @@ const ShowPrestamos = ({ situacion }) => {
 
     // 2. Filtro por Texto (Nombre o DNI)
     const coincideBusqueda =
-      item.tcliente.nombre_completo
+      (item.tcliente.nombre_completo || '')
         .toLowerCase()
         .includes(search.toLowerCase()) ||
       (item.tcliente.dni || "").toLowerCase().includes(search.toLowerCase());
