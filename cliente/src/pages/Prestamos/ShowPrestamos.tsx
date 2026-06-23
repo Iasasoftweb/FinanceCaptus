@@ -398,31 +398,45 @@ const ShowPrestamos = ({ situacion }) => {
   };
 
   const filtrar = misPrestamos?.filter((item) => {
+    // Optimizamos convirtiendo las búsquedas a minúsculas una sola vez aquí adentro
+    const buscarZonasTermino = (searchZonas || "").toLowerCase();
+    const buscarGeneralTermino = (search || "").toLowerCase();
+
+    // 1. Filtro por Zona (Blindado contra tcliente o tbzona nulos)
     const coincideZona = searchZonas
-      ? (item.tcliente.tbzona.nombrerutas || '')
+      ? (item.tcliente?.tbzona?.nombrerutas || "")
+          .toString()
           .toLowerCase()
-          .includes((searchZonas || '').toLowerCase())
+          .includes(buscarZonasTermino)
       : true;
 
-    // 2. Filtro por Texto (Nombre o DNI)
+    // 2. Filtro por Texto (Nombre o DNI) (Blindado contra tcliente nulo)
+    const nombreCompleto = (item.tcliente?.nombre_completo || "")
+      .toString()
+      .toLowerCase();
+    const dniCliente = (item.tcliente?.dni || "").toString().toLowerCase();
+
     const coincideBusqueda =
-      (item.tcliente.nombre_completo || '')
-        .toLowerCase()
-        .includes((search || '').toLowerCase()) ||
-      (item.tcliente.dni || '').toLowerCase().includes((search || '').toLowerCase());
-    // 3. Filtro por Estado (ACTIVO  E INACTIVO)
+      nombreCompleto.includes(buscarGeneralTermino) ||
+      dniCliente.includes(buscarGeneralTermino);
+
+    // 3. Filtro por Estado (ACTIVO E INACTIVO)
+    const modoActual = (item.modo || "").toString().toLowerCase();
     const coincideActivo = checked
-      ? (item.modo || '').toLowerCase() === "activo"
-      : (item.modo || '').toLowerCase() === "inactivo";
+      ? modoActual === "activo"
+      : modoActual === "inactivo";
+
     // 4. Filtro por Estado de Cuota (Todos, Atrasados y Pagada)
     const cumpleEstado =
       filtroEstado === "TODOS" || item.estado === filtroEstado;
 
+    // 5. Filtro por Situación
     const coincideSituacion =
       situacion === "prestamos"
         ? item.situacion === "prestamo"
         : item.situacion === "EVALUACION";
 
+    // Retornamos la combinación de todas las condiciones de forma segura
     return (
       coincideZona &&
       coincideBusqueda &&
@@ -465,16 +479,19 @@ const ShowPrestamos = ({ situacion }) => {
 
     try {
       // Envía la petición a tu backend Express
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/prestamos/cobrar`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/prestamos/cobrar`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            idprestamo: prestamoSeleccionado.id,
+            montoRecibido: monto,
+          }),
         },
-        body: JSON.stringify({
-          idprestamo: prestamoSeleccionado.id,
-          montoRecibido: monto,
-        }),
-      });
+      );
 
       const data = await response.json();
 
@@ -1160,20 +1177,17 @@ const ShowPrestamos = ({ situacion }) => {
                               </button>
                             )}
 
-
-                             {situacion === "solicitudes" && (
+                            {situacion === "solicitudes" && (
                               <button
                                 className="btn btn-outline-success btn-sm border-0 rounded-3 p-1 mx-1"
                                 title="Cuotas Generadas"
                                 onClick={() => {
                                   setPrestamoSeleccionado(item);
-                                  setTipoModal("cuotas");                                  
+                                  setTipoModal("cuotas");
                                 }}
                               >
                                 <Tags size={18} />
                               </button>
-
-                              
                             )}
 
                             {situacion === "solicitudes" && (
@@ -1183,17 +1197,11 @@ const ShowPrestamos = ({ situacion }) => {
                                 onClick={() => {
                                   setPrestamoSeleccionado(item);
                                   setTipoModal("modificasolicitud");
-                                  
                                 }}
                               >
                                 <ClipboardPen size={18} />
-                                
                               </button>
-
-                              
                             )}
-
-                           
 
                             {situacion === "prestamos" && (
                               <button
@@ -1308,14 +1316,17 @@ const ShowPrestamos = ({ situacion }) => {
             overflowY: "auto", // Permite el scroll correcto en la pantalla general
           }}
         >
-          <ShowDetalleSolicitud cuotas={prestamoSeleccionado} onClose={()=>{
-            setPrestamoSeleccionado(null);
-            setTipoModal(null)
-          }} />
+          <ShowDetalleSolicitud
+            cuotas={prestamoSeleccionado}
+            onClose={() => {
+              setPrestamoSeleccionado(null);
+              setTipoModal(null);
+            }}
+          />
         </div>
       )}
 
- {prestamoSeleccionado && tipoModal === "modificasolicitud" && (
+      {prestamoSeleccionado && tipoModal === "modificasolicitud" && (
         <div
           className="modal fade show d-block"
           tabIndex="-1"
@@ -1325,13 +1336,15 @@ const ShowPrestamos = ({ situacion }) => {
             overflowY: "auto", // Permite el scroll correcto en la pantalla general
           }}
         >
-          <ModiSolicitud dataInicial={prestamoSeleccionado} onClose={()=>{
-            setPrestamoSeleccionado(null);
-            setTipoModal(null)
-          }} />
+          <ModiSolicitud
+            dataInicial={prestamoSeleccionado}
+            onClose={() => {
+              setPrestamoSeleccionado(null);
+              setTipoModal(null);
+            }}
+          />
         </div>
       )}
-
 
       {/* ==========================================
           MODAL: REGISTRAR PAGO (BOOTSTRAP STYLE)
