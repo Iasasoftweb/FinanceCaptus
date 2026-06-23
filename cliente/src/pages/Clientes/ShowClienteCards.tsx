@@ -108,8 +108,8 @@ const ShowClienteCards = () => {
   const API_BASE_URL = `${import.meta.env.VITE_API_URL}/clientes`;
 
   const prestamosInf = (id) => {
-    const TotaPrestamos = DataPrestamos.filter((c) => c.idclientes === id);
-    const TotalGeneral = TotaPrestamos.filter((c) => c.estado === "VIGENTE");
+    const TotaPrestamos = DataPrestamos?.filter((c) => c.idclientes === id);
+    const TotalGeneral = TotaPrestamos?.filter((c) => c.estado === "VIGENTE");
     return {
       resultTotal: TotalGeneral.length,
     };
@@ -189,7 +189,7 @@ const ShowClienteCards = () => {
   };
 
   // Lógica de Filtrado por búsqueda
-  const filtrar = clienteDatos.filter(
+  const filtrar = clienteDatos?.filter(
     (cliente) =>
       cliente.nombres.toLowerCase().includes(search.toLowerCase()) ||
       cliente.dni.includes(search),
@@ -922,10 +922,10 @@ const ShowClienteCards = () => {
 
                       <button
                         className="btn btn-outline-secondary border shadow-sm flex-shrink-0"
-                         onClick={() => {
-                                        CaptureDnI(cliente.id);
-                                        setSelectCliente(cliente);
-                                      }}
+                        onClick={() => {
+                          CaptureDnI(cliente.id);
+                          setSelectCliente(cliente);
+                        }}
                       >
                         <Files size={18} />
                       </button>
