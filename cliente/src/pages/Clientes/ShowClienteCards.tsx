@@ -292,33 +292,39 @@ const ShowClienteCards = () => {
     // Abrimos el modal
   };
 
-  const handleGetDeviceLocation = () => {
-    if (!navigator.geolocation) {
-      showToast(
-        "Tu navegador o dispositivo no soporta la Geolocalización.",
-        "danger",
-      );
-      return;
-    }
-    showToast("Capturando coordenadas satelitales...", "info");
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        setCoordinates({
-          latitud: position.coords.latitude.toFixed(6),
-          longitud: position.coords.longitude.toFixed(6),
-        });
-        showToast("¡Coordenadas GPS obtenidas con éxito!", "success");
-      },
-      (error) => {
-        showToast(
-          "Error al obtener ubicación. Asegúrate de dar permisos de GPS.",
-          "warning",
-        );
-      },
-      { enableHighAccuracy: true, timeout: 8000 },
+ const handleGetDeviceLocation = () => {
+  if (!navigator.geolocation) {
+    showToast(
+      "Tu navegador o dispositivo no soporta la Geolocalización.",
+      "danger",
     );
-  };
+    return;
+  }
+  
+  showToast("Capturando coordenadas satelitales...", "info");
+  
+  navigator.geolocation.getCurrentPosition(
+    (position) => {
+      // Extraemos con seguridad verificando que existan los valores numéricos
+      const lat = position?.coords?.latitude;
+      const lng = position?.coords?.longitude;
 
+      setCoordinates({
+        latitud: lat !== undefined && lat !== null ? lat.toFixed(6) : "0.000000",
+        longitud: lng !== undefined && lng !== null ? lng.toFixed(6) : "0.000000",
+      });
+      
+      showToast("¡Coordenadas GPS obtenidas con éxito!", "success");
+    },
+    (error) => {
+      showToast(
+        "Error al obtener ubicación. Asegúrate de dar permisos de GPS.",
+        "warning",
+      );
+    },
+    { enableHighAccuracy: true, timeout: 8000 },
+  );
+};
   const handleSaveLocation = async () => {
     if (!selectCliente) return;
 

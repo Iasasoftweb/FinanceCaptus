@@ -184,7 +184,7 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
           Frecuencia,
         );
 
-        setValue("interes", resultado.toFixed(2));
+        setValue("interes", resultado.toFixed(2) );
       } else {
         toast.error("No has intrudicido la cantidad de Cuota");
         setValue("interes", 0.0);
