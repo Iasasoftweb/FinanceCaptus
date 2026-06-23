@@ -176,7 +176,7 @@ const PrestamoDetail = () => {
     const pendientes = verCuotas?.filter((item) => {
       const pagada =
         typeof item.pagada === "string"
-          ? item.pagada.toLowerCase() === "true"
+          ? (item.pagada || '').toLowerCase() === "true"
           : Boolean(item.pagada);
 
       return !pagada;

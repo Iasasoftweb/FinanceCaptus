@@ -399,7 +399,7 @@ const ShowPrestamos = ({ situacion }) => {
 
   const filtrar = misPrestamos?.filter((item) => {
     const coincideZona = searchZonas
-      ? item.tcliente.tbzona.nombrerutas
+      ? (item.tcliente.tbzona.nombrerutas || '')
           .toLowerCase()
           .includes(searchZonas.toLowerCase())
       : true;
@@ -409,11 +409,11 @@ const ShowPrestamos = ({ situacion }) => {
       item.tcliente.nombre_completo
         .toLowerCase()
         .includes(search.toLowerCase()) ||
-      item.tcliente.dni.toLowerCase().includes(search.toLowerCase());
+      (item.tcliente.dni || "").toLowerCase().includes(search.toLowerCase());
     // 3. Filtro por Estado (ACTIVO  E INACTIVO)
     const coincideActivo = checked
-      ? item.modo.toLowerCase() === "activo"
-      : item.modo.toLowerCase() === "inactivo";
+      ? (item.modo || '').toLowerCase() === "activo"
+      : (item.modo || '').toLowerCase() === "inactivo";
     // 4. Filtro por Estado de Cuota (Todos, Atrasados y Pagada)
     const cumpleEstado =
       filtroEstado === "TODOS" || item.estado === filtroEstado;

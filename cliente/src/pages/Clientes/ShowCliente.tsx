@@ -132,19 +132,19 @@ const ShowClientes = () => {
         elementos.dni
           .toString()
           .toLowerCase()
-          .includes(condicionesFiltrar.toLowerCase()) ||
+          .includes((condicionesFiltrar || '').toLowerCase()) ||
         elementos.nombres
           .toString()
           .toLowerCase()
-          .includes(condicionesFiltrar.toLowerCase()) ||
+          .includes((condicionesFiltrar || '').toLowerCase()) ||
         elementos.apellidos
           .toString()
           .toLowerCase()
-          .includes(condicionesFiltrar.toLowerCase()) ||
+          .includes((condicionesFiltrar || '').toLowerCase()) ||
         elementos.tbzona.nombrerutas
           .toString()
           .toLowerCase()
-          .includes(condicionesFiltrar.toLowerCase())
+          .includes((condicionesFiltrar || '').toLowerCase())
       ) {
         return elementos;
       }

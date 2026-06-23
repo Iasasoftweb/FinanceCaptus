@@ -44,7 +44,7 @@ const Company = () => {
   const itemsPerPage = 5;
 
   const filtrar = Data?.filter((items) =>
-    items.company.toLowerCase().includes(search.toLowerCase()),
+    (items.company || '').toLowerCase().includes(search.toLowerCase()),
   );
 
   const indexOfLastItem = currentPage * itemsPerPage;
