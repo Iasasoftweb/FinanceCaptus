@@ -391,57 +391,58 @@ const ShowPrestamos = ({ situacion }) => {
     console.log(event.target.checked);
   };
 
-  const filtrar = misPrestamos?.filter((item) => {
-    // Optimizamos convirtiendo las búsquedas a minúsculas una sola vez aquí adentro
-    const buscarZonasTermino = (searchZonas || '').toLowerCase();
-    const buscarGeneralTermino = (search || '').toLowerCase();
+  const prestamosParaFiltrar = Array.isArray(misPrestamos) ? misPrestamos : [];
 
-    // 1. Filtro por Zona (Blindado contra tcliente o tbzona nulos)
-    const coincideZona = searchZonas
-      ? (item.tcliente?.tbzona?.nombrerutas || '')
-          .toString()
-          .toLowerCase()
-          .includes(buscarZonasTermino)
-      : true;
+  const filtrar = prestamosParaFiltrar.filter((item) => {
+  // Convertimos las búsquedas a minúsculas una sola vez aquí adentro
+  const buscarZonasTermino = (searchZonas || '').toLowerCase();
+  const buscarGeneralTermino = (search || '').toLowerCase();
 
-    // 2. Filtro por Texto (Nombre o DNI) (Blindado contra tcliente nulo)
-    const nombreCompleto = item.tcliente?.nombre_completo 
-      ? item.tcliente.nombre_completo.toString().toLowerCase() 
-      : '';
-      
-    const dniCliente = item.tcliente?.dni 
-      ? item.tcliente.dni.toString().toLowerCase() 
-      : '';
+  // 2. Filtro por Zona (Asegurando que tcliente y tbzona existan)
+  const coincideZona = searchZonas
+    ? (item?.tcliente?.tbzona?.nombrerutas || '')
+        .toString()
+        .toLowerCase()
+        .includes(buscarZonasTermino)
+    : true;
 
-    const coincideBusqueda =
-      nombreCompleto.includes(buscarGeneralTermino) ||
-      dniCliente.includes(buscarGeneralTermino);
+  // 3. Filtro por Texto (Nombre o DNI)
+  const nombreCompleto = item?.tcliente?.nombre_completo 
+    ? item.tcliente.nombre_completo.toString().toLowerCase() 
+    : '';
+    
+  const dniCliente = item?.tcliente?.dni 
+    ? item.tcliente.dni.toString().toLowerCase() 
+    : '';
 
-    // 3. Filtro por Estado (ACTIVO E INACTIVO)
-    const modoActual = item.modo ? item.modo.toString().toLowerCase() : '';
-    const coincideActivo = checked
-      ? modoActual === "activo"
-      : modoActual === "inactivo";
+  const coincideBusqueda =
+    nombreCompleto.includes(buscarGeneralTermino) ||
+    dniCliente.includes(buscarGeneralTermino);
 
-    // 4. Filtro por Estado de Cuota (Todos, Atrasados y Pagada)
-    const cumpleEstado =
-      filtroEstado === "TODOS" || item.estado === filtroEstado;
+  // 4. Filtro por Estado (ACTIVO E INACTIVO)
+  const modoActual = item?.modo ? item.modo.toString().toLowerCase() : '';
+  const coincideActivo = checked
+    ? modoActual === "activo"
+    : modoActual === "inactivo";
 
-    // 5. Filtro por Situación
-    const coincideSituacion =
-      situacion === "prestamos"
-        ? item.situacion === "prestamo"
-        : item.situacion === "EVALUACION";
+  // 5. Filtro por Estado de Cuota
+  const cumpleEstado =
+    filtroEstado === "TODOS" || item?.estado === filtroEstado;
 
-    // Retornamos la combinación de todas las condiciones de forma segura
-    return (
-      coincideZona &&
-      coincideBusqueda &&
-      coincideActivo &&
-      cumpleEstado &&
-      coincideSituacion
-    );
-  });
+  // 6. Filtro por Situación
+  const coincideSituacion =
+    situacion === "prestamos"
+      ? item?.situacion === "prestamo"
+      : item?.situacion === "EVALUACION";
+
+  return (
+    coincideZona &&
+    coincideBusqueda &&
+    coincideActivo &&
+    cumpleEstado &&
+    coincideSituacion
+  );
+});
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
