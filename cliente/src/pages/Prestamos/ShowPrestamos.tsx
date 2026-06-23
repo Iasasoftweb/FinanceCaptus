@@ -2,7 +2,6 @@ import React, { useEffect, useState, useRef, useMemo } from "react";
 import axios from "axios";
 import { Paper, Avatar } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import { createTheme } from "@mui/material/styles";
 import PrestamosForm from "./PrestamosForm.tsx";
 import { formatCurrency } from "../../components/UtilsStuff.tsx";
 import "./prestamos.css";
@@ -10,7 +9,6 @@ import { MisColores } from "../../components/stuff/MisColores.tsx";
 import {
   AlertCircle,
   BanknoteArrowDown,
-  Briefcase,
   ChevronLeft,
   ChevronRight,
   ClipboardPen,
@@ -37,14 +35,12 @@ import { getBase64ImageFromURL } from "../../components/stuff/getBase64ImageFrom
 import { agregarImagenProporcional } from "../../components/stuff/agragarImagenProporcional.tsx";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import { ConsoleSqlOutlined } from "@ant-design/icons";
 import { usePrestamosCalculado } from "../../hooks/useDataPrestamos.tsx";
 import {
   circleClasses,
   circleStyle,
 } from "../../components/stuff/toolsComponents.tsx";
 import { simularDistribucionDePago } from "../../hooks/useSimularDistribucionDePago.tsx";
-import NoDatos from "../../components/stuff/NoDatos.tsx";
 import { ModalReciboComprobante } from "../../components/Recibos/ModalReciboComprobante.tsx";
 import { ShowDetalleSolicitud } from "./showDetalleSolicitud.tsx";
 import ModiSolicitud from "./ModiSolicitud.tsx";
@@ -53,7 +49,6 @@ const ShowPrestamos = ({ situacion }) => {
   const [PrestamoData, setPrestamoData] = useState([]);
   const [DataPrestamo, setDataPrestamo] = useState([]);
   const [dataRutas, setDataRutas] = useState([]);
-  const [page, setPage] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isModalEdit, setIsModalEdit] = useState(false);
@@ -61,7 +56,6 @@ const ShowPrestamos = ({ situacion }) => {
   const [searchZonas, setSearchZonas] = useState("");
   const [cuotas, setCuotas] = useState([]);
   const [checked, setChecked] = React.useState(true);
-  const [idPrestamo, setIdPrestamos] = useState(0);
   const [verPDF, setVerPDF] = useState(false);
   const [filtroEstado, setFiltroEstado] = useState("TODOS");
   const [prestamoSeleccionado, setPrestamoSeleccionado] = useState(null);
@@ -399,29 +393,32 @@ const ShowPrestamos = ({ situacion }) => {
 
   const filtrar = misPrestamos?.filter((item) => {
     // Optimizamos convirtiendo las búsquedas a minúsculas una sola vez aquí adentro
-    const buscarZonasTermino = (searchZonas || "").toLowerCase();
-    const buscarGeneralTermino = (search || "").toLowerCase();
+    const buscarZonasTermino = (searchZonas || '').toLowerCase();
+    const buscarGeneralTermino = (search || '').toLowerCase();
 
     // 1. Filtro por Zona (Blindado contra tcliente o tbzona nulos)
     const coincideZona = searchZonas
-      ? (item.tcliente?.tbzona?.nombrerutas || "")
+      ? (item.tcliente?.tbzona?.nombrerutas || '')
           .toString()
           .toLowerCase()
           .includes(buscarZonasTermino)
       : true;
 
     // 2. Filtro por Texto (Nombre o DNI) (Blindado contra tcliente nulo)
-    const nombreCompleto = (item.tcliente?.nombre_completo || "")
-      .toString()
-      .toLowerCase();
-    const dniCliente = (item.tcliente?.dni || "").toString().toLowerCase();
+    const nombreCompleto = item.tcliente?.nombre_completo 
+      ? item.tcliente.nombre_completo.toString().toLowerCase() 
+      : '';
+      
+    const dniCliente = item.tcliente?.dni 
+      ? item.tcliente.dni.toString().toLowerCase() 
+      : '';
 
     const coincideBusqueda =
       nombreCompleto.includes(buscarGeneralTermino) ||
       dniCliente.includes(buscarGeneralTermino);
 
     // 3. Filtro por Estado (ACTIVO E INACTIVO)
-    const modoActual = (item.modo || "").toString().toLowerCase();
+    const modoActual = item.modo ? item.modo.toString().toLowerCase() : '';
     const coincideActivo = checked
       ? modoActual === "activo"
       : modoActual === "inactivo";
