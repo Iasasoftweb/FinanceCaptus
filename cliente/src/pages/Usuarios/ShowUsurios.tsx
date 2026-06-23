@@ -76,8 +76,8 @@ function ShowUsuarios() {
 
   const filtrar = dataUser?.filter(
     (items) =>
-      (items.usuario || '').toLowerCase().includes(search.toLowerCase()) ||
-      (items.nombreusuario || '').toLowerCase().includes(search.toLowerCase()),
+      (items.usuario || '').toLowerCase().includes((search || '').toLowerCase()) ||
+      (items.nombreusuario || '').toLowerCase().includes((search || '').toLowerCase()),
   );
 
   const indexOfLastItem = currentPage * itemsPerPage;

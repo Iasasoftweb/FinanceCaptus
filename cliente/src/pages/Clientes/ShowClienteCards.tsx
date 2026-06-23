@@ -191,7 +191,7 @@ const ShowClienteCards = () => {
   // Lógica de Filtrado por búsqueda
   const filtrar = clienteDatos?.filter(
     (cliente) =>
-      (cliente.nombres || '').toLowerCase().includes(search.toLowerCase()) ||
+      (cliente.nombres || '').toLowerCase().includes((search || '').toLowerCase()) ||
       cliente.dni.includes(search),
   );
 

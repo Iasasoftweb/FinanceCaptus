@@ -60,7 +60,7 @@ const Dashboard = () => {
       const cuotasVencidas = getCuotas?.filter((item) => {
         const pagada =
           typeof item.pagada === "string"
-            ? item.pagada.toLowerCase() === "true"
+            ? (item.pagada || '').toLowerCase() === "true"
             : Boolean(item.pagada);
 
         const estaVencida = dayjs(item.fechapago).isAfter(hoy);
