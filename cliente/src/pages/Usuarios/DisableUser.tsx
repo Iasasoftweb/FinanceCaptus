@@ -14,7 +14,7 @@ function DisableUser({ Id, open, dataInitial, handleClose, onSave }) {
   const [getUsuario, setGetUser] = useState([]);
   const [estado, setEstado] = useState(0);
 
-  const UriUser = "http://localhost:5000/usuarios/";
+  const UriUser = `${import.meta.env.VITE_API_URL}/usuarios/`;
   const getUser = async () => {
     try {
       await axios.get(`${UriUser}${Id}`).then((response) => {

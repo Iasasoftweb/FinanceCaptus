@@ -1,4 +1,3 @@
-
 import express from "express";
 import cors from "cors";
 import ClienteRoute from "./routes/routes.js";
@@ -23,6 +22,7 @@ import Company from "./routes/CompanyRouter.js";
 import Cuotas from "./routes/CuotasRouter.js";
 import Pagos from "./routes/routePagos.js";
 import Moneda from "./routes/ModenaRouter.js";
+import db from "./database/db.js";
 
 //Inizializations
 const app = express();
@@ -31,13 +31,17 @@ const __dirname = dirname(__filename);
 
 app.use(morgan("dev"));
 
-// const result = dotenv.config({ path: path.resolve(__dirname, "../.env") });
-// if (result.error) {
-//   console.error("No se pudo cargar el archivo .env:", result.error);
-// }
-
-//middlewares
-app.use(cors());
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173",
+      "http://localhost:5174",
+      "https://localhost:5173",
+      "https://localhost:5174",
+    ],
+    credentials: true,
+  }),
+);
 app.use(express.urlencoded({ extended: true }));
 
 app.use(express.json());
@@ -101,7 +105,7 @@ app.post(
 //   "/uploads",
 //   express.static(path.join(__dirname, "uploads/clientes/avata/")),
 // );
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 app.use(
   "/uploadusers",
@@ -122,11 +126,11 @@ app.use(
 
 try {
   await db.authenticate();
-  console.log("Conexion exitosa al la DB");
+  console.log("🚀 Conexión exitosa a la base de datos local");
 } catch (error) {
-  console.log("Error de coneccion al la DB: $error");
+  console.log(`❌ Error de conexión a la base de datos: ${error.message}`);
 }
 
 app.listen(5000, () => {
-  console.log("Servidor Conectado: 5000");
+  console.log("⭐ Servidor Backend corriendo en: http://localhost:5000");
 });

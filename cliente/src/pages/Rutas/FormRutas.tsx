@@ -40,7 +40,7 @@ export const FormRutas = ({
   const [cargado, setCargado] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const URI = "http://localhost:5000/zonas/";
+  const URI = `${import.meta.env.VITE_API_URL}/zonas/`;
 
   useEffect(() => {
     if (ModoEdicion === true) {
@@ -64,7 +64,7 @@ export const FormRutas = ({
 
   const onSubmit = async (data: FieldValues) => {
     if (ModoEdicion) {
-      await axios.put(`http://localhost:5000/zonas/${idRutas}`, data);
+      await axios.put(`${import.meta.env.VITE_API_URL}/zonas/${idRutas}`, data);
       Swal.fire({
         position: "top-end",
         icon: "success",

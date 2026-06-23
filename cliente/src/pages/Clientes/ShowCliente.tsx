@@ -56,8 +56,8 @@ const ShowClientes = () => {
     _DATA.jump(p);
   };
 
-  const URIs = "http://localhost:5000/clientes/";
-  const UrisImg = "http://localhost:5000/uploads/clientes/avata/";
+  const URIs =`${import.meta.env.VITE_API_URL}/clientes/`;
+  const UrisImg = `${import.meta.env.VITE_API_URL}/uploads/clientes/avata/`;
 
   useEffect(() => {
     setModoEdicion(modoEdicion);

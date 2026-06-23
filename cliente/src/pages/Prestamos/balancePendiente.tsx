@@ -15,8 +15,8 @@ const useBalancePendiente = (idprestamo: number) => {
   const [CuotasAtrasadas, setCuotasAtrasadas] = useState(0);
   const [montoCuota, setMontoCuota] = useState(0);
 
-  const uriPrestamos = "http://localhost:5000/prestamos/";
-  const uriCuotas = "http://localhost:5000/cuotas/";
+  const uriPrestamos = `${import.meta.env.VITE_API_URL}/prestamos/`;
+  const uriCuotas = `${import.meta.env.VITE_API_URL}/cuotas/`;
 
   const getPrestamos = async (idprestamo: number) => {
     try {

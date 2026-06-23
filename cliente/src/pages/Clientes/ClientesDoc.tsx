@@ -84,9 +84,9 @@ const ClienteDo = ({ Id, open, handleClose, dataInitial }) => {
     width: 1,
   });
 
-  const URI = "http://localhost:5000/clienteDoc/";
-  const UrisImgDelete = "http://localhost:5000/clienteDoc/deleteimagen/";
-  const UriImg = "http://localhost:5000/uploads/clientes/docs/";
+  const URI = `${import.meta.env.VITE_API_URL}/clienteDoc/`;
+  const UrisImgDelete = `${import.meta.env.VITE_API_URL}/clienteDoc/deleteimagen/`;
+  const UriImg = `${import.meta.env.VITE_API_URL}/uploads/clientes/docs/`;
   const [selectedFileId, setSelectedFileId] = useState(null);
 
   const clearField = () => {
@@ -255,7 +255,7 @@ const ClienteDo = ({ Id, open, handleClose, dataInitial }) => {
 
     try {
       const res = await axios.post(
-        "http://localhost:5000/uploadDoc/",
+        `${import.meta.env.VITE_API_URL}/uploadDoc/`,
         formatdata,
       );
       cargaNameImg(res.data.fileName);

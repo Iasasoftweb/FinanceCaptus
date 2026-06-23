@@ -107,11 +107,11 @@ const ModiSolicitud = ({ dataInicial, onClose }) => {
 
         // 2. CRÍTICO: Primero eliminamos las cuotas viejas para evitar duplicados
         // Ajusta esta URL según cómo manejes los DELETE en tu API de Express/Node
-        await axios.delete(`http://localhost:5000/cuotas/cuotas/${idPrestamo}`);
+        await axios.delete(`${import.meta.env.VITE_API_URL}/cuotas/cuotas/${idPrestamo}`);
 
         // 3. Insertamos las nuevas cuotas recalculadas
         await axios.post(
-          "http://localhost:5000/cuotas/",
+          `${import.meta.env.VITE_API_URL}/cuotas/`,
           tablaAmortizacion.map((cuota) => ({
             idprestamo: idPrestamo,
             ...cuota,
@@ -119,19 +119,10 @@ const ModiSolicitud = ({ dataInicial, onClose }) => {
         );
 
 
-             await axios.put(`http://localhost:5000/prestamos/${idPrestamo}`, datosModificados);
+             await axios.put(`${import.meta.env.VITE_API_URL}/prestamos/${idPrestamo}`, datosModificados);
         
 
 
-
-        // 4. Opcional: Aquí también deberías actualizar la tabla de 'solicitudes' o 'prestamos'
-        /*
-      await axios.put(`http://localhost:5000/prestamos/${idPrestamo}`, {
-         fechaprimer: fechaInicial,
-         tcuota: totalCuotas,
-         frecuencia: frecuencia
-      });
-      */
 
         alert("¡Solicitud y cuotas modificadas con éxito!");
         onClose(); // Cerrar modal

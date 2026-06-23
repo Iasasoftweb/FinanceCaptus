@@ -14,7 +14,7 @@ interface Props {
 const FindEmpresas: React.FC<Props> = ({ onUpdate }) => {
   const [dataEmpresa, setDataEmpresa] = useState<Empresa | null>(null);
 
-  const URI = "http://localhost:8000/empresas/";
+  const URI = `${import.meta.env.VITE_API_URL}/empresas/`;
 
   const getEmpresa = async () => {
     try {

@@ -9,7 +9,7 @@ const useCobrador = () => {
     const id = 2;
     try {
       setLoading(true);
-      const respuesta = await axios.get(`http://localhost:5000/usuarios/roles/${id}`);
+      const respuesta = await axios.get(`${import.meta.env.VITE_API_URL}/usuarios/roles/${id}`);
       
       // LOG DE DEPURACIÓN: Mira exactamente qué llega del servidor
       console.log("Respuesta completa de Axios:", respuesta);

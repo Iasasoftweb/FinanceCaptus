@@ -59,12 +59,12 @@ function ModalUsuario({ Id, open, dataInitial, handleClose, edit, onSave }) {
   const [vRole, setVRole] = useState("");
 
   const myData = edit ? dataInitial : "";
-  const UriUser = "http://localhost:5000/usuarios/";
-  const UriRol = "http://localhost:5000/roles/";
-  const UriRutas = "http://localhost:5000/zonas/";
-  const UriTipo = "http://localhost:5000/usuarios/tipo/";
-  const UriImg = "http://localhost:5000/uploads/clientes/avatausers/";
-  const UrisImgDelete = "http://localhost:5000/usuarios/deleteimg/";
+  const UriUser = `${import.meta.env.VITE_API_URL}/usuarios/`;
+  const UriRol = `${import.meta.env.VITE_API_URL}/roles/`;
+  const UriRutas = `${import.meta.env.VITE_API_URL}/zonas/`;
+  const UriTipo = `${import.meta.env.VITE_API_URL}/usuarios/tipo/`;
+  const UriImg = `${import.meta.env.VITE_API_URL}/uploads/clientes/avatausers/`;
+  const UrisImgDelete = `${import.meta.env.VITE_API_URL}/usuarios/deleteimg/`;
 
   const VisuallyHiddenInput = styled("input")({
     clip: "rect(0 0 0 0)",
@@ -115,7 +115,7 @@ function ModalUsuario({ Id, open, dataInitial, handleClose, edit, onSave }) {
     console.log(fileOriginal);
     try {
       const res = await axios.post(
-        "http://localhost:5000/uploaduser/",
+        `${import.meta.env.VITE_API_URL}/uploaduser/`,
         formatdata,
       );
       console.log(res.data.fileName);

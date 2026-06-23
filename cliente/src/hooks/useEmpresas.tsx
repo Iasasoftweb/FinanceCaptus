@@ -7,7 +7,7 @@ export const useEmpresa = () => {
     // Cambiamos la clave de 'myEmpresa' a 'datosEmpresa' para resetear el caché
     queryKey: ['datosEmpresa1'], 
     queryFn: async () => {
-      const { data } = await axios.get('http://localhost:5000/empresas/');
+      const { data } = await axios.get(`${import.meta.env.VITE_API_URL}/empresas/`);
       
       // Axios guarda la respuesta en .data
       // Verificamos si es un array y tomamos el primer elemento

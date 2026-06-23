@@ -15,9 +15,9 @@ import getCliente from "../../../data/clientes/Getclientes";
 const ListadoClientes = () => {
   //const ref = {ref};
 
-  const UriEmpresa = "http://localhost:5000/empresas/estado";
-  const UriImg = "http://localhost:5000/uploadEmpresa/";
-  const URIs = "http://localhost:5000/clientes/estado/";
+  const UriEmpresa = `${import.meta.env.VITE_API_URL}/empresas/estado`;
+  const UriImg = `${import.meta.env.VITE_API_URL}/uploadEmpresa/`;
+  const URIs = `${import.meta.env.VITE_API_URL}/clientes/estado/`;
 
   const [empresasData, setEmpresasData] = useState([]);
   const [selectedFileId, setSelectedFileId] = useState(null);

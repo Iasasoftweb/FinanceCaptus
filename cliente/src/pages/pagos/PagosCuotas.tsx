@@ -50,7 +50,7 @@ const PagosCuotas = () => {
   const idprestamo = Number(id);
   const [activeTab, setActiveTab] = useState("amortizacion");
 
-  const UrisImg = "http://localhost:5000/uploads/clientes/avata/";
+  const UrisImg = `${import.meta.env.VITE_API_URL}/uploads/clientes/avata/`;
 
   const { data: PrestamoData, isLoading, error } = usePrestamosOne(idprestamo);
   const { data: cuotasPrestamos = [] } = useCuotasPrestamos(idprestamo);

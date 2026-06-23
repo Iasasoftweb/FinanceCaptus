@@ -17,8 +17,8 @@ function NavAvatar() {
   // Estado inicial como null para validar carga
   const [user, setUser] = useState(null);
 
-  const userURI = "http://localhost:5000/usuarios/";
-  const UriImg = "http://localhost:5000/uploads/clientes/avatauser/";
+  const userURI = `${import.meta.env.VITE_API_URL}/usuarios/`;
+  const UriImg = `${import.meta.env.VITE_API_URL}/uploads/clientes/avatauser/`;
 
   const handleLogout = (e) => {
     e.preventDefault();

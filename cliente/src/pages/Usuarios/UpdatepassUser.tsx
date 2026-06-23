@@ -32,8 +32,8 @@ function Updatepass({ Id, open, dataInitial, handleClose, onSave }) {
   const handleClickShowPassword = () => setShowPassword(!showPassword);
   const handleMouseDownPassword = (event) => event.preventDefault();
 
-  const UriUser = "http://localhost:5000/usuarios/";
-  const UriUpdate = "http://localhost:5000/usuarios/credential/";
+  const UriUser = `${import.meta.env.VITE_API_URL}/usuarios/`;
+  const UriUpdate = `${import.meta.env.VITE_API_URL}/usuarios/credential/`;
   const getUser = async () => {
     try {
       await axios.get(`${UriUser}${Id}`).then((response) => {

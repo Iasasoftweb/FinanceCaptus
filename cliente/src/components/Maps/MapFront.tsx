@@ -20,7 +20,7 @@ const MapFront = ({ clientes = [] }) => {
   const [popupInfo, setPopupInfo] = useState(null);
   const [mapError, setMapError] = useState(false);
 
-  const UrisImg = "http://localhost:5000/uploads/clientes/avata/";
+  const UrisImg = `${import.meta.env.VITE_API_URL}/uploads/clientes/avata/`;
 
   // Filtrado de clientes con coordenadas válidas para prevenir errores de renderizado
   const clientesConGPS = useMemo(() => {

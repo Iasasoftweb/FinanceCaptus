@@ -24,10 +24,12 @@ function App() {
   const [Empresa, SetEmpresa] = useState([]);
   const [InteresDefault, setInteresDefault] = useState("");
 
+  
+
   const GetEmpresa = async () => {
     try {
-      const respuesta = await axios.get(`http://localhost:5000/empresas/`);
-
+      const respuesta = await axios.get(`${import.meta.env.VITE_API_URL}/empresas/`);
+      
       const getEmpresas = respuesta?.data.data || respuesta.data;
       console.log(getEmpresas[0].interesdefecto);
       SetEmpresa(getEmpresas);

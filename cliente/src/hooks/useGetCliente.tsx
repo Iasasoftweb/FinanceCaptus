@@ -10,7 +10,7 @@ const useGetCliente = ( id ) => {
   
   const getCliente = async (idcliente) => {
     try {
-      const res = await axios.get(`http://localhost:5000/clientes/${idcliente}`);
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/clientes/${idcliente}`);
       const Data = res?.data.data || res.data || []
       setDataCliente(Data);
       console.log(Data);
@@ -34,7 +34,7 @@ export const useAllClientes = () => {
   return useQuery({
     queryKey: ['clientes'],
     queryFn: async () => {
-      const { data} = await axios.get('http://localhost:5000/clientes');
+      const { data} = await axios.get(`${import.meta.env.VITE_API_URL}/clientes`);
       console.log(data)
       
       return data;

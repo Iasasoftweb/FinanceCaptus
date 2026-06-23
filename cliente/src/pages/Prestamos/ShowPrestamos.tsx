@@ -70,12 +70,12 @@ const ShowPrestamos = ({ situacion }) => {
   const [montoIngresado, setMontoIngresado] = useState("");
   const [reciboActivo, setReciboActivo] = useState(null);
 
-  const UriData = "http://localhost:5000/prestamos/";
-  const uriCuotas = "http://localhost:5000/cuotas/";
-  const uriRutas = "http://localhost:5000/zonas/";
+  const UriData = `${import.meta.env.VITE_API_URL}/prestamos/`;
+  const uriCuotas = `${import.meta.env.VITE_API_URL}/cuotas/`;
+  const uriRutas = `${import.meta.env.VITE_API_URL}/zonas/`;
 
-  const UrisImg = "http://localhost:5000/uploads/clientes/avata/";
-  const UrisImgEmpresa = "http://localhost:5000/uploads/clientes/empresa/";
+  const UrisImg = `${import.meta.env.VITE_API_URL}/uploads/clientes/avata/`;
+  const UrisImgEmpresa = `${import.meta.env.VITE_API_URL}/uploads/clientes/empresa/`;
 
   const { data: dataEmpresa, isLoading } = useEmpresa();
   const Navigate = useNavigate();
@@ -465,7 +465,7 @@ const ShowPrestamos = ({ situacion }) => {
 
     try {
       // Envía la petición a tu backend Express
-      const response = await fetch("http://localhost:5000/prestamos/cobrar", {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/prestamos/cobrar`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

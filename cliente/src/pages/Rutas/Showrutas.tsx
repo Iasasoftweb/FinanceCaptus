@@ -60,7 +60,7 @@ const [currentPage, setCurrentPage] = useState(1);
   };
 
 
-  const URI = "http://localhost:5000/zonas/";
+  const URI = `${import.meta.env.VITE_API_URL}/zonas/`;
 
 
   const Allzonas = async () =>{

@@ -6,7 +6,7 @@ interface props {
 }
 
 export const useDataPrestamos = () => {
-  const UrisPrestamos = "http://localhost:5000/prestamos/";
+  const UrisPrestamos = `${import.meta.env.VITE_API_URL}/prestamos/`;
 
   const [DataPrestamos, setDataPrestamos] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
@@ -44,7 +44,7 @@ export const usePrestamosOne = (idprestamos?: number) => {
     queryKey: ["prestamos", idprestamos],
     queryFn: async () => {
       const { data } = await axios.get(
-        `http://localhost:5000/prestamos/${idprestamos}`,
+        `${import.meta.env.VITE_API_URL}/prestamos/${idprestamos}`,
       );
       return data;
     },
@@ -56,7 +56,7 @@ export const useCuotasPrestamos = (idprestamos?: number) => {
     queryKey: ["cuotas", idprestamos],
     queryFn: async () => {
       const { data } = await axios.get(
-        `http://localhost:5000/cuotas/${idprestamos}`,
+        `${import.meta.env.VITE_API_URL}/cuotas/${idprestamos}`,
       );
       return data.data || [];
     },

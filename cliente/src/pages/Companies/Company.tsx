@@ -58,7 +58,7 @@ const Company = () => {
     }
   };
 
-  const URI = "http://localhost:5000/Company/";
+  const URI = `${import.meta.env.VITE_API_URL}/Company/`;
 
   const datosCompanies = async () => {
     try {

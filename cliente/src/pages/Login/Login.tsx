@@ -24,11 +24,11 @@ const Login = () => {
 
   const { data : dataEmpresa, isLoading } = useEmpresa();
   console.log(dataEmpresa)
-  const UrisImg = "http://localhost:5000/uploads/clientes/empresa/";
+  const UrisImg = `${import.meta.env.VITE_API_URL}/uploads/clientes/empresa/`;
   const validarCredencial = (e) => {
     e.preventDefault();
     axios
-      .post("http://localhost:5000/usuarios/login/", { usuario, pass })
+      .post(`${import.meta.env.VITE_API_URL}/usuarios/login/`, { usuario, pass })
       .then((res) => {
         console.log(res);
         console.log(res.data.ID);
@@ -92,7 +92,7 @@ const Login = () => {
                     <br />
                     <BeatLoader color={MisColores.headerBlue} size={15} className="text-center" />
                   </div>
-                ) : (<img src={`${UrisImg}${dataEmpresa.logoempresa}`} alt="logo"  className="mt-2 img-fluid" />)}
+                ) : (<img src={`${UrisImg}${dataEmpresa?.logoempresa}`} alt="logo"  className="mt-2 img-fluid" />)}
                 
               </div>
               

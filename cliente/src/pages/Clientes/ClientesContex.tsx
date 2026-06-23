@@ -10,7 +10,7 @@ export const ClientesProvider = ({ children }) => {
 
 
     
-     const URIs = "http://localhost:5000/clientes/";
+     const URIs = `${import.meta.env.VITE_API_URL}/clientes/`;
 
     // Función para obtener la lista de clientes
     const fetchClientes = async () => {

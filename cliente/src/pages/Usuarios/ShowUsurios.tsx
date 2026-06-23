@@ -63,7 +63,7 @@ function ShowUsuarios() {
   const [isEdit, setIsEdit] = useState(false);
   const [reload, setReload] = useState(false);
 
-  const UriImg = "http://localhost:5000/uploads/clientes/avatauser/";
+  const UriImg = `${import.meta.env.VITE_API_URL}/uploads/clientes/avatauser/`;
   
 
 

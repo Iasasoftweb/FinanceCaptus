@@ -2,7 +2,7 @@ import axios from "axios";
 
 const AllClient = async () => {
    
-    const URI = "http://localhost:5000/clientes/";
+    const URI = `${import.meta.env.VITE_API_URL}/clientes/`;
     const res = await axios.get(URI);
     const clientes = await res.data;
   

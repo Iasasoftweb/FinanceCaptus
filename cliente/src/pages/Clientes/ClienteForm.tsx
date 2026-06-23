@@ -85,11 +85,11 @@ const ClienteForm = ({
   const [imgFilename, setImgFileName] = useState(null);
   const [Rutas, setGetRutas] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(open);
-  const URIs = "http://localhost:5000/tipodocs/";
-  const URIs2 = "http://localhost:5000/clientes/";
-  const UrisImg = "http://localhost:5000/uploads/";
-  const UrisImgDelete = "http://localhost:5000/clientes/deleteimagen/imagen/";
-  const URIrutas = "http://localhost:5000/zonas/";
+  const URIs = `${import.meta.env.VITE_API_URL}/tipodocs/`;
+  const URIs2 = `${import.meta.env.VITE_API_URL}/clientes/`;
+  const UrisImg = `${import.meta.env.VITE_API_URL}/uploads/`;
+  const UrisImgDelete = `${import.meta.env.VITE_API_URL}/clientes/deleteimagen/imagen/`;
+  const URIrutas = `${import.meta.env.VITE_API_URL}/zonas/`;
   const [isLoading, setIsLoading] = useState(false);
   const [dni, setDni] = useState("");
   const [tipodoc, setTipoDoc] = useState("");
@@ -287,7 +287,7 @@ const ClienteForm = ({
     if (formattedDNInormal.length == 11) {
       setIsLoading(true);
       axios
-        .get(`http://localhost:5000/jce/${formattedDNInormal}`)
+        .get(`${import.meta.env.VITE_API_URL}/jce/${formattedDNInormal}`)
         .then((personas) => {
           setNewNombre(personas.data.nombres);
           setNewApellidos(
@@ -350,11 +350,11 @@ const ClienteForm = ({
     setValue("telefonotrabajo", formattedTelefono);
   };
 
-  const UriImgContainer = "http://localhost:5000/uploads/clientes/avata/";
+  const UriImgContainer = `${import.meta.env.VITE_API_URL}/uploads/clientes/avata/`;
   useEffect(() => {
     if (ModoEdicion && idCliente) {
       axios
-        .get(`http://localhost:5000/clientes/${idCliente}`)
+        .get(`${import.meta.env.VITE_API_URL}/clientes/${idCliente}`)
         .then((response) => {
           setNewNombre(response.data.nombres);
           setNewApellidos(response.data.apellidos);
@@ -399,7 +399,7 @@ const ClienteForm = ({
         formData.append("avatar", fileToUpload);
 
         const resImg = await axios.post(
-          "http://localhost:5000/clientes/uploaduser",
+          `${import.meta.env.VITE_API_URL}/clientes/uploaduser`,
           formData,
           {
             headers: { "Content-Type": "multipart/form-data" },
@@ -416,7 +416,7 @@ const ClienteForm = ({
       if (ModoEdicion) {
         // --- MODO EDICIÓN ---
         await axios.put(
-          `http://localhost:5000/clientes/${idCliente}`,
+          `${import.meta.env.VITE_API_URL}/clientes/${idCliente}`,
           datosParaEnviar,
         );
 
@@ -432,7 +432,7 @@ const ClienteForm = ({
         // 1. Validar DNI duplicado
 
         const findDni = await axios.get(
-          `http://localhost:5000/clientes/buscar-dni/${data.dni}`,
+          `${import.meta.env.VITE_API_URL}/clientes/buscar-dni/${data.dni}`,
         );
 
         if (findDni.data) {
@@ -530,7 +530,7 @@ const ClienteForm = ({
 
     try {
       const res = await axios.post(
-        "http://localhost:5000/uploaduser/",
+          `${import.meta.env.VITE_API_URL}/uploaduser/` ,
         formData,
         {
           headers: { "Content-Type": "multipart/form-data" },

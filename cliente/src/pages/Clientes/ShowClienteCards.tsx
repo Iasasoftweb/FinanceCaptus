@@ -103,9 +103,9 @@ const ShowClienteCards = () => {
     toast.warning("Esta opcion no esta habilitado en tu perfil");
   };
 
-  const URIs = "http://localhost:5000/clientes/";
-  const UrisImg = "http://localhost:5000/uploads/clientes/avata/";
-  const API_BASE_URL = "http://localhost:5000/clientes";
+  const URIs = `${import.meta.env.VITE_API_URL}/clientes/`;
+  const UrisImg = `${import.meta.env.VITE_API_URL}/uploads/clientes/avata/`;
+  const API_BASE_URL = `${import.meta.env.VITE_API_URL}/clientes`;
 
   const prestamosInf = (id) => {
     const TotaPrestamos = DataPrestamos.filter((c) => c.idclientes === id);

@@ -108,7 +108,7 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
 
   const { data: DataEmpresa, isLoading } = useEmpresa();
 
-  const URI = "http://localhost:5000/prestamos/";
+  const URI = `${import.meta.env.VITE_API_URL}/prestamos/`;
 
   const [calcMethod, setCalcMethod] = useState("french"); // Por defecto 'french' (Cuota Fija / Francés)
   const [calcCapital, setCalcCapital] = useState(50000); // Capital editable en el modal
@@ -203,7 +203,7 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
   const ClienteData = async () => {
     try {
       await axios
-        .get(`http://localhost:5000/clientes/${idCliente}`)
+        .get(`${import.meta.env.VITE_API_URL}/clientes/${idCliente}`)
         .then((respuesta) => {
           setClienteData(respuesta.data);
           setCedulaCliente(respuesta.data.dni);
@@ -450,7 +450,7 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
 
         if (tablaAmortizacion.length > 0) {
           await axios.post(
-            "http://localhost:5000/cuotas/",
+            `${import.meta.env.VITE_API_URL}/cuotas/`,
             tablaAmortizacion.map((cuota) => ({
               idprestamo: nuevoPrestamoID,
               ...cuota,

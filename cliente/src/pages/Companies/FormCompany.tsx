@@ -34,7 +34,7 @@ export const FormCompany = ({ open,updateList, idCompany, ModoEdicion, handleClo
   
   const [companydatos, setCompanyData] = useState<any[]>([]);
   
-  const URI = "http://localhost:5000/Company/";
+  const URI = `${import.meta.env.VITE_API_URL}/Company/`;
 
   useEffect(() => {
     if (ModoEdicion === true) {
@@ -60,7 +60,7 @@ export const FormCompany = ({ open,updateList, idCompany, ModoEdicion, handleClo
       if (ModoEdicion) {
         // 1. Enviamos la actualización al servidor
         const response = await axios.put(
-          `http://localhost:5000/Company/${idCompany}`,
+          `${import.meta.env.VITE_API_URL}/Company/${idCompany}`,
           data,
         );
 

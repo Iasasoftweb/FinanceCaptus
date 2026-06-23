@@ -37,9 +37,9 @@ const Dashboard = () => {
     useState(0);
   const [clientesData, setClientesData] = useState([]);
 
-  const UriCliente = "http://localhost:5000/clientes/";
-  const UriPrestamos = "http://localhost:5000/prestamos/";
-  const UriCuotas = "http://localhost:5000/cuotas/";
+  const UriCliente = `${import.meta.env.VITE_API_URL}/clientes/`;
+  const UriPrestamos = `${import.meta.env.VITE_API_URL}/prestamos/`;
+  const UriCuotas = `${import.meta.env.VITE_API_URL}/cuotas/`;
 
   const { data: listaDeClientes, isLoading } = useAllClientes();
 

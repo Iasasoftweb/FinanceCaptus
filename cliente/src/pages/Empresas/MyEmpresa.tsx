@@ -53,9 +53,9 @@ const MyEmpresa = ({ open }) => {
   const [vpais, setVpais] = useState("");
   const [isAplicaMora, setIsAplicaMora] = useState("false");
   const [isImprimilo, setIsimprimelogo] = useState("");
-  const UriImg = "http://localhost:5000/uploads/clientes/empresa/";
-  const URIEmpresas = "http://localhost:5000/empresas/estado/";
-  const UriMoneda = "http://localhost:5000/moneda/";
+  const UriImg = `${import.meta.env.VITE_API_URL}/uploads/clientes/empresa/`;
+  const URIEmpresas = `${import.meta.env.VITE_API_URL}/empresas/estado/`;
+  const UriMoneda = `${import.meta.env.VITE_API_URL}/moneda/`;
   const navigate = useNavigate();
   const [selectedFileId, setSelectedFileId] = useState(null);
   const [MoraDefault, setMoraDefault] = useState(0);
@@ -134,7 +134,7 @@ const MyEmpresa = ({ open }) => {
 
     try {
       const res = await axios.post(
-        "http://localhost:5000/uploadEmpresa/",
+        `${import.meta.env.VITE_API_URL}/uploadEmpresa/`,
         formatdata,
       );
       console.log(res.data.fileName);
@@ -196,7 +196,7 @@ const MyEmpresa = ({ open }) => {
   };
 
   const onSubmit = async (data: FieldValues) => {
-    await axios.put(`http://localhost:5000/empresas/${Idempresas}`, data);
+    await axios.put(`${import.meta.env.VITE_API_URL}/empresas/${Idempresas}`, data);
     Swal.fire({
       position: "center",
       icon: "success",

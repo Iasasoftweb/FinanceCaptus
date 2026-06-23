@@ -5,7 +5,7 @@ const useDataUsuario = () => {
   const [dataUser, setDataUser] = useState([]);
   const getDataUsuario = async () => {
     try {
-      await axios.get(`http://localhost:5000/usuarios/`).then((respuesta) => {
+      await axios.get(`${import.meta.env.VITE_API_URL}/usuarios/`).then((respuesta) => {
         setDataUser(respuesta.data);
       });
     } catch (error) {
