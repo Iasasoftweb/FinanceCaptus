@@ -435,6 +435,8 @@ const ShowPrestamos = ({ situacion }) => {
       ? item?.situacion === "prestamo"
       : item?.situacion === "EVALUACION";
 
+      
+
   return (
     coincideZona &&
     coincideBusqueda &&
