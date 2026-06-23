@@ -7,7 +7,9 @@ export const procesarCobroTransaccional = async (req, res) => {
   const efectivo = parseFloat(montoRecibido);
 
   if (!idprestamo || isNaN(efectivo) || efectivo <= 0) {
-    return res.status(400).json({ success: false, message: 'Datos de cobro inválidos.' });
+    return res
+      .status(400)
+      .json({ success: false, message: "Datos de cobro inválidos." });
   }
 
   // 1. Iniciar la transacción administrada por Sequelize
@@ -17,25 +19,32 @@ export const procesarCobroTransaccional = async (req, res) => {
     // 2. Buscar el préstamo bloqueando la fila para actualización concurrente (FOR UPDATE)
     const prestamo = await PrestaModels.findByPk(idprestamo, {
       transaction: t,
-      lock: t.LOCK.UPDATE
+      lock: t.LOCK.UPDATE,
     });
 
     if (!prestamo) {
       await t.rollback();
-      return res.status(404).json({ success: false, message: 'Préstamo no encontrado.' });
+      return res
+        .status(404)
+        .json({ success: false, message: "Préstamo no encontrado." });
     }
 
     // 3. Obtener todas las cuotas del préstamo ordenadas por su número de cuota
     const cuotas = await CuotasModels.findAll({
       where: { idprestamo },
-      order: [['numcuota', 'ASC']],
+      order: [["numcuota", "ASC"]],
       transaction: t,
-      lock: t.LOCK.UPDATE
+      lock: t.LOCK.UPDATE,
     });
 
     if (cuotas.length === 0) {
       await t.rollback();
-      return res.status(404).json({ success: false, message: 'No se encontraron cuotas para este préstamo.' });
+      return res
+        .status(404)
+        .json({
+          success: false,
+          message: "No se encontraron cuotas para este préstamo.",
+        });
     }
 
     let efectivoDisponible = efectivo;
@@ -50,23 +59,23 @@ export const procesarCobroTransaccional = async (req, res) => {
       const saldoPendiente = Math.max(0, montocuota - montopagadoActual);
 
       // Si la cuota ya está marcada como pagada o el saldo pendiente es nulo, la saltamos
-      if (saldoPendiente <= 0.05 || cuota.pagada === 'true') continue;
+      if (saldoPendiente <= 0.05 || cuota.pagada === "true") continue;
 
       let montoAplicado = 0;
-      let tipoOperacion = 'ABONO';
+      let tipoOperacion = "ABONO";
 
       if (efectivoDisponible >= saldoPendiente) {
         // Se salda la cuota completa y el remanente derrama a la siguiente
         montoAplicado = saldoPendiente;
         efectivoDisponible -= saldoPendiente;
-        tipoOperacion = 'SALDO';
-        cuota.pagada = 'true';
+        tipoOperacion = "SALDO";
+        cuota.pagada = "true";
         cuota.fechapago = new Date();
       } else {
         // Se abona el saldo restante del efectivo y se detiene el derrame
         montoAplicado = efectivoDisponible;
         efectivoDisponible = 0;
-        tipoOperacion = 'ABONO';
+        tipoOperacion = "ABONO";
       }
 
       // --- DISTRIBUCIÓN ESPECÍFICA (Mora -> Interés -> Capital) ---
@@ -90,7 +99,9 @@ export const procesarCobroTransaccional = async (req, res) => {
       let aplicarInt = 0;
       if (remanenteAplicar > 0 && intPendiente > 0) {
         aplicarInt = Math.min(remanenteAplicar, intPendiente);
-        cuota.interespagado = parseFloat((intPagadoAct + aplicarInt).toFixed(2));
+        cuota.interespagado = parseFloat(
+          (intPagadoAct + aplicarInt).toFixed(2),
+        );
         remanenteAplicar -= aplicarInt;
       }
 
@@ -101,19 +112,25 @@ export const procesarCobroTransaccional = async (req, res) => {
       let aplicarCap = 0;
       if (remanenteAplicar > 0 && capPendiente > 0) {
         aplicarCap = Math.min(remanenteAplicar, capPendiente);
-        cuota.capitalpagado = parseFloat((capPagadoAct + aplicarCap).toFixed(2));
+        cuota.capitalpagado = parseFloat(
+          (capPagadoAct + aplicarCap).toFixed(2),
+        );
         remanenteAplicar -= aplicarCap;
       }
 
       // Guardar saldos finales calculados de la cuota
-      cuota.montopagado = parseFloat((montopagadoActual + montoAplicado).toFixed(2));
-      cuota.montopendiente = parseFloat((montocuota - cuota.montopagado).toFixed(2));
-      
+      cuota.montopagado = parseFloat(
+        (montopagadoActual + montoAplicado).toFixed(2),
+      );
+      cuota.montopendiente = parseFloat(
+        (montocuota - cuota.montopagado).toFixed(2),
+      );
+
       if (cuota.montopendiente <= 0.05) {
-        cuota.pagada = 'true';
-        cuota.estado = 'PAGADA';
+        cuota.pagada = "true";
+        cuota.estado = "PAGADA";
       } else {
-        cuota.estado = 'ABONADA';
+        cuota.estado = "ABONADA";
       }
 
       // Guardar cuota en la base de datos dentro de la transacción
@@ -127,34 +144,56 @@ export const procesarCobroTransaccional = async (req, res) => {
         desglose: {
           mora: aplicarMora,
           interes: aplicarInt,
-          capital: aplicarCap
-        }
+          capital: aplicarCap,
+        },
       });
     }
 
     if (detallesRecibo.length === 0) {
       await t.rollback();
-      return res.status(400).json({ success: false, message: 'El préstamo ya se encuentra completamente al día.' });
+      return res
+        .status(400)
+        .json({
+          success: false,
+          message: "El préstamo ya se encuentra completamente al día.",
+        });
     }
 
     // 5. Recalcular los acumuladores globales del Préstamo
     const todasLasCuotas = await CuotasModels.findAll({
       where: { idprestamo },
-      transaction: t
+      transaction: t,
     });
 
-    const totalPagadoPrestamo = todasLasCuotas.reduce((acc, c) => acc + parseFloat(c.montopagado || 0), 0);
-    const totalCapitalPagado = todasLasCuotas.reduce((acc, c) => acc + parseFloat(c.capitalpagado || 0), 0);
-    const totalCuotasPagas = todasLasCuotas.filter(c => c.pagada === 'true').length;
+    const totalPagadoPrestamo = todasLasCuotas.reduce(
+      (acc, c) => acc + parseFloat(c.montopagado || 0),
+      0,
+    );
+    const totalCapitalPagado = todasLasCuotas.reduce(
+      (acc, c) => acc + parseFloat(c.capitalpagado || 0),
+      0,
+    );
+    const totalCuotasPagas = todasLasCuotas?.filter(
+      (c) => c.pagada === "true",
+    ).length;
 
     prestamo.cuotaspagas = totalCuotasPagas;
     prestamo.montopagado = parseFloat(totalPagadoPrestamo.toFixed(2));
-    prestamo.capitalpendiente = parseFloat(Math.max(0, (prestamo.capital || 0) - totalCapitalPagado).toFixed(2));
-    prestamo.balancependiente = parseFloat(Math.max(0, ((prestamo.montoprestar || 0) + (prestamo.montointeres || 0)) - totalPagadoPrestamo).toFixed(2));
+    prestamo.capitalpendiente = parseFloat(
+      Math.max(0, (prestamo.capital || 0) - totalCapitalPagado).toFixed(2),
+    );
+    prestamo.balancependiente = parseFloat(
+      Math.max(
+        0,
+        (prestamo.montoprestar || 0) +
+          (prestamo.montointeres || 0) -
+          totalPagadoPrestamo,
+      ).toFixed(2),
+    );
     prestamo.fechaultimopago = new Date();
 
     if (prestamo.balancependiente <= 0.05) {
-      prestamo.estado = 'SALDADO';
+      prestamo.estado = "SALDADO";
     }
 
     await prestamo.save({ transaction: t });
@@ -167,14 +206,14 @@ export const procesarCobroTransaccional = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      message: 'Cobro procesado correctamente en la base de datos.',
+      message: "Cobro procesado correctamente en la base de datos.",
       recibo: {
         codigo: codigoRecibo,
         montoTotal: efectivo,
         fecha: new Date(),
         idprestamo: idprestamo,
         detalles: detallesRecibo,
-        sobranteFavor: parseFloat(efectivoDisponible.toFixed(2))
+        sobranteFavor: parseFloat(efectivoDisponible.toFixed(2)),
       },
       prestamoActualizado: {
         id: prestamo.id,
@@ -184,13 +223,14 @@ export const procesarCobroTransaccional = async (req, res) => {
         capitalpendiente: prestamo.capitalpendiente,
         balancependiente: prestamo.balancependiente,
         estado: prestamo.estado,
-        cuotas: todasLasCuotas
-      }
+        cuotas: todasLasCuotas,
+      },
     });
-
   } catch (error) {
     await t.rollback();
-    console.error('Error procesando cobro en Sequelize:', error);
-    return res.status(500).json({ success: false, message: 'Error interno en el servidor.' });
+    console.error("Error procesando cobro en Sequelize:", error);
+    return res
+      .status(500)
+      .json({ success: false, message: "Error interno en el servidor." });
   }
 };

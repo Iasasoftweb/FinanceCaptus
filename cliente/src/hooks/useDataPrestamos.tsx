@@ -124,10 +124,10 @@ export const usePrestamosCalculado = (prestamosLista, hoy = new Date()) => {
 
       // 2. Control de cuotas (ej: 0 / 13)
       const cuotasTotales = prestamo.cuotas.length;
-      const cuotasPagadas = prestamo.cuotas.filter(c => c.pagada==='true').length;
+      const cuotasPagadas = prestamo.cuotas?.filter(c => c.pagada==='true').length;
 
       // 3. Cuotas atrasadas (No pagadas y fecha de vencimiento anterior a HOY)
-      const cuotasAtrasadas = prestamo.cuotas.filter(c => {
+      const cuotasAtrasadas = prestamo.cuotas?.filter(c => {
         const fechaVence = new Date(c.fechavencimiento);
         
         return c.pagada==='false'  && fechaVence < hoy;

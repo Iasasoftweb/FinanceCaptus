@@ -173,7 +173,7 @@ const PrestamoDetail = () => {
   const getCuotasInfo = () => {
     const hoy = new Date();
 
-    const pendientes = verCuotas.filter((item) => {
+    const pendientes = verCuotas?.filter((item) => {
       const pagada =
         typeof item.pagada === "string"
           ? item.pagada.toLowerCase() === "true"
@@ -182,7 +182,7 @@ const PrestamoDetail = () => {
       return !pagada;
     });
 
-    const atrasadas = pendientes.filter((c) => {
+    const atrasadas = pendientes?.filter((c) => {
       const fechavencimiento = new Date(c.fechavencimiento);
       return fechavencimiento < hoy;
     });

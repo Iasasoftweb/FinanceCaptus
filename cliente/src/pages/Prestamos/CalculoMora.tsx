@@ -16,7 +16,7 @@ const CalculoMora = (idPrestamo) => {
       const Data = response?.data.data || response.data || [];
       setDataCuotas(Data);
 
-      const cuotasVencidas =  Data.filter((items) => {
+      const cuotasVencidas =  Data?.filter((items) => {
         const vencida = new Date(items.fechavencimiento) < new Date();
         return vencida;
       });

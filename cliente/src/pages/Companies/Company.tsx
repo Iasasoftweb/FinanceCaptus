@@ -43,7 +43,7 @@ const Company = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
-  const filtrar = Data.filter((items) =>
+  const filtrar = Data?.filter((items) =>
     items.company.toLowerCase().includes(search.toLowerCase()),
   );
 

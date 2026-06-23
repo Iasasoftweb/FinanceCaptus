@@ -19,7 +19,7 @@ const useCuotasAtrasadas = (id) => {
       const hoy = format(new Date(), "MM-dd-yyyy");
       
       // Cuotas pendientes (no pagadas)
-      const pendientes = cuotasData.filter(item => {
+      const pendientes = cuotasData?.filter(item => {
         const pagada = typeof item.pagada === 'string' 
           ? item.pagada.toLowerCase() === "true" 
           : Boolean(item.pagada);
@@ -29,7 +29,7 @@ const useCuotasAtrasadas = (id) => {
       setCuotasPendientes(pendientes.length);
 
       // Cuotas atrasadas (pendientes y con fecha de pago pasada)
-      const atrasadas = pendientes.filter(item => {
+      const atrasadas = pendientes?.filter(item => {
         return format(item.fechapago, "MM/dd/yyyy") < hoy;
       });
       setCuotasAtrasadas(atrasadas.length);

@@ -24,7 +24,7 @@ const MapFront = ({ clientes = [] }) => {
 
   // Filtrado de clientes con coordenadas válidas para prevenir errores de renderizado
   const clientesConGPS = useMemo(() => {
-    return (clientes || []).filter((cliente) => {
+    return (clientes || [])?.filter((cliente) => {
       const lat = parseFloat(cliente.latitud);
       const lng = parseFloat(cliente.longitud);
       // Validamos que sean números, no sean 0 (ubicación nula) y existan

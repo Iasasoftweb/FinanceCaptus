@@ -33,7 +33,7 @@ const useBalancePendiente = (idprestamo: number) => {
 
       const hoy = dayjs();
 
-      const pendientes = CuotasData.filter((item) => {
+      const pendientes = CuotasData?.filter((item) => {
         const pagada =
           typeof item.pagada === "string"
             ? item.pagada.toLowerCase() === "true"
@@ -42,7 +42,7 @@ const useBalancePendiente = (idprestamo: number) => {
         return !pagada;
       });
 
-      const Atrasos = CuotasData.filter((item) => {
+      const Atrasos = CuotasData?.filter((item) => {
         const pagada =
           typeof item.pagada === "string"
             ? item.pagada.toLowerCase() === "true"

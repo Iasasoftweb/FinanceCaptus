@@ -57,7 +57,7 @@ const Dashboard = () => {
 
       const hoy = dayjs();
 
-      const cuotasVencidas = getCuotas.filter((item) => {
+      const cuotasVencidas = getCuotas?.filter((item) => {
         const pagada =
           typeof item.pagada === "string"
             ? item.pagada.toLowerCase() === "true"
@@ -74,7 +74,7 @@ const Dashboard = () => {
 
       console.log(prestamosIdsConCuotasVencidas);
       const cantidadPrestamosVencidos = prestamosIdsConCuotasVencidas.length;
-      const prestamosVencidos = getPrestamos.filter((prestamo) =>
+      const prestamosVencidos = getPrestamos?.filter((prestamo) =>
         prestamosIdsConCuotasVencidas.includes(prestamo.id),
       );
 
@@ -87,7 +87,7 @@ const Dashboard = () => {
         `Préstamos con cuotas vencidas: ${cantidadPrestamosVencidos}`,
       );
 
-      const prestamosAct = getPrestamos.filter(
+      const prestamosAct = getPrestamos?.filter(
         (prestamos) => prestamos.modo === "activo",
       );
 

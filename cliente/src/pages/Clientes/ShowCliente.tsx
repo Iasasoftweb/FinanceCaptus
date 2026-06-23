@@ -127,7 +127,7 @@ const ShowClientes = () => {
   };
 
   const filtrar = (condicionesFiltrar) => {
-    const resultados = clienteDatos.filter((elementos) => {
+    const resultados = clienteDatos?.filter((elementos) => {
       if (
         elementos.dni
           .toString()

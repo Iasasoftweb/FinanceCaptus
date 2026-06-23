@@ -44,7 +44,7 @@ function Showrutas() {
 const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
-  const filtrar = zonasd.filter((items) =>
+  const filtrar = zonasd?.filter((items) =>
     items.nombrerutas.toLowerCase().includes(search.toLowerCase()),
   );
 

@@ -74,7 +74,7 @@ function ShowUsuarios() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
-  const filtrar = dataUser.filter(
+  const filtrar = dataUser?.filter(
     (items) =>
       items.usuario.toLowerCase().includes(search.toLowerCase()) ||
       items.nombreusuario.toLowerCase().includes(search.toLowerCase()),

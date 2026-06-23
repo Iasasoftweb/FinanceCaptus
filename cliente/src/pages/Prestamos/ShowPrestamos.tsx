@@ -282,7 +282,7 @@ const ShowPrestamos = ({ situacion }) => {
   }, []);
 
   const prestamosConCuotas = DataPrestamo.map((prestamo) => {
-    const cuotasDelPrestamo = cuotas.filter(
+    const cuotasDelPrestamo = cuotas?.filter(
       (cuota) => cuota.idprestamo === prestamo.id,
     );
 
@@ -348,13 +348,13 @@ const ShowPrestamos = ({ situacion }) => {
         const cuotas = actualizado.cuotas.map((c) =>
           c.id === cuotaId ? { ...c, pagada: !c.pagada } : c,
         );
-        const cuotasAtrasadas = cuotas.filter(
+        const cuotasAtrasadas = cuotas?.filter(
           (c) => !c.pagada && new Date(c.fechavencimiento) < fechaHoySimulada,
         );
         return {
           ...actualizado,
           cuotas,
-          cuotasPagadas: cuotas.filter((c) => c.pagada).length,
+          cuotasPagadas: cuotas?.filter((c) => c.pagada).length,
           cuotasTotales: cuotas.length,
           cantidadAtrasadas: cuotasAtrasadas.length,
           estado: cuotasAtrasadas.length > 0 ? "ATRASADO" : "AL DÍA",
@@ -397,7 +397,7 @@ const ShowPrestamos = ({ situacion }) => {
     console.log(event.target.checked);
   };
 
-  const filtrar = misPrestamos.filter((item) => {
+  const filtrar = misPrestamos?.filter((item) => {
     const coincideZona = searchZonas
       ? item.tcliente.tbzona.nombrerutas
           .toLowerCase()
