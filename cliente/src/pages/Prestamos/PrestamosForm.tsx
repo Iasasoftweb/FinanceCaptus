@@ -185,7 +185,7 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
           Frecuencia,
         );
 
-        setValue( "interes", safeFixed(resultado, 2));
+        setValue("interes", safeFixed(resultado, 2));
       } else {
         toast.error("No has intrudicido la cantidad de Cuota");
         setValue("interes", 0.0);
@@ -350,7 +350,10 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
           !isNaN(tasaPorcentaje) &&
           isFinite(tasaPorcentaje);
 
-        setValue("interes", esTasaValida ? safeFixed(tasaPorcentaje, 5) : "0.0000");
+        setValue(
+          "interes",
+          esTasaValida ? safeFixed(tasaPorcentaje, 5) : "0.0000",
+        );
       } else {
         setValue("interes", "0.0000");
       }
@@ -458,7 +461,7 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
         if (tablaAmortizacion.length > 0) {
           await axios.post(
             `${import.meta.env.VITE_API_URL}/cuotas/`,
-            tablaAmortizacion.map((cuota) => ({
+            tablaAmortizacion?.map((cuota) => ({
               idprestamo: nuevoPrestamoID,
               ...cuota,
             })),
@@ -510,8 +513,7 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
     );
     console.log(calcRate);
 
-     
-    setCustomCuotaValue(parseFloat(safeFixed(calculatedCuota, 2) ));
+    setCustomCuotaValue(parseFloat(safeFixed(calculatedCuota, 2)));
   };
 
   const handleTermChange = (val) => {
@@ -524,7 +526,7 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
       calcRate,
     );
 
-    setCustomCuotaValue(parseFloat(safeFixed(calculatedCuota,  2) ));
+    setCustomCuotaValue(parseFloat(safeFixed(calculatedCuota, 2)));
   };
 
   const handleRateChange = (val) => {
@@ -536,7 +538,7 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
       parseInt(calcTerm) || 1,
       rate,
     );
-   
+
     setCustomCuotaValue(parseFloat(safeFixed(calculatedCuota, 2)));
   };
 
@@ -564,7 +566,6 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
         calcRate,
       );
 
-     
       setCustomCuotaValue(parseFloat(safeFixed(calculatedCuota, 2)));
     }
   };
@@ -811,7 +812,7 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
                   onChange={HandleAmortiza}
                 >
                   <option value="">Seleccione un tipo...</option>
-                  {TipoAmortizacion.map((item) => (
+                  {TipoAmortizacion?.map((item) => (
                     <option key={item.id} value={item.tipo}>
                       {item.tipo}
                     </option>
@@ -832,7 +833,7 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
                   onChange={HandleFrecuencia}
                 >
                   <option value="">Seleccione un tipo...</option>
-                  {Frecuencias.map((items) => (
+                  {Frecuencias?.map((items) => (
                     <option key={items.id} value={items.tipo}>
                       {items.tipo}
                     </option>
@@ -1174,7 +1175,7 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
                   <option value="" disabled selected>
                     Seleccione un Compañia
                   </option>
-                  {dataCompany.map((items) => (
+                  {dataCompany?.map((items) => (
                     <option value={items.id} key={items.id}>
                       {items.company}
                     </option>
@@ -1213,7 +1214,7 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
                   <option value="" disabled selected>
                     Seleccione un gestor...
                   </option>
-                  {dataUser.map((items) => (
+                  {dataUser?.map((items) => (
                     <option value={items.id} key={items.id}>
                       {items.nombreusuario}
                     </option>
@@ -1236,7 +1237,7 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
                   <option value="" disabled selected>
                     Seleccione un cobrador...
                   </option>
-                  {dataCobrador.map((items) => (
+                  {dataCobrador?.map((items) => (
                     <option value={items.id} key={items.id}>
                       {items.nombreusuario}
                     </option>
