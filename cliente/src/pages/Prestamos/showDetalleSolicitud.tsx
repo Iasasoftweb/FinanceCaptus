@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { MisColores } from "../../components/stuff/MisColores";
 import { Tags } from "lucide-react";
+import { safeFixed } from "../../components/UtilsStuff";
 
 export const ShowDetalleSolicitud = ({ cuotas, onClose }) => {
   const misCuotas = cuotas.cuotas || [];
@@ -118,9 +119,9 @@ export const ShowDetalleSolicitud = ({ cuotas, onClose }) => {
                     <tr key={cuota.id}>
                       <td>{cuota.numcuota}</td>
                       <td>{cuota.fechavencimiento}</td>
-                      <td>${Number(cuota.montocapital || 0).toFixed(2)}</td>
-                      <td>${Number(cuota.montointeres || 0).toFixed(2)}</td>
-                      <td>${Number(cuota.montocuota || 0).toFixed(2)}</td>
+                      <td>${Number(safeFixed(cuota.montocapital, 2))}</td>
+                      <td>${Number(safeFixed(cuota.montointeres, 2))}</td>
+                      <td>${Number(safeFixed(cuota.montocuota, 2))}</td>
                       <td>
                         <span
                           className={`badge ${cuota.estado === "Pendiente" ? "bg-warning" : "bg-success"}`}

@@ -24,6 +24,7 @@ import dayjs from "dayjs";
 import MapFront from "../Maps/MapFront";
 import { useAllClientes } from "../../hooks/useGetCliente";
 import { MisColores } from "../stuff/MisColores";
+import { safeFixed } from "../UtilsStuff";
 
 
 const Dashboard = () => {
@@ -100,9 +101,7 @@ const Dashboard = () => {
       console.log(pocentPrestAct);
 
       setDataPrestamosActivos(prestamosAct.length);
-      setDataPrestamosActivosporcent(typeof pocentPrestAct === "number" && !isNaN(pocentPrestAct)
-          ? pocentPrestAct.toFixed(0)
-          : "0");
+      setDataPrestamosActivosporcent(Number(safeFixed(pocentPrestAct, 0)));
     } catch (error) {
       console.log(error);
     }

@@ -48,6 +48,7 @@ import "mapbox-gl/dist/mapbox-gl.css";
 import { StyleMap } from "../../components/Maps/StyleMap.tsx";
 import { useEmpresa } from "../../hooks/useEmpresas.tsx";
 import { InputField } from "../../components/stuff/InputField.tsx";
+import { safeFixed } from "../../components/UtilsStuff.tsx";
 
 const ShowClienteCards = () => {
   const [clients, setClientes] = useState([]);
@@ -310,8 +311,8 @@ const ShowClienteCards = () => {
       const lng = position?.coords?.longitude;
 
       setCoordinates({
-        latitud: lat !== undefined && lat !== null ? lat.toFixed(6) : "0.000000",
-        longitud: lng !== undefined && lng !== null ? lng.toFixed(6) : "0.000000",
+        latitud: lat !== undefined && lat !== null ? safeFixed(lat, 6) : "0.000000",
+        longitud: lng !== undefined && lng !== null ? safeFixed(lng, 6) : "0.000000",
       });
       
       showToast("¡Coordenadas GPS obtenidas con éxito!", "success");

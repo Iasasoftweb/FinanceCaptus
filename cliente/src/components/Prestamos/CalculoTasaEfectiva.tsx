@@ -1,4 +1,5 @@
 import React from "react";
+import { safeFixed } from "../UtilsStuff";
 
  export const obtenerFactorMensual = (frecuencia) => {
     switch (frecuencia) {
@@ -80,7 +81,7 @@ export const calcularTasaEfectiva = (monto, cuotas, pagoCuota) => {
       let calculatedCuota = (capital * mid) / (1 - Math.pow(1 + mid, -term));
 
       if (Math.abs(calculatedCuota - desiredCuota) < tolerance) {
-        return parseFloat((mid * 100).toFixed(4));
+        return parseFloat(safeFixed(mid * 100, 4));
       }
 
       if (calculatedCuota > desiredCuota) {
@@ -89,7 +90,7 @@ export const calcularTasaEfectiva = (monto, cuotas, pagoCuota) => {
         low = mid;
       }
     }
-    return parseFloat((((low + high) / 2) * 100).toFixed(4));
+    return parseFloat(safeFixed(((low + high) / 2) * 100, 4));
   };
 
 

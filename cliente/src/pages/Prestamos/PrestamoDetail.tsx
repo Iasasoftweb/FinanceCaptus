@@ -3,7 +3,7 @@ import axios from "axios";
 import { useParams } from "react-router-dom";
 import Avatar from "@mui/material/Avatar";
 import Rating from "@mui/material/Rating";
-import { formatCurrency } from "../../components/UtilsStuff";
+import { formatCurrency, safeFixed } from "../../components/UtilsStuff";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Container from "react-bootstrap/Container";
@@ -236,7 +236,7 @@ const PrestamoDetail = () => {
         textAnchor={x > cx ? "start" : "end"}
         dominantBaseline="central"
       >
-        {`${(percent * 100).toFixed(0)}%`}
+        {`${safeFixed((percent * 100),0)}%`}
       </text>
     );
   };

@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { Button, Spinner } from "react-bootstrap";
 import { BsFiletypeXls } from "react-icons/bs";
 import * as XLSX from "xlsx";
+import { safeFixed } from "../UtilsStuff";
 
 const BtnXlsDefault = ({ tarray, fileName }) => {
   const [loading, setLoading] = useState(false);
@@ -14,7 +15,7 @@ const BtnXlsDefault = ({ tarray, fileName }) => {
     const hoja = XLSX.utils.json_to_sheet(tarray);
     let num = Math.random();
     XLSX.utils.book_append_sheet(libro, hoja, "tarray");
-    const FileName = fileName+'-'+format(new Date(), 'dd-MM-yyyy')+'-'+num.toFixed(1)+'.xlsx'
+    const FileName = fileName+'-'+format(new Date(), 'dd-MM-yyyy')+'-'+(safeFixed(num, 1))+'.xlsx'
     setTimeout(() => {
       XLSX.writeFile(libro, FileName);
       setLoading(false);

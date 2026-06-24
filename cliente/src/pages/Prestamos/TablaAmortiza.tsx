@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import dayjs from "dayjs";
 import { addDays, format } from "date-fns";
 import { Table, useStepContext } from "@mui/material";
-import { formatCurrency } from "../../components/UtilsStuff";
+import { formatCurrency, safeFixed } from "../../components/UtilsStuff";
 import limpiarMonto from "../../components/stuff/LimpiarMonto";
 import axios from "axios";
 
@@ -121,8 +121,8 @@ const TablaAmortiza = ({
             fechapago: format(fecha, "dd/MM/yyyy"),
             fechavencimiento: format(fecha, "dd/MM/yyyy"), 
             montocuota: mc + limpiarMonto(Seguro),
-            montocapital: cuotaActual - parseFloat(iinteres.toFixed(2)),
-            montointeres: parseFloat(iinteres.toFixed(2)),
+            montocapital: cuotaActual - parseFloat(safeFixed(iinteres, 2)),
+            montointeres: parseFloat(safeFixed(iinteres, 2)),
             montomora: 0.0,
             seguro: limpiarMonto(Seguro) || 0,
             montopagado: iinteres + pagado,

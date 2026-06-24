@@ -30,6 +30,7 @@ import MButton from "../../components/stuff/MButton.tsx";
 import { CiSaveDown1 } from "react-icons/ci";
 import { MdOutlineCancel, MdOutlineSaveAlt } from "react-icons/md";
 import FindEmpresas from "../../components/general/FindEmpresas.tsx";
+import { safeFixed } from "../../components/UtilsStuff.tsx";
 
 const CuotasList = ({
   open,
@@ -140,7 +141,7 @@ const CuotasList = ({
       Frecuencia
     );
 
-    setInteres(resultado.toFixed(2));
+    setInteres(safeFixed(resultado, 2));
   };
 
   const GetCalculadora = () => {
@@ -603,7 +604,7 @@ const CuotasList = ({
                         fechainicio={vfechaPrimerPago}
                         tc={vCuota}
                         mc={limpiarMonto(montoCuota)}
-                        loan={Number(Interes).toFixed(2)}
+                        loan={Number(safeFixed(Interes,2))}
                         ccapital={limpiarMonto(capitalValue)}
                         tipo={amortiza}
                         fre={Frecuencia}

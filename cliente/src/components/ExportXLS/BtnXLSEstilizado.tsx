@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { Button, Spinner } from "react-bootstrap";
 import { BsFiletypeXls } from "react-icons/bs";
 import * as XLSX from "xlsx";
+import { safeFixed } from "../UtilsStuff";
 
 const BtnXLSEstilizado = ({ tdata, fileName, tTitulo }) => {
     const [loading, setLoading]=useState(false);
@@ -41,7 +42,7 @@ const BtnXLSEstilizado = ({ tdata, fileName, tTitulo }) => {
       
       XLSX.utils.book_append_sheet(wb, ws, fileName);
       let num = Math.random();
-      const FileName = fileName+'-'+format(new Date(), 'dd-MM-yyyy')+'-'+num.toFixed(1)+'.xlsx'
+      const FileName = fileName+'-'+format(new Date(), 'dd-MM-yyyy')+'-'+(safeFixed(num,1))+'.xlsx'
     
     // const dataFinal = [...titulo, ...tabla, informacionAdicional];
 

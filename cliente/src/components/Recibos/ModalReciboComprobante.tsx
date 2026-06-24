@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { safeFixed } from "../UtilsStuff";
 
 export function ModalReciboComprobante({ recibo, empresa, onClose }) {
 
@@ -33,7 +34,7 @@ export function ModalReciboComprobante({ recibo, empresa, onClose }) {
     recibo.detalles.forEach((det) => {
       msg += `• *Cuota #${det.numcuota}* (${det.tipoOperacion})\n`;
       msg += `   *Monto Aplicado:* $${det.montoAplicado.toLocaleString('es-DO', { minimumFractionDigits: 2 })}\n`;
-      msg += `   _Desglose:_ (Cap: $${det.desglose.capital.toFixed(2)} | Int: $${det.desglose.interes.toFixed(2)}${det.desglose.mora > 0 ? ` | Mora: $${det.desglose.mora.toFixed(2)}` : ''})\n\n`;
+      msg += `   _Desglose:_ (Cap: $${safeFixed(det.desglose.capital, 2)} | Int: $${safeFixed(det.desglose.interes, 2)}${det.desglose.mora > 0 ? ` | Mora: $${safeFixed(det.desglose.mora, 2)}` : ''})\n\n`;
     });
 
     msg += `------------------------------------------------\n`;
@@ -129,7 +130,7 @@ export function ModalReciboComprobante({ recibo, empresa, onClose }) {
                       <td className="py-1 text-start">
                         <div className="fw-bold">Cuota #{det.numcuota}</div>
                         <div className="text-muted" style={{ fontSize: '9px' }}>
-                          (Cap: ${det.desglose.capital.toFixed(2)} | Int: ${det.desglose.interes.toFixed(2)} {det.desglose.mora > 0 && `| Mora: $${det.desglose.mora.toFixed(2)}`})
+                          (Cap: ${safeFixed(det.desglose.capital, 2)} | Int: ${safeFixed(det.desglose.interes, 2)} {det.desglose.mora > 0 && `| Mora: $${safeFixed(det.desglose.mora, 2)}`})
                         </div>
                       </td>
                       <td className="text-center py-1">

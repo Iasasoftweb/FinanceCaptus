@@ -1,5 +1,6 @@
 import { addDays } from "date-fns";
 import limpiarMonto from "../../components/stuff/LimpiarMonto";
+import { safeFixed } from "../../components/UtilsStuff";
 
 interface AmortizaData {
   numcuota: number;
@@ -78,11 +79,11 @@ const getAmortizaData = ({
         fechavencimiento: addDays(fecha, prorrogaCuotas)
           .toISOString()
           .split("T")[0],
-        montocuota: parseFloat((cuotaFija + seguroMonto).toFixed(2)),
-        montocapital: parseFloat(capitalPagado.toFixed(2)),
-        montointeres: parseFloat(interes.toFixed(2)),
-        seguro: parseFloat(seguroMonto.toFixed(2)),
-        saldoPendiente: parseFloat(saldoPendiente.toFixed(2)),
+        montocuota: parseFloat(safeFixed((cuotaFija + seguroMonto),2)),
+        montocapital: parseFloat(safeFixed(capitalPagado,2)),
+        montointeres: parseFloat(safeFixed(interes,2)),
+        seguro: parseFloat(safeFixed(seguroMonto,2)),
+        saldoPendiente: parseFloat(safeFixed(saldoPendiente,2)),
         estado: "normal",
         pagada: "false",
       });

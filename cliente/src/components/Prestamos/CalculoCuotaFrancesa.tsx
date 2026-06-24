@@ -23,10 +23,10 @@ export const calcularCuotaFrancesa = (
   tasaPeriodoDecimal,
   totalCuotas,
 ) => {
-  if (tasaPeriodoDecimal === 0) return (capital / totalCuotas).toFixed(2);
+  if (tasaPeriodoDecimal === 0) return (capital / totalCuotas);
 
   const numerador = capital * tasaPeriodoDecimal;
   const denominador = 1 - Math.pow(1 + tasaPeriodoDecimal, -totalCuotas);
 
-  return (numerador / denominador).toFixed(2);
+  return (numerador / denominador);
 };

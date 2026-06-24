@@ -1,5 +1,7 @@
 // utils/finance.js
 
+import { safeFixed } from "../UtilsStuff";
+
 /**
  * Calcula las tasas y la cantidad exacta de cuotas dinámicamente
  * @param {number} tasaMensual - Tasa base del sistema (ej: 10)
@@ -49,7 +51,7 @@ export const obtenerEsquemaFrecuenciasDinamico = (
       dias: frec.diasFrecuencia,
       tasa: tasaCalculada,
       // Redondeamos las cuotas a 1 decimal por si dan números periódicos (ej: 6.5)
-      cuotas: Number(cantidadCuotas.toFixed(1)),
+      cuotas: Number(safeFixed(cantidadCuotas, 1)),
     };
   });
 };

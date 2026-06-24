@@ -1,5 +1,7 @@
 // utils/finance.js
 
+import { safeFixed } from "../components/UtilsStuff";
+
 export const DIAS_POR_FRECUENCIA = {
   DIARIO: 1,
   SEMANAL: 7,
@@ -42,9 +44,9 @@ export const calcularCreditoDinamico = (montoPrestamo, tasaMensualBase, frecuenc
   
   return {
     diasTotalesCredito: Math.round(diasTotalesCredito),
-    tasaFrecuenciaPorcentaje: Number((tasaFrecuencia * 100).toFixed(3)),
-    montoCuota: Number(montoCuota.toFixed(2)),         // Redondeado a 2 decimales para dinero
-    totalAPagar: Number(totalAPagar.toFixed(2)),
-    totalIntereses: Number(totalIntereses.toFixed(2))
+    tasaFrecuenciaPorcentaje: Number(safeFixed((tasaFrecuencia * 100),3)),
+    montoCuota: Number(safeFixed(montoCuota, 2)),         // Redondeado a 2 decimales para dinero
+    totalAPagar: Number(safeFixed(totalAPagar, 2)),
+    totalIntereses: Number(safeFixed(totalIntereses, 2))
   };
 };

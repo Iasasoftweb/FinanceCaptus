@@ -3,7 +3,7 @@ import axios from "axios";
 import { Paper, Avatar } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import PrestamosForm from "./PrestamosForm.tsx";
-import { formatCurrency } from "../../components/UtilsStuff.tsx";
+import { formatCurrency, safeFixed } from "../../components/UtilsStuff.tsx";
 import "./prestamos.css";
 import { MisColores } from "../../components/stuff/MisColores.tsx";
 import {
@@ -753,7 +753,7 @@ const ShowPrestamos = ({ situacion }) => {
                         Capital Total
                       </p>
                       <h4 className="fw-bold mb-0 text-dark">
-                        {formatCurrency(totalCapital.toFixed(2) || 0)}
+                        {formatCurrency(safeFixed(totalCapital,2))}
                       </h4>
                     </div>
                   </div>
@@ -773,7 +773,7 @@ const ShowPrestamos = ({ situacion }) => {
                         Mora Acumulada
                       </p>
                       <h4 className="fw-bold mb-0 text-dark">
-                        {formatCurrency(totalMora.toFixed(2) || 0)}
+                        {formatCurrency(safeFixed(totalMora,2))}
                       </h4>
                     </div>
                   </div>
@@ -2016,18 +2016,7 @@ const ShowPrestamos = ({ situacion }) => {
                             className="btn btn-xs btn-outline-secondary text-start"
                             style={{ fontSize: "11px" }}
                             onClick={() => {
-                              // 1. Extraemos el saldo con encadenamiento opcional (?.)
-                              const saldo =
-                                prestamoSeleccionado?.saldoPendienteTotal;
-
-                              // 2. Evaluamos de forma segura si es un número válido
-                              setMontoIngresado(
-                                saldo !== null &&
-                                  saldo !== undefined &&
-                                  !isNaN(saldo)
-                                  ? Number(saldo).toFixed(2)
-                                  : "0.00",
-                              );
+                             setMontoIngresado(safeFixed(prestamoSeleccionado?.saldoPendienteTotal, 2));
                             }}
                           >
                             💸 <strong>Saldar Préstamo Completo:</strong> $
@@ -2189,7 +2178,7 @@ const ShowPrestamos = ({ situacion }) => {
                                       >
                                         {cuota.nuevoSaldoPendiente === 0
                                           ? "Saldará"
-                                          : `Abonará (Resta $${cuota.nuevoSaldoPendiente.toFixed(2)})`}
+                                          : `Abonará (Resta $${safeFixed(cuota.nuevoSaldoPendiente,2)})`}
                                       </span>
                                     </div>
                                     <div

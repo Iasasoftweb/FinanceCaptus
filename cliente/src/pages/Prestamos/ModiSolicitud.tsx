@@ -14,6 +14,7 @@ import Frecuencias from "../../data/Apis/Modalidad.json";
 import getAmortizaData from "./getAmortizaCuotaFija";
 import axios from "axios";
 import limpiarMonto from "../../components/stuff/LimpiarMonto";
+import { safeFixed } from "../../components/UtilsStuff";
 
 const ModiSolicitud = ({ dataInicial, onClose }) => {
   const miData = dataInicial;
@@ -52,7 +53,7 @@ const ModiSolicitud = ({ dataInicial, onClose }) => {
       setTotalCuotas(miData.tcuota || "");
       setFrecuencia(miData.frecuencia || "");
       setMontoPrestado(miData.capital || "");
-      setTasaInteres(miData.interes.toFixed(3) || "");
+      setTasaInteres(safeFixed(miData.interes,3) || "");
       setMontoCuota(miData.mcuota || "");
     }
   }, [dataInicial]);
