@@ -1175,11 +1175,16 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
                   <option value="" disabled selected>
                     Seleccione un Compañia
                   </option>
-                  {dataCompany?.map((items) => (
-                    <option value={items.id} key={items.id}>
-                      {items.company}
-                    </option>
-                  ))}
+
+                                 
+
+                  {Array.isArray(dataCompany)
+                    ? dataCompany.map((item) => (
+                        <option key={item.id} value={item.id}>
+                          {item.company || item.nombre}
+                        </option>
+                      ))
+                    : null}
                 </select>
               </InputField>
 
