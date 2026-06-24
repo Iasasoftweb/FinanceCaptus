@@ -325,7 +325,7 @@ const ShowClientes = () => {
                     </tr>
                   </thead>
                   <tbody className="">
-                    {_DATA.currentData().map((item) => (
+                    {_DATA.currentData()?.map((item) => (
                       <tr key={item.id}>
                         <td className="clFont align-middle">{item.id}</td>
                         <td

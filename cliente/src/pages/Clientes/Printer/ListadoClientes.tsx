@@ -189,7 +189,7 @@ const ListadoClientes = () => {
                 </View>
               </View>
 
-              {dataCliente.map((item, index) => (
+              {dataCliente?.map((item, index) => (
                 <View style={style.tableRow}>
                   <View
                     style={{

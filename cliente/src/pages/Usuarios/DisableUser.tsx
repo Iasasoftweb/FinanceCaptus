@@ -175,7 +175,7 @@ const result = await Swal.fire({
               className="clFont form-select"
               onChange={handleEstado}
             >
-              {dataEstado.map((items) => (
+              {dataEstado?.map((items) => (
                 <option key={items.id} value={items.estado} className="clFont">
                   {items.estado}
                 </option>

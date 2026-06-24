@@ -503,7 +503,7 @@ const ClienteDo = ({ Id, open, handleClose, dataInitial }) => {
                           page * rowsPerPage,
                           page * rowsPerPage + rowsPerPage,
                         )
-                        .map((item) => (
+                        ?.map((item) => (
                           <TableRow key={item.id}>
                             <TableCell>
                               {!item.img ? (

@@ -251,7 +251,7 @@ const [currentPage, setCurrentPage] = useState(1);
                   </tr>
                 </thead>
                 <tbody>
-                  {currentRutas.map((item) => (
+                  {currentRutas?.map((item) => (
                     <tr key={item.id}>
                       <td>
                         {item.id}

@@ -72,7 +72,7 @@ const AppConfig = (props: AppConfigProps) => {
                         <div className="flex align-items-center">
                             <Button icon="pi pi-minus" type="button" onClick={decrementScale} rounded text className="w-2rem h-2rem mr-2" disabled={layoutConfig.scale === scales[0]}></Button>
                             <div className="flex gap-2 align-items-center">
-                                {scales.map((item) => {
+                                {scales?.map((item) => {
                                     return <i className={classNames('pi pi-circle-fill', { 'text-primary-500': item === layoutConfig.scale, 'text-300': item !== layoutConfig.scale })} key={item}></i>;
                                 })}
                             </div>

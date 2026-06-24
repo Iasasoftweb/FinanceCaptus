@@ -315,7 +315,7 @@ const CuotasList = ({
                           },
                         }}
                       >
-                        {TipoAmortizacion.map((items) => (
+                        {TipoAmortizacion?.map((items) => (
                           <MenuItem key={items.id} value={items.tipo}>
                             <span className="clFont">{items.tipo}</span>
                           </MenuItem>
@@ -346,7 +346,7 @@ const CuotasList = ({
                           },
                         }}
                       >
-                        {Frecuencias.map((items) => (
+                        {Frecuencias?.map((items) => (
                           <MenuItem key={items.id} value={items.tipo}>
                             <span className="clFont">{items.tipo}</span>
                           </MenuItem>

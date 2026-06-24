@@ -163,7 +163,7 @@ const TablaAmortiza = ({
           </tr>
         </thead>
         <tbody>
-          {DataAmortiza.map((items) => (
+          {DataAmortiza?.map((items) => (
             <tr key={items.numcuota} className="">
               <td
                 className="text-center fw-bold bg-info-subtle  p-1"

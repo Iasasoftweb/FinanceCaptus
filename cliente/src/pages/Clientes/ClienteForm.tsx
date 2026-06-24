@@ -708,7 +708,7 @@ const ClienteForm = ({
                 onChange={handleTipoDoc}
               >
                 <option value="">Seleccione...</option>
-                {tipoDocs.map((options) => (
+                {tipoDocs?.map((options) => (
                   <option key={options.id} value={options.id}>
                     <span className="clFont">{options.tipodoc}</span>
                   </option>
@@ -849,7 +849,7 @@ const ClienteForm = ({
                 onChange={handleNacionalidad}
               >
                 <option value="">Seleccione...</option>
-                {Paises.map((paises) => (
+                {Paises?.map((paises) => (
                   <option
                     value={paises.name}
                     key={paises.id}
@@ -895,7 +895,7 @@ const ClienteForm = ({
                 onChange={handleCiudad}
               >
                 <option value="">Seleccione...</option>
-                {Provincias.map((provincias) => (
+                {Provincias?.map((provincias) => (
                   <option
                     value={provincias.name}
                     key={provincias.id}
@@ -1050,7 +1050,7 @@ const ClienteForm = ({
                      onChange={handleIdRutas} 
                     style={{ fontSize: "0.8em" }}>
                      <option value="">Seleccione...</option>
-                      {Rutas.map((itemruta) => (
+                      {Rutas?.map((itemruta) => (
                       <option
                         value={itemruta.id}
                         key={itemruta.id}

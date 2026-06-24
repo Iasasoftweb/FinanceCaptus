@@ -147,7 +147,7 @@ function ShowUsuarios() {
     setIsModalEstado(false);
     setIsEdit(true);
     if (rowData.zonas) {
-      const zonasSeleccionadas = rowData.zonas.split(", ").map((zona) => ({
+      const zonasSeleccionadas = rowData.zonas.split(", ")?.map((zona) => ({
         value: zona.trim(),
         label: zona.trim(),
       }));
@@ -299,7 +299,7 @@ function ShowUsuarios() {
               </tr>
             </thead>
             <tbody>
-              {currentUsuarios.map((item) => (
+              {currentUsuarios?.map((item) => (
                 <tr key={item.id} className="border-bottom">
                   <td className="clFont">{item.id}</td>
                   <td style={{ width: "250px" }} className="clFont">

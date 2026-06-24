@@ -84,7 +84,7 @@ const MapFront = ({ clientes = [] }) => {
         <FullscreenControl position="top-right" />
 
         {/* Marcadores de Clientes */}
-        {clientesConGPS.map((cliente) => (
+        {clientesConGPS?.map((cliente) => (
           <Marker
             key={cliente.id}
             longitude={parseFloat(cliente.longitud)}

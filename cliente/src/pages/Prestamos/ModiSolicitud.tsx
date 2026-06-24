@@ -113,7 +113,7 @@ const ModiSolicitud = ({ dataInicial, onClose }) => {
         // 3. Insertamos las nuevas cuotas recalculadas
         await axios.post(
           `${import.meta.env.VITE_API_URL}/cuotas/`,
-          tablaAmortizacion.map((cuota) => ({
+          tablaAmortizacion?.map((cuota) => ({
             idprestamo: idPrestamo,
             ...cuota,
           })),
@@ -203,7 +203,7 @@ const ModiSolicitud = ({ dataInicial, onClose }) => {
                 disabled={true}
               >
                 <option value="">Seleccione un tipo...</option>
-                {Frecuencias.map((items) => (
+                {Frecuencias?.map((items) => (
                   <option key={items.id} value={items.tipo}>
                     {items.tipo}
                   </option>

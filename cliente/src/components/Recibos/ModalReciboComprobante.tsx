@@ -125,7 +125,7 @@ export function ModalReciboComprobante({ recibo, empresa, onClose }) {
                   </tr>
                 </thead>
                 <tbody>
-                  {recibo.detalles.map((det, index) => (
+                  {recibo.detalles?.map((det, index) => (
                     <tr key={index} className="align-middle">
                       <td className="py-1 text-start">
                         <div className="fw-bold">Cuota #{det.numcuota}</div>

@@ -19,7 +19,7 @@ const BtnXLSEstilizado = ({ tdata, fileName, tTitulo }) => {
     const handleDownload=()=>{
         setLoading(true);
     
-       const datosFormateados = tdata.map((datos) => ({
+       const datosFormateados = tdata?.map((datos) => ({
         'Id' : datos.id,
         'fecha' : datos.fecha,
         'DNI' : datos.tcliente.dni,

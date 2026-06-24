@@ -652,7 +652,7 @@ const ShowClienteCards = () => {
                       </tr>
                     </thead>
                     <tbody className="bg-white">
-                      {currentClientes.map((cliente) => {
+                      {currentClientes?.map((cliente) => {
                         const { resultTotal } = prestamosInf(cliente.id);
                         return (
                           <tr key={cliente.id} className="border-bottom">
@@ -841,7 +841,7 @@ const ShowClienteCards = () => {
           ) : (
             // Vista de Cards */
 
-            currentClientes.map((cliente) => {
+            currentClientes?.map((cliente) => {
               const { resultTotal } = prestamosInf(cliente.id);
 
               return (
@@ -1215,7 +1215,7 @@ const ShowClienteCards = () => {
           pointerEvents: "none",
         }}
       >
-        {notificaciones.map((toast) => {
+        {notificaciones?.map((toast) => {
           const config = {
             success: {
               bg: "rgba(209, 250, 229, 0.9)",

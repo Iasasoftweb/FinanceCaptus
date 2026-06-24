@@ -5,7 +5,7 @@
   const operacionesEfectuadas = []; // Historial de a dónde fue el dinero
   
   // Clonar y asegurar que cada cuota contenga sus propiedades de balance calculadas internamente
-  const cuotasCalculadas = cuotas.map(c => {
+  const cuotasCalculadas = cuotas?.map(c => {
     const montoTotalCuota = (parseFloat(c.montocapital) || 0) + (parseFloat(c.montointeres) || 0);
     const montoPagadoActual = parseFloat(c.montopagado) || 0;
     const saldoPendienteActual = Math.max(0, montoTotalCuota - montoPagadoActual);

@@ -442,7 +442,7 @@ const MyEmpresa = ({ open }) => {
                 >
                   <option value="">Seleccione un país</option>
                   {Pais &&
-                    Pais.map((item) => (
+                    Pais?.map((item) => (
                       <option key={item.id} value={item.name}>
                         <span className="clFont">{item.name}</span>
                       </option>

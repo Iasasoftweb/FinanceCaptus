@@ -259,7 +259,7 @@ const PrestamoDetail = () => {
         />
       )}
 
-      {dataPrestamo.map((items) => (
+      {dataPrestamo?.map((items) => (
         <Row>
           <Col md={2} sm={12}>
             <div className="border p-2  rounded-4 shadow-lg">
@@ -385,7 +385,7 @@ const PrestamoDetail = () => {
                       paddingAngle={5}
                       dataKey="value"
                     >
-                      {data.map((entry, index) => (
+                      {data?.map((entry, index) => (
                         <Cell
                           key={`cell-${index}`}
                           fill={COLORS[index % COLORS.length]}
@@ -603,7 +603,7 @@ const PrestamoDetail = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {_DATACUOTAS?.currentData().map((items) => {
+                      {_DATACUOTAS?.currentData()?.map((items) => {
                         const vencida = isBefore(
                           items.fechavencimiento,
                           new Date()

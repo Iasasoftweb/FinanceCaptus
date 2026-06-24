@@ -281,7 +281,7 @@ const PagosCuotas = () => {
             color: "success",
             bg: "success-subtle",
           },
-        ].map((item, i) => (
+        ]?.map((item, i) => (
           <div key={i} className="col-sm-6 col-lg-3">
             <div className="card card-modern p-3 border border-light-subtle">
               <div className="d-flex justify-content-between align-items-center mb-2">
@@ -362,7 +362,7 @@ const PagosCuotas = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {cuotasDatas.map((item) => {
+                    {cuotasDatas?.map((item) => {
                       const diasAtraso = getDiasAtraso(item);
                       return (
                         <tr key={item.id}>

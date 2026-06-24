@@ -71,11 +71,11 @@ export const usePrestamosCalculado = (prestamosLista, hoy = new Date()) => {
     let sumaInteresGlobal = 0;
 
 
-    const prestamosProcesados = (prestamosLista || []).map((prestamo) => {
+    const prestamosProcesados = (prestamosLista || [])?.map((prestamo) => {
 
        
       // Mapeo y cálculo detallado cuota por cuota
-      const cuotasProcesadas = prestamo.cuotas.map((c) => {
+      const cuotasProcesadas = prestamo.cuotas?.map((c) => {
         const montoTotalCuota = parseFloat(c.montocapital) + parseFloat(c.montointeres);
         const montoPagado = parseFloat(c.montopagado || 0);
         const saldoPendiente = Math.max(0, montoTotalCuota - montoPagado);

@@ -91,7 +91,7 @@ const ShowPrestamos = ({ situacion }) => {
     }
 
     // Preparar los datos para el Excel (aplanar el objeto)
-    const datosExcel = filtrar.map((item) => ({
+    const datosExcel = filtrar?.map((item) => ({
       "No. Préstamo": item.nPre,
       Cliente: item.tcliente.nombre_completo,
       DNI: item.tcliente.dni,
@@ -155,7 +155,7 @@ const ShowPrestamos = ({ situacion }) => {
       { header: "Vencido", dataKey: "vencido" },
     ];
 
-    const rows = filtrar.map((item) => ({
+    const rows = filtrar?.map((item) => ({
       nPre: item.id,
       cliente: item.tcliente.nombre_completo,
       dni: item.tcliente.dni,
@@ -275,7 +275,7 @@ const ShowPrestamos = ({ situacion }) => {
     //  inputRef.current.focus();
   }, []);
 
-  const prestamosConCuotas = DataPrestamo.map((prestamo) => {
+  const prestamosConCuotas = DataPrestamo?.map((prestamo) => {
     const cuotasDelPrestamo = cuotas?.filter(
       (cuota) => cuota.idprestamo === prestamo.id,
     );
@@ -295,7 +295,7 @@ const ShowPrestamos = ({ situacion }) => {
   );
 
   // Clonar y asegurar que cada cuota contenga sus propiedades de balance calculadas internamente
-  const cuotasCalculadas = cuotas.map((c) => {
+  const cuotasCalculadas = cuotas?.map((c) => {
     const montoTotalCuota = (c.montocapital || 0) + (c.montointeres || 0);
     const montoPagadoActual = c.montopagado || 0;
     const saldoPendienteActual = Math.max(
@@ -339,7 +339,7 @@ const ShowPrestamos = ({ situacion }) => {
       setPrestamoSeleccionado((prev) => {
         const actualizado = misPrestamos.find((p) => p.id === prestamoId);
         if (!actualizado) return prev;
-        const cuotas = actualizado.cuotas.map((c) =>
+        const cuotas = actualizado.cuotas?.map((c) =>
           c.id === cuotaId ? { ...c, pagada: !c.pagada } : c,
         );
         const cuotasAtrasadas = cuotas?.filter(
@@ -840,7 +840,7 @@ const ShowPrestamos = ({ situacion }) => {
                     style={{ fontSize: "0.7rem" }}
                   >
                     <option value="">Seleccione una Zona</option>
-                    {dataRutas.map((ruta) => (
+                    {dataRutas?.map((ruta) => (
                       <option key={ruta.id} value={ruta.nombrerutas}>
                         {ruta.nombrerutas}
                       </option>
@@ -1007,7 +1007,7 @@ const ShowPrestamos = ({ situacion }) => {
                   </tr>
                 </thead>
                 <tbody className="">
-                  {currentPrestamos.map((item, idx) => {
+                  {currentPrestamos?.map((item, idx) => {
                     return (
                       <tr key={idx}>
                         <td className="ps-4">
@@ -1450,7 +1450,7 @@ const ShowPrestamos = ({ situacion }) => {
               </h6>
 
               <div className="d-flex flex-column gap-3 w-100">
-                {prestamoSeleccionado.cuotas.map((cuota) => {
+                {prestamoSeleccionado.cuotas?.map((cuota) => {
                   const esVencida =
                     cuota.pagada === "false" &&
                     new Date(cuota.fechavencimiento) < fechaHoySimulada;
@@ -2077,7 +2077,7 @@ const ShowPrestamos = ({ situacion }) => {
                               </span>
                               <div className="p-3 bg-primary-subtle rounded-3 text-primary border border-primary-subtle">
                                 <ul className="list-unstyled mb-0 small">
-                                  {simulacionPago.operacionesEfectuadas.map(
+                                  {simulacionPago.operacionesEfectuadas?.map(
                                     (op, idx) => (
                                       <li
                                         key={idx}
@@ -2143,7 +2143,7 @@ const ShowPrestamos = ({ situacion }) => {
                               className="d-flex flex-column gap-2 overflow-y-auto"
                               style={{ maxHeight: "150px" }}
                             >
-                              {simulacionPago.cuotasCalculadas.map((cuota) => {
+                              {simulacionPago.cuotasCalculadas?.map((cuota) => {
                                 // Solo mostrar cuotas afectadas por el pago o la siguiente pendiente
                                 const fueAfectada =
                                   cuota.nuevoMontoPagado !==

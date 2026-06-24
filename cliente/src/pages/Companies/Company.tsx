@@ -228,7 +228,7 @@ const Company = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {currentZonas.map((item) => (
+                  {currentZonas?.map((item) => (
                     <tr key={item.id} className="border-bottom">
                       <td className="clFont">{item.id}</td>
                       <td style={{ width: "250px" }} className="clFont">

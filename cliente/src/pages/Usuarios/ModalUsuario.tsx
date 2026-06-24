@@ -193,7 +193,7 @@ function ModalUsuario({ Id, open, dataInitial, handleClose, edit, onSave }) {
   const getZonas = async () => {
     try {
       await axios.get(`${UriRutas}`).then((data) => {
-        const formattedOptions = data.data.map((route) => ({
+        const formattedOptions = data.data?.map((route) => ({
           value: route.nombrerutas, // El valor real que se enviará en el formulario
           label: route.nombrerutas, // El nombre visible en el dropdown
         }));
@@ -242,7 +242,7 @@ function ModalUsuario({ Id, open, dataInitial, handleClose, edit, onSave }) {
 
   const onSubmit = async (data: FieldValues) => {
     if (edit) {
-      const zonasString = data.zonas.map((zona) => zona.value).join(", ");
+      const zonasString = data.zonas?.map((zona) => zona.value).join(", ");
       const datosActualizado = { ...data, zonas: zonasString };
       await axios.put(`${UriUser}${Id}`, datosActualizado);
       Swal.fire({
@@ -253,7 +253,7 @@ function ModalUsuario({ Id, open, dataInitial, handleClose, edit, onSave }) {
         timer: 2000,
       });
     } else {
-      const zonasString = data.zonas.map((zona) => zona.value).join(", ");
+      const zonasString = data.zonas?.map((zona) => zona.value).join(", ");
       const datosActualizado = { ...data, zonas: zonasString };
       await axios.post(`${UriUser}`, datosActualizado);
       Swal.fire({
@@ -420,7 +420,7 @@ function ModalUsuario({ Id, open, dataInitial, handleClose, edit, onSave }) {
                     value={vRole}
                     onChange={handleRole}
                   >
-                    {dataRol.map((option) => (
+                    {dataRol?.map((option) => (
                       <MenuItem key={option.id} value={option.id}>
                         <span className="clFont"> {option.nombre}</span>
                       </MenuItem>
@@ -499,15 +499,16 @@ function ModalUsuario({ Id, open, dataInitial, handleClose, edit, onSave }) {
                       variant="outlined"
                       value={vSupervisor}
                       onChange={handleSupervisor}
-                    >{Array.isArray(dataTipo) ? (
-    dataTipo.map((option) => (
-      <MenuItem key={option.id} value={option.id}>
-        {option.nombreusuario}
-      </MenuItem>
-    ))
-  ) : (
-    <MenuItem disabled>Cargando supervisores...</MenuItem>
-  )}
+                    >
+                      {Array.isArray(dataTipo) ? (
+                        dataTipo?.map((option) => (
+                          <MenuItem key={option.id} value={option.id}>
+                            {option.nombreusuario}
+                          </MenuItem>
+                        ))
+                      ) : (
+                        <MenuItem disabled>Cargando supervisores...</MenuItem>
+                      )}
                     </TextField>
                   </div>
                   <div className="col-md-6 col-sm-12">

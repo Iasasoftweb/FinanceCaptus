@@ -32,7 +32,7 @@ export const obtenerEsquemaFrecuenciasDinamico = (
 
   const diasMesBase = diasTotalesCredito / 3; // El "mes" relativo del sistema
 
-  return mapeoFrecuencias.map((frec) => {
+  return mapeoFrecuencias?.map((frec) => {
     // 1. CALCULO DINÁMICO DE CUOTAS: Días totales del crédito / Días de esta frecuencia
     const cantidadCuotas = diasTotalesCredito / frec.diasFrecuencia;
 

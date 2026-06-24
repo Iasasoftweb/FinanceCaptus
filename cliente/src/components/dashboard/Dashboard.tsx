@@ -70,7 +70,7 @@ const Dashboard = () => {
       });
 
       const prestamosIdsConCuotasVencidas = [
-        ...new Set(cuotasVencidas.map((cuota) => cuota.idprestamo)),
+        ...new Set(cuotasVencida?.map((cuota) => cuota.idprestamo)),
       ];
 
       console.log(prestamosIdsConCuotasVencidas);
