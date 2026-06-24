@@ -100,7 +100,9 @@ const Dashboard = () => {
       console.log(pocentPrestAct);
 
       setDataPrestamosActivos(prestamosAct.length);
-      setDataPrestamosActivosporcent(pocentPrestAct.toFixed(0));
+      setDataPrestamosActivosporcent(typeof pocentPrestAct === "number" && !isNaN(pocentPrestAct)
+          ? pocentPrestAct.toFixed(0)
+          : "0");
     } catch (error) {
       console.log(error);
     }

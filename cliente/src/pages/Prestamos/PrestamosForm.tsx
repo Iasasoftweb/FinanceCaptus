@@ -184,7 +184,12 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
           Frecuencia,
         );
 
-        setValue("interes", resultado.toFixed(2) );
+        setValue(
+          "interes",
+          resultado !== null && resultado !== undefined && !isNaN(resultado)
+            ? Number(resultado).toFixed(2)
+            : "0.00",
+        );
       } else {
         toast.error("No has intrudicido la cantidad de Cuota");
         setValue("interes", 0.0);
@@ -343,7 +348,13 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
       if (p * n > capital1) {
         const tasaResultante = calcularTasaNewtonRaphson(capital1, n, p);
         const tasaPorcentaje = tasaResultante * 100;
-        setValue("interes", tasaPorcentaje.toFixed(5));
+
+        const esTasaValida =
+          typeof tasaPorcentaje === "number" &&
+          !isNaN(tasaPorcentaje) &&
+          isFinite(tasaPorcentaje);
+
+        setValue("interes", esTasaValida ? tasaPorcentaje.toFixed(5) : "0.0000");
       } else {
         setValue("interes", "0.0000");
       }
@@ -502,7 +513,12 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
       calcRate,
     );
     console.log(calcRate);
-    setCustomCuotaValue(parseFloat(calculatedCuota.toFixed(2)));
+
+     const esValorValida =
+          typeof calculatedCuota === "number" &&
+          !isNaN(calculatedCuota) &&
+          isFinite(calculatedCuota);
+    setCustomCuotaValue(parseFloat(esValorValida ? calculatedCuota.toFixed(2) : "0.0000"));
   };
 
   const handleTermChange = (val) => {
@@ -514,7 +530,13 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
       term,
       calcRate,
     );
-    setCustomCuotaValue(parseFloat(calculatedCuota.toFixed(2)));
+
+    
+     const esValorValida =
+          typeof calculatedCuota === "number" &&
+          !isNaN(calculatedCuota) &&
+          isFinite(calculatedCuota);
+    setCustomCuotaValue(parseFloat(esValorValida ? calculatedCuota.toFixed(2) : '0.0000'));
   };
 
   const handleRateChange = (val) => {
@@ -526,7 +548,11 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
       parseInt(calcTerm) || 1,
       rate,
     );
-    setCustomCuotaValue(parseFloat(calculatedCuota.toFixed(2)));
+     const esValorValida =
+          typeof calculatedCuota === "number" &&
+          !isNaN(calculatedCuota) &&
+          isFinite(calculatedCuota);
+    setCustomCuotaValue(parseFloat(esValorValida ? calculatedCuota.toFixed(2) : '0.0000'));
   };
 
   const handleCuotaDesiredChange = (val) => {
@@ -552,7 +578,12 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
         parseInt(calcTerm) || 1,
         calcRate,
       );
-      setCustomCuotaValue(parseFloat(calculatedCuota.toFixed(2)));
+
+       const esValorValida =
+          typeof calculatedCuota === "number" &&
+          !isNaN(calculatedCuota) &&
+          isFinite(calculatedCuota);
+      setCustomCuotaValue(parseFloat(esValorValida ? calculatedCuota.toFixed(2) : '0.000'));
     }
   };
 

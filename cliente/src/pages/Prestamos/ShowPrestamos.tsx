@@ -394,57 +394,55 @@ const ShowPrestamos = ({ situacion }) => {
   const prestamosParaFiltrar = Array.isArray(misPrestamos) ? misPrestamos : [];
 
   const filtrar = prestamosParaFiltrar.filter((item) => {
-  // Convertimos las búsquedas a minúsculas una sola vez aquí adentro
-  const buscarZonasTermino = (searchZonas || '').toLowerCase();
-  const buscarGeneralTermino = (search || '').toLowerCase();
+    // Convertimos las búsquedas a minúsculas una sola vez aquí adentro
+    const buscarZonasTermino = (searchZonas || "").toLowerCase();
+    const buscarGeneralTermino = (search || "").toLowerCase();
 
-  // 2. Filtro por Zona (Asegurando que tcliente y tbzona existan)
-  const coincideZona = searchZonas
-    ? (item?.tcliente?.tbzona?.nombrerutas || '')
-        .toString()
-        .toLowerCase()
-        .includes(buscarZonasTermino)
-    : true;
+    // 2. Filtro por Zona (Asegurando que tcliente y tbzona existan)
+    const coincideZona = searchZonas
+      ? (item?.tcliente?.tbzona?.nombrerutas || "")
+          .toString()
+          .toLowerCase()
+          .includes(buscarZonasTermino)
+      : true;
 
-  // 3. Filtro por Texto (Nombre o DNI)
-  const nombreCompleto = item?.tcliente?.nombre_completo 
-    ? item.tcliente.nombre_completo.toString().toLowerCase() 
-    : '';
-    
-  const dniCliente = item?.tcliente?.dni 
-    ? item.tcliente.dni.toString().toLowerCase() 
-    : '';
+    // 3. Filtro por Texto (Nombre o DNI)
+    const nombreCompleto = item?.tcliente?.nombre_completo
+      ? item.tcliente.nombre_completo.toString().toLowerCase()
+      : "";
 
-  const coincideBusqueda =
-    nombreCompleto.includes(buscarGeneralTermino) ||
-    dniCliente.includes(buscarGeneralTermino);
+    const dniCliente = item?.tcliente?.dni
+      ? item.tcliente.dni.toString().toLowerCase()
+      : "";
 
-  // 4. Filtro por Estado (ACTIVO E INACTIVO)
-  const modoActual = item?.modo ? item.modo.toString().toLowerCase() : '';
-  const coincideActivo = checked
-    ? modoActual === "activo"
-    : modoActual === "inactivo";
+    const coincideBusqueda =
+      nombreCompleto.includes(buscarGeneralTermino) ||
+      dniCliente.includes(buscarGeneralTermino);
 
-  // 5. Filtro por Estado de Cuota
-  const cumpleEstado =
-    filtroEstado === "TODOS" || item?.estado === filtroEstado;
+    // 4. Filtro por Estado (ACTIVO E INACTIVO)
+    const modoActual = item?.modo ? item.modo.toString().toLowerCase() : "";
+    const coincideActivo = checked
+      ? modoActual === "activo"
+      : modoActual === "inactivo";
 
-  // 6. Filtro por Situación
-  const coincideSituacion =
-    situacion === "prestamos"
-      ? item?.situacion === "prestamo"
-      : item?.situacion === "EVALUACION";
+    // 5. Filtro por Estado de Cuota
+    const cumpleEstado =
+      filtroEstado === "TODOS" || item?.estado === filtroEstado;
 
-      
+    // 6. Filtro por Situación
+    const coincideSituacion =
+      situacion === "prestamos"
+        ? item?.situacion === "prestamo"
+        : item?.situacion === "EVALUACION";
 
-  return (
-    coincideZona &&
-    coincideBusqueda &&
-    coincideActivo &&
-    cumpleEstado &&
-    coincideSituacion
-  );
-});
+    return (
+      coincideZona &&
+      coincideBusqueda &&
+      coincideActivo &&
+      cumpleEstado &&
+      coincideSituacion
+    );
+  });
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -755,7 +753,7 @@ const ShowPrestamos = ({ situacion }) => {
                         Capital Total
                       </p>
                       <h4 className="fw-bold mb-0 text-dark">
-                        {formatCurrency(totalCapital.toFixed(2))}
+                        {formatCurrency(totalCapital.toFixed(2) || 0)}
                       </h4>
                     </div>
                   </div>
@@ -775,7 +773,7 @@ const ShowPrestamos = ({ situacion }) => {
                         Mora Acumulada
                       </p>
                       <h4 className="fw-bold mb-0 text-dark">
-                        {formatCurrency(totalMora.toFixed(2))}
+                        {formatCurrency(totalMora.toFixed(2) || 0)}
                       </h4>
                     </div>
                   </div>
@@ -2017,13 +2015,20 @@ const ShowPrestamos = ({ situacion }) => {
                             type="button"
                             className="btn btn-xs btn-outline-secondary text-start"
                             style={{ fontSize: "11px" }}
-                            onClick={() =>
+                            onClick={() => {
+                              // 1. Extraemos el saldo con encadenamiento opcional (?.)
+                              const saldo =
+                                prestamoSeleccionado?.saldoPendienteTotal;
+
+                              // 2. Evaluamos de forma segura si es un número válido
                               setMontoIngresado(
-                                prestamoSeleccionado.saldoPendienteTotal.toFixed(
-                                  2,
-                                ),
-                              )
-                            }
+                                saldo !== null &&
+                                  saldo !== undefined &&
+                                  !isNaN(saldo)
+                                  ? Number(saldo).toFixed(2)
+                                  : "0.00",
+                              );
+                            }}
                           >
                             💸 <strong>Saldar Préstamo Completo:</strong> $
                             {prestamoSeleccionado.saldoPendienteTotal.toLocaleString(
