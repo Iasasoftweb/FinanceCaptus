@@ -8,25 +8,34 @@ import "./prestamos.css";
 import { MisColores } from "../../components/stuff/MisColores.tsx";
 import {
   AlertCircle,
+  AlertTriangle,
   BanknoteArrowDown,
+  Calendar,
+  Check,
+  CheckCircle,
   ChevronLeft,
   ChevronRight,
   ClipboardPen,
   Cuboid,
+  DollarSign,
   Eye,
   FileSpreadsheet,
   FileText,
   HandCoins,
   Landmark,
   MapPinCheckInside,
+  MessageSquare,
   Printer,
   RefreshCw,
   Search,
   Tags,
   TrendingUp,
   TriangleAlert,
+  User,
   Users,
+  WandSparkles,
   X,
+  XCircle,
 } from "lucide-react";
 import { InputField } from "../../components/stuff/InputField.tsx";
 import { EmptyState } from "../../components/stuff/EmptyState.tsx";
@@ -63,6 +72,11 @@ const ShowPrestamos = ({ situacion }) => {
   const [notificacion, setNotificacion] = useState("");
   const [montoIngresado, setMontoIngresado] = useState("");
   const [reciboActivo, setReciboActivo] = useState(null);
+  const [nuevoEstado, setNuevoEstado] = useState(null);
+  const [observacionCambio, setObservacionCambio] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
 
   const UriData = `${import.meta.env.VITE_API_URL}/prestamos/`;
   const uriCuotas = `${import.meta.env.VITE_API_URL}/cuotas/`;
@@ -70,6 +84,7 @@ const ShowPrestamos = ({ situacion }) => {
 
   const UrisImg = `${import.meta.env.VITE_API_URL}/uploads/clientes/avata/`;
   const UrisImgEmpresa = `${import.meta.env.VITE_API_URL}/uploads/clientes/empresa/`;
+ 
 
   const { data: dataEmpresa, isLoading } = useEmpresa();
   const Navigate = useNavigate();
@@ -431,8 +446,8 @@ const ShowPrestamos = ({ situacion }) => {
 
     // 6. Filtro por Situación
     const coincideSituacion =
-      situacion === "prestamos"
-        ? item?.situacion === "prestamo"
+      situacion === "ACEPTADO"
+        ? item?.situacion === "ACEPTADO"
         : item?.situacion === "EVALUACION";
 
     return (
@@ -625,6 +640,39 @@ const ShowPrestamos = ({ situacion }) => {
     window.print();
   };
 
+  console.log(nuevoEstado);
+
+   const guardarCambiosEstado = async (e) => {
+    e.preventDefault();
+    if (!prestamoSeleccionado) return;
+    
+    try {
+    await axios.patch(`${import.meta.env.VITE_API_URL}/prestamos/${prestamoSeleccionado.id}/situacion`, { 
+      situacion: nuevoEstado 
+    });
+            
+    } catch (err) {
+      setError(err.response?.data?.message || "Error al actualizar");
+    } finally {
+      setLoading(false);
+    }
+    
+    setTipoModal(null)
+    setNuevoEstado(null)
+   }
+    // Actualizamos el estado de la solicitud en nuestro listado simulado
+    
+    // setSolicitudes(prev => prev.map(sol => {
+    //   if (sol.id === prestamoSeleccionado.id) {
+    //     return {
+    //       ...sol,
+    //       estado: nuevoEstado,
+    //       observacion: observacionCambio
+    //     };
+    //   }
+    //   return sol;
+    // }));
+
   return (
     <div className="vh-100">
       {isModalOpen && (
@@ -712,7 +760,7 @@ const ShowPrestamos = ({ situacion }) => {
               height: "45px",
             }}
           >
-            {situacion === "prestamos" ? (
+            {situacion === "ACEPTADO" ? (
               <Landmark size={20} />
             ) : (
               <Cuboid size={20} />
@@ -720,11 +768,11 @@ const ShowPrestamos = ({ situacion }) => {
           </div>
           <div>
             <h5 className="fw-bold mb-0" style={{ color: "#2c3e50" }}>
-              {situacion === "prestamos" ? "Préstamos" : "Solicitudes"}
+              {situacion === "ACEPTADO" ? "Préstamos" : "Solicitudes"}
             </h5>
             <p className="text-muted mb-0 " style={{ fontSize: "0.8em" }}>
               Control de{" "}
-              {situacion === "prestamos"
+              {situacion === "ACEPTADO"
                 ? "Préstamos Emitidos"
                 : "Solicitudes de Préstamo"}
             </p>
@@ -737,7 +785,7 @@ const ShowPrestamos = ({ situacion }) => {
 
       <Paper>
         <div className="container-fluid max-width-xxl mx-auto">
-          {situacion === "prestamos" && (
+          {situacion === "ACEPTADO" && (
             <div className="row g-3 mb-4">
               <div className="col-12 col-md-4">
                 <div className="card border-0 shadow-sm p-3 h-100">
@@ -753,7 +801,7 @@ const ShowPrestamos = ({ situacion }) => {
                         Capital Total
                       </p>
                       <h4 className="fw-bold mb-0 text-dark">
-                        {formatCurrency(safeFixed(totalCapital,2))}
+                        {formatCurrency(safeFixed(totalCapital, 2))}
                       </h4>
                     </div>
                   </div>
@@ -773,7 +821,7 @@ const ShowPrestamos = ({ situacion }) => {
                         Mora Acumulada
                       </p>
                       <h4 className="fw-bold mb-0 text-dark">
-                        {formatCurrency(safeFixed(totalMora,2))}
+                        {formatCurrency(safeFixed(totalMora, 2))}
                       </h4>
                     </div>
                   </div>
@@ -811,7 +859,7 @@ const ShowPrestamos = ({ situacion }) => {
                   <input
                     type="text"
                     className="form-control bg-light border-0 shadow-none ps-2"
-                    placeholder={`${situacion === "prestamos" ? "Buscar Préstamos..." : "Buscar Solicitudes..."}`}
+                    placeholder={`${situacion === "ACEPTADO" ? "Buscar Préstamos..." : "Buscar Solicitudes..."}`}
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     style={{ fontSize: "0.7rem" }}
@@ -863,7 +911,7 @@ const ShowPrestamos = ({ situacion }) => {
             </div>
 
             {/* Botones de Acción Derecha */}
-            {situacion === "prestamos" && (
+            {situacion === "ACEPTADO" && (
               <div className="col text-end d-flex justify-content-end align-items-center gap-2">
                 <button
                   className="btn  btn-sm px-3 fw-semibold text-white shadow-sm d-flex align-items-center gap-2"
@@ -904,7 +952,7 @@ const ShowPrestamos = ({ situacion }) => {
               </div>
             )}
 
-            {situacion === "prestamos" && (
+            {situacion === "ACEPTADO" && (
               <div className="col-12 col-md-12 d-flex justify-content-end">
                 <div className="btn-group rounded-3" role="group">
                   {["TODOS", "AL DÍA", "ATRASADO"].map((est) => (
@@ -982,7 +1030,7 @@ const ShowPrestamos = ({ situacion }) => {
                       Zona
                     </th>
 
-                    {situacion === "prestamos" && (
+                    {situacion === "ACEPTADO" && (
                       <th
                         className="py-3 border-0 text-muted text-uppercase fw-bold text-center"
                         style={{ fontSize: "0.7rem" }}
@@ -990,7 +1038,7 @@ const ShowPrestamos = ({ situacion }) => {
                         Atrasadas
                       </th>
                     )}
-                    {situacion === "prestamos" && (
+                    {situacion === "ACEPTADO" && (
                       <th
                         className="py-3 border-0 text-muted text-uppercase fw-bold text-center"
                         style={{ fontSize: "0.7rem" }}
@@ -1070,7 +1118,7 @@ const ShowPrestamos = ({ situacion }) => {
                             className="border px-2 py-1 rounded-pill fw-bold text-secondary"
                             style={{ fontSize: "0.75rem" }}
                           >
-                            {situacion === "prestamos"
+                            {situacion === "ACEPTADO"
                               ? `${item.cuotasPagadas} / ${item.tcuota}`
                               : `${item.tcuota}`}
                           </span>
@@ -1083,7 +1131,7 @@ const ShowPrestamos = ({ situacion }) => {
                             {item.tcliente.tbzona.nombrerutas}
                           </span>
                         </td>
-                        {situacion === "prestamos" && (
+                        {situacion === "ACEPTADO" && (
                           <td>
                             <span className="text-muted fw-medium">
                               <span
@@ -1102,7 +1150,7 @@ const ShowPrestamos = ({ situacion }) => {
                           </td>
                         )}
 
-                        {situacion === "prestamos" && (
+                        {situacion === "ACEPTADO" && (
                           <td className="text-center">
                             <span
                               className={`badge rounded-pill text-uppercase px-3 py-1.5 fw-bold  ${
@@ -1122,7 +1170,7 @@ const ShowPrestamos = ({ situacion }) => {
 
                         <td className="pe-4 text-center">
                           <div className="btn-group">
-                            {situacion === "prestamos" && (
+                            {situacion === "ACEPTADO" && (
                               <button
                                 className="btn btn-outline-primary btn-sm border-0 rounded-3 p-1 mx-1"
                                 title="Cobrar"
@@ -1135,7 +1183,7 @@ const ShowPrestamos = ({ situacion }) => {
                                 <HandCoins size={18} />
                               </button>
                             )}
-                            {situacion === "prestamos" && (
+                            {situacion === "solicitudes" && (
                               <button
                                 className="btn btn-outline-secondary btn-sm border-0 rounded-3 p-1 mx-1"
                                 title="Ver"
@@ -1148,21 +1196,8 @@ const ShowPrestamos = ({ situacion }) => {
                               </button>
                             )}
 
-                            {situacion === "solicitudes" && (
-                              <button
-                                className="btn btn-outline-secondary btn-sm border-0 rounded-3 p-1 mx-1"
-                                title="Resumen de Prestamos"
-                                onClick={() => {
-                                  // handleDetail(item.id);
-
-                                  setPrestamoSeleccionado(item);
-                                  setTipoModal("detalle");
-                                }}
-                              >
-                                <Eye size={18} />
-                              </button>
-                            )}
-                            {situacion === "prestamos" && (
+                            
+                            {situacion === "ACEPTADO" && (
                               <button
                                 className="btn btn-outline-primary btn-sm border-0 rounded-3 p-1 mx-1"
                                 title="Detalle del Préstamo"
@@ -1201,7 +1236,29 @@ const ShowPrestamos = ({ situacion }) => {
                               </button>
                             )}
 
-                            {situacion === "prestamos" && (
+                            {situacion === "solicitudes" && (
+                              <button
+                                className="btn btn-sm border-0 rounded-3 p-1 mx-1 text-white p-1 shadow fw-semibold"
+                                style={{
+                                  backgroundColor: MisColores.headerBlue,
+                                }}
+                                title="Modificar Solicitud"
+                                onClick={() => {
+                                  setPrestamoSeleccionado(item);
+                                  setTipoModal("Estado");
+                                }}
+                              >
+                                {/* <WandSparkles size ={18}/> */}
+                                <span
+                                  className="px-2"
+                                  style={{ fontSize: "0.9em" }}
+                                >
+                                  Evaluar <ChevronRight size={17} />
+                                </span>
+                              </button>
+                            )}
+
+                            {situacion === "ACEPTADO" && (
                               <button
                                 className="btn btn-outline-success btn-sm border-0 rounded-3 p-1 mx-1"
                                 title="Ver"
@@ -1222,7 +1279,7 @@ const ShowPrestamos = ({ situacion }) => {
                       TOTALES
                     </td>
                     <td className="text-end py-3 text-primary">
-                      ${formatCurrency(totalCapital)}
+                      {formatCurrency(totalCapital)}
                     </td>
                     <td className="text-end py-3 text-dark">
                       {formatCurrency(totalInteres)}
@@ -1884,6 +1941,169 @@ const ShowPrestamos = ({ situacion }) => {
         </div>
       )}
 
+      {prestamoSeleccionado && tipoModal === "Estado" && (
+        <div
+          className="modal fade show d-block"
+          tabIndex="-1"
+          style={{
+            backgroundColor: "rgba(0,0,0,0.5)",
+          }}
+        >
+          <div className="modal-dialog modal-dialog-centered ">
+            <div className="modal-content border-1 shadow">
+              {/* HEADER */}
+              <div className="modal-header">
+                <h6 className="modal-title fw-semibold">
+                  Modificar Estado de Solicitud
+                </h6>
+
+                <button
+                  type="button"
+                  className="btn-close"
+                  style={{ fontSize: "0.9em" }}
+                  onClick={() => {
+                    setPrestamoSeleccionado(null);
+                    setTipoModal(null);
+                  }}
+                ></button>
+              </div>
+
+              <div className="modal-body p-4 bg-light text-start">
+                <form className="modal-body p-4 d-flex flex-column gap-4" onSubmit={guardarCambiosEstado}>
+                  
+                  {/* Información Breve de la Solicitud */}
+                  <div className="bg-secondary bg-opacity-10 p-3 rounded-3 border border-secondary border-opacity-25">
+                    <div className="d-flex justify-content-between align-items-center mb-2" style={{ fontSize: '0.75rem' }}>
+                      <span className="text-secondary d-flex align-items-center gap-1">
+                        <User style={{ width: '14px', height: '14px' }} className="text-muted" /> Solicitante:
+                      </span>
+                      <span className="fw-semibold ">{prestamoSeleccionado?.tcliente.nombre_completo || "N/A"}</span>
+                    </div>
+                    <div className="d-flex justify-content-between align-items-center mb-2" style={{ fontSize: '0.75rem' }}>
+                      <span className="text-secondary d-flex align-items-center gap-1">
+                        <DollarSign style={{ width: '14px', height: '14px' }} className="text-muted" /> Monto:
+                      </span>
+                      <span className="font-monospace fw-semibold">
+                        RD$ {Number(safeFixed(prestamoSeleccionado?.montoprestar)).toLocaleString("es-DO", { minimumFractionDigits: 2 })}
+                      </span>
+                    </div>
+                    <div className="d-flex justify-content-between align-items-center" style={{ fontSize: '0.75rem' }}>
+                      <span className="text-secondary d-flex align-items-center gap-1">
+                        <Calendar style={{ width: '14px', height: '14px' }} className="text-muted" /> Fecha registro:
+                      </span>
+                      <span className="font-monospace">{prestamoSeleccionado?.fechaprimer || "N/A"}</span>
+                    </div>
+                  </div>
+
+                  {/* Selección de Estados con Diseño Tipo Tarjetas */}
+                  <div>
+                    <label className="form-label text-secondary text-uppercase fw-semibold tracking-wider m-0 mb-3" style={{ fontSize: '0.75rem' }}>
+                      Selecciona el nuevo estado:
+                    </label>
+                    <div className="row g-2">
+                     
+                      {/* Opción: Aceptado */}
+                      <div className="col-4">
+                        <button
+                          type="button"
+                          onClick={() => setNuevoEstado("ACEPTADO")}
+                          className={`btn w-100 py-3 rounded-3 border d-flex flex-column align-items-center gap-2 position-relative text-wrap ${
+                            nuevoEstado === "ACEPTADO"
+                              ? "border-success text-white"
+                              : "border-secondary text-secondary text-white"
+                          }`}
+                          style={{ borderColor: nuevoEstado === "ACEPTADO" ? '#198754' : 'rgba(255,255,255,0.1)', minHeight: '90px', background : MisColores.headerBlue }}
+                        >
+                          <CheckCircle style={{ width: '22px', height: '22px' }} className={"text-white"} />
+                          <span className="fw-semibold" style={{ fontSize: '0.75rem' }}>Aceptado</span>
+                          {nuevoEstado === "ACEPTADO" && (
+                            <span className="position-absolute bg-danger rounded-circle " style={{ width: '8px', height: '8px', top: '8px', right: '8px' }}></span>
+                          )}
+                        </button>
+                      </div>
+
+                      {/* Opción: Incompleta */}
+                      <div className="col-4">
+                        <button
+                          type="button"
+                          onClick={() => setNuevoEstado("INCOMPLETO")}
+                          className={`btn w-100 py-3 rounded-3 border d-flex flex-column align-items-center gap-2 position-relative text-wrap ${
+                            nuevoEstado === "INCOMPLETO"
+                              ? "bg-opacity-10 border-warning text-white"
+                              : "bg-opacity-20 border-secondary text-white"
+                          }`}
+                          style={{ borderColor: nuevoEstado === "INCOMPLETO" ? '#ffc107' : 'rgba(255,255,255,0.1)', minHeight: '90px', background: MisColores.teal  }}
+                        >
+                          <AlertTriangle style={{ width: '22px', height: '22px' }} className={nuevoEstado === "INCOMPLETO" ? "text-warning" : "text-warning"} />
+                          <span className="fw-semibold" style={{ fontSize: '0.75rem' }}>Incompleta</span>
+                          {nuevoEstado === "INCOMPLETO" && (
+                            <span className="position-absolute bg-warning rounded-circle" style={{ width: '8px', height: '8px', top: '8px', right: '8px' }}></span>
+                          )}
+                        </button>
+                      </div>
+
+                      {/* Opción: Cancelado */}
+                      <div className="col-4">
+                        <button
+                          type="button"
+                          onClick={() => setNuevoEstado("RECHAZADO")}
+                          className={`btn w-100 py-3 rounded-3 border d-flex flex-column align-items-center gap-2 position-relative text-wrap ${
+                            nuevoEstado === "RECHAZADO"
+                              ? "bg-opacity-10 border-danger text-white"
+                              : "bg-opacity-5 border-secondary text-white"
+                          }`}
+                          style={{ borderColor: nuevoEstado === "RECHAZADO" ? '#dc3545' : 'rgba(255,255,255,0.1)', minHeight: '90px', background: MisColores.buscarOrange }}
+                        >
+                          <XCircle style={{ width: '22px', height: '22px' }} className={"text-white"} />
+                          <span className="fw-semibold" style={{ fontSize: '0.75rem' }}>Rechazado</span>
+                          {nuevoEstado === "RECHAZADO" && (
+                            <span className="position-absolute bg-danger rounded-circle" style={{ width: '8px', height: '8px', top: '8px', right: '8px' }}></span>
+                          )}
+                        </button>
+                      </div>
+
+                    </div>
+                  </div>
+
+                  {/* Campo para Observación / Comentarios de Auditoría */}
+                  <div className="d-flex flex-column gap-2">
+                    <label className="form-label text-secondary text-uppercase fw-semibold tracking-wider m-0 d-flex align-items-center gap-1.5" style={{ fontSize: '0.75rem' }}>
+                      <MessageSquare style={{ width: '16px', height: '16px' }} className="text-muted" /> Observaciones o Justificación:
+                    </label>
+                    <textarea
+                     // value={observacionCambio}
+                     // onChange={(e) => setObservacionCambio(e.target.value)}
+                      placeholder="Explique el motivo del cambio de estado (ej: documentos faltantes, buró crediticio aprobado, etc...)"
+                      className="form-control bg-dark text-light border-secondary rounded-3"
+                      style={{ minHeight: '100px', fontSize: '0.85rem', borderColor: 'rgba(255,255,255,0.15)', resize: 'none' }}
+                    />
+                  </div>
+
+                  {/* Botonera de Acción del Modal */}
+                  <div className="modal-footer border-secondary px-0 pb-0 pt-3 d-flex flex-column flex-sm-row gap-2" style={{ borderTopColor: 'rgba(255,255,255,0.1)' }}>
+                    <button
+                      type="button"
+                      onClick={()=>setTipoModal(null)}
+                      className="btn btn-outline-secondary w-100 w-sm-auto order-2 order-sm-1 px-4 py-2 rounded-3 text-secondary"
+                      style={{ fontSize: '0.85rem' }}
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      type="submit"
+                      className="btn w-100 w-sm-auto order-1 order-sm-2 px-4 py-2 rounded-3 d-flex align-items-center justify-content-center gap-1.5 fw-semibold text-white"
+                      style={{ fontSize: '0.85rem', background: MisColores.headerBlue }}
+                    >
+                      <Check style={{ width: '16px', height: '16px' }} className="mx-2" /> Guardar Estado
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* =========================================================================
           MODAL INTERACTIVO DE PAGO AVANZADO (CON DISTRIBUCIÓN EN CASCADA)
           ========================================================================= */}
@@ -2016,10 +2236,15 @@ const ShowPrestamos = ({ situacion }) => {
                             className="btn btn-xs btn-outline-secondary text-start"
                             style={{ fontSize: "11px" }}
                             onClick={() => {
-                             setMontoIngresado(safeFixed(prestamoSeleccionado?.saldoPendienteTotal, 2));
+                              setMontoIngresado(
+                                safeFixed(
+                                  prestamoSeleccionado?.saldoPendienteTotal,
+                                  2,
+                                ),
+                              );
                             }}
                           >
-                            💸 <strong>Saldar Préstamo Completo:</strong> $
+                            💸 <strong>Saldar Préstamo Complet o:</strong> $
                             {prestamoSeleccionado.saldoPendienteTotal.toLocaleString(
                               "es-DO",
                               { minimumFractionDigits: 2 },
@@ -2178,7 +2403,7 @@ const ShowPrestamos = ({ situacion }) => {
                                       >
                                         {cuota.nuevoSaldoPendiente === 0
                                           ? "Saldará"
-                                          : `Abonará (Resta $${safeFixed(cuota.nuevoSaldoPendiente,2)})`}
+                                          : `Abonará (Resta $${safeFixed(cuota.nuevoSaldoPendiente, 2)})`}
                                       </span>
                                     </div>
                                     <div

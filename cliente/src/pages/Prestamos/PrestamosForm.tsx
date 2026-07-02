@@ -305,7 +305,7 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
   };
 
   const HandleFrecuencia = (e) => {
-    setFrecuencia(e.target.value);
+     setFrecuencia(e.target.value);
   };
 
   const HandleCapital = (e) => {
@@ -1176,7 +1176,8 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
                     Seleccione un Compañia
                   </option>
 
-                                 
+                 
+                 
 
                   {Array.isArray(dataCompany)
                     ? dataCompany.map((item) => (

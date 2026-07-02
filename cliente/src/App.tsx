@@ -122,7 +122,7 @@ function App() {
             }
           />
           <Route path="/prestamodetail/:id" element={<PrestamoDetail />} />
-          <Route path="/prestamos/" element={<ShowPrestamos situacion="prestamos" />} />
+          <Route path="/prestamos/" element={<ShowPrestamos situacion="ACEPTADO" />} />
           <Route path="/solicitudes/" element={<ShowPrestamos situacion="solicitudes" />} />
           <Route path="/company" element={<Company />} />
         </Route>
