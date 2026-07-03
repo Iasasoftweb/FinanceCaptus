@@ -22,6 +22,7 @@ import {
   FileSpreadsheet,
   FileText,
   HandCoins,
+  Info,
   Landmark,
   MapPinCheckInside,
   MessageSquare,
@@ -53,6 +54,7 @@ import { simularDistribucionDePago } from "../../hooks/useSimularDistribucionDeP
 import { ModalReciboComprobante } from "../../components/Recibos/ModalReciboComprobante.tsx";
 import { ShowDetalleSolicitud } from "./showDetalleSolicitud.tsx";
 import ModiSolicitud from "./ModiSolicitud.tsx";
+import DocumentosDropdown from "../../components/Prestamos/DocumentsDropdown.tsx";
 
 const ShowPrestamos = ({ situacion }) => {
   const [PrestamoData, setPrestamoData] = useState([]);
@@ -1170,9 +1172,25 @@ const ShowPrestamos = ({ situacion }) => {
 
                         <td className="pe-4 text-center">
                           <div className="btn-group">
+
+                              {situacion === "solicitudes" && (
+                                 <DocumentosDropdown prestamo={prestamoSeleccionado} />
+                              // <button
+                              //   className="btn btn-outline-info btn-sm border-0 rounded-3 p-1 mx-1"
+                              //   title="Documentos"
+                              //   onClick={() => {
+                              //     setPrestamoSeleccionado(item);
+                              //     setTipoModal("detalle");
+                              //   }}
+                              // >
+                              //   <Info size={18} />
+                              // </button>
+                            )}
+
+
                             {situacion === "ACEPTADO" && (
                               <button
-                                className="btn btn-outline-primary btn-sm border-0 rounded-3 p-1 mx-1"
+                                className="btn btn-outline-warning btn-sm border-0 rounded-3 p-1 mx-1 bg-warning-subtle border-2 border rounded-2 pe-2 ps-2"
                                 title="Cobrar"
                                 onClick={() => {
                                   setPrestamoSeleccionado(item);
@@ -1180,7 +1198,9 @@ const ShowPrestamos = ({ situacion }) => {
                                   setMontoIngresado("");
                                 }}
                               >
-                                <HandCoins size={18} />
+                                   <HandCoins size={18} /> <span className="" style={{ fontSize: "0.8em", color: MisColores.headerBlue, fontWeight: "bold" }}>
+                                    Cobrar
+                                  </span>
                               </button>
                             )}
                             {situacion === "solicitudes" && (
@@ -1196,7 +1216,9 @@ const ShowPrestamos = ({ situacion }) => {
                               </button>
                             )}
 
-                            
+                          
+
+
                             {situacion === "ACEPTADO" && (
                               <button
                                 className="btn btn-outline-primary btn-sm border-0 rounded-3 p-1 mx-1"
@@ -2066,7 +2088,7 @@ const ShowPrestamos = ({ situacion }) => {
                   </div>
 
                   {/* Campo para Observación / Comentarios de Auditoría */}
-                  <div className="d-flex flex-column gap-2">
+                  {/* <div className="d-flex flex-column gap-2">
                     <label className="form-label text-secondary text-uppercase fw-semibold tracking-wider m-0 d-flex align-items-center gap-1.5" style={{ fontSize: '0.75rem' }}>
                       <MessageSquare style={{ width: '16px', height: '16px' }} className="text-muted" /> Observaciones o Justificación:
                     </label>
@@ -2077,7 +2099,7 @@ const ShowPrestamos = ({ situacion }) => {
                       className="form-control bg-dark text-light border-secondary rounded-3"
                       style={{ minHeight: '100px', fontSize: '0.85rem', borderColor: 'rgba(255,255,255,0.15)', resize: 'none' }}
                     />
-                  </div>
+                  </div> */}
 
                   {/* Botonera de Acción del Modal */}
                   <div className="modal-footer border-secondary px-0 pb-0 pt-3 d-flex flex-column flex-sm-row gap-2" style={{ borderTopColor: 'rgba(255,255,255,0.1)' }}>
