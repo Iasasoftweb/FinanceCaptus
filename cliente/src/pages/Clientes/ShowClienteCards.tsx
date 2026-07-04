@@ -672,8 +672,8 @@ const ShowClienteCards = () => {
                                   //  <User size={18} className="text-muted w-100" />
                                   <div className="w-100">
                                     <h6 className="mb-0  text-muted fs-6 fw-bold">
-                                      {cliente.nombres.charAt(0)}
-                                      {cliente.apellidos.charAt(0)}
+                                      {cliente.nombres?.charAt(0) || ''}
+                                      {cliente.apellidos?.charAt(0) || ''}
                                     </h6>
                                   </div>
                                 )}
@@ -862,7 +862,7 @@ const ShowClienteCards = () => {
                             }}
                           >
                             <h5 className="mb-0 fw-bold">
-                              {cliente.nombres.charAt(0)}
+                              {cliente.nombres?.charAt(0) || ''}
                             </h5>
                           </div>
                           <div>
