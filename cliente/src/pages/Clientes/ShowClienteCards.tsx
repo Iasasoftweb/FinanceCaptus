@@ -700,7 +700,7 @@ const ShowClienteCards = () => {
                             <td>
                               <div className="d-flex align-items-center fw-medium small fw-bold">
                                 <MapPin size={12} className="me-1" />{" "}
-                                {cliente.tbzona.nombrerutas}
+                                {cliente.tbzona?.nombrerutas || "N/A"}
                               </div>
                             </td>
 
@@ -713,7 +713,7 @@ const ShowClienteCards = () => {
                                       : "bg-danger-subtle text-danger border border-danger-subtle"
                                   }`}
                               >
-                                {cliente.estado.toUpperCase()}
+                                {cliente.estado?.toUpperCase() || 'N/A'}
                               </span>
                             </td>
                             <td className="text-center align-middle">
@@ -890,7 +890,7 @@ const ShowClienteCards = () => {
                         </div>
                         <div className="d-flex align-items-center text-muted small">
                           <MapPin size={14} className="me-2 text-primary" />{" "}
-                          {cliente.tbzona.nombrerutas} • {cliente.sector}
+                          {cliente.tbzona?.nombrerutas || "N/A"} • {cliente.sector}
                         </div>
                       </div>
 
