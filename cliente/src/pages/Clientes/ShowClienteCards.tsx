@@ -193,8 +193,8 @@ const ShowClienteCards = () => {
   const filtrar = clienteDatos?.filter(
     (cliente) =>
       (cliente.nombres || '').toLowerCase().includes((search || '').toLowerCase()) ||
-      cliente.dni.includes(search),
-  );
+      cliente.dni?.includes(search),
+  ) || [];
 
   // Lógica de Paginación
   const indexOfLastItem = currentPage * itemsPerPage;

@@ -1,11 +1,11 @@
 import { useState, useRef, useEffect } from "react";
 
 const DOCUMENTOS = [
-  { key: "carta-bureau",          label: "Carta al bureau" },
-  { key: "entrega-prestaciones",  label: "Entrega de prestaciones" },
-  { key: "pagare-notarial",       label: "Pagaré notarial" },
-  { key: "poder-especial",        label: "Poder especial" },
-  { key: "poder-litis",           label: "Poder litis" },
+  { key: "carta-bureau", label: "Carta al bureau" },
+  { key: "entrega-prestaciones", label: "Entrega de prestaciones" },
+  { key: "pagare-notarial", label: "Pagaré notarial" },
+  { key: "poder-especial", label: "Poder especial" },
+  { key: "poder-litis", label: "Poder litis" },
   { key: "reconocimiento-deudas", label: "Reconocimiento de deudas" },
 ];
 
@@ -19,8 +19,8 @@ export default function DocumentosDropdown({ prestamo }) {
     if (!open && btnRef.current) {
       const rect = btnRef.current.getBoundingClientRect();
       setMenuPos({
-        top: rect.bottom + 4,         // justo debajo del botón
-        left: rect.right - 220,       // alineado a la derecha del botón
+        top: rect.bottom + 4, // justo debajo del botón
+        left: rect.right - 220, // alineado a la derecha del botón
       });
     }
     setOpen((v) => !v);
@@ -42,37 +42,57 @@ export default function DocumentosDropdown({ prestamo }) {
 
   return (
     <>
-      <button ref={btnRef} onClick={handleToggle} className="btn btn-outline-info btn-sm border-0 rounded-3 p-1 mx-1 bg-info-subtle border-2 border rounded-2 pe-2 ps-2" title="Documentos" style={{ fontSize: "0.8em", color: "#0d6efd", fontWeight: "bold" }}>
+      <button
+        ref={btnRef}
+        onClick={handleToggle}
+        className="btn btn-outline-info btn-sm border-0 rounded-3 p-1 mx-1 bg-info-subtle border-2 border rounded-2 pe-2 ps-2"
+        title="Documentos"
+        style={{ fontSize: "0.8em", color: "#0d6efd", fontWeight: "bold" }}
+      >
         📄 Documentos ▾
       </button>
 
       {open && (
-        <ul style={{
-          position: "fixed",          // 👈 clave: sale del flujo de la tabla
-          top: menuPos.top,
-          left: menuPos.left,
-          zIndex: 9999,
-          background: "#fff",
-          border: "1px solid #e2e8f0",
-          borderRadius: "8px",
-          padding: "6px",
-          minWidth: "220px",
-          boxShadow: "0 4px 16px rgba(0,0,0,0.12)",
-          listStyle: "none",
-          margin: 0,
-        }}>
+        <ul
+          style={{
+            position: "fixed", // 👈 clave: sale del flujo de la tabla
+            top: menuPos.top,
+            left: menuPos.left,
+            zIndex: 9999,
+            background: "#fff",
+            border: "1px solid #e2e8f0",
+            borderRadius: "8px",
+            padding: "6px",
+            minWidth: "220px",
+            boxShadow: "0 4px 16px rgba(0,0,0,0.12)",
+            listStyle: "none",
+            margin: 0,
+          }}
+        >
           {DOCUMENTOS.map((doc) => (
             <li key={doc.key}>
               <button
                 onClick={() => handleSeleccionar(doc)}
                 style={{
-                  display: "block", width: "100%", textAlign: "left",
-                  padding: "8px 12px", background: "none", border: "none",
-                  borderRadius: "6px", cursor: "pointer", fontSize: "13px",
+                  display: "block",
+                  width: "100%",
+                  textAlign: "left",
+                  padding: "8px 12px",
+                  background: "none",
+                  border: "none",
+                  borderRadius: "6px",
+                  cursor: "pointer",
+                  fontSize: "13px",
                 }}
-                onMouseEnter={(e) => e.currentTarget.style.background = "#f1f5f9"}
-                onMouseLeave={(e) => e.currentTarget.style.background = "none"}
+                onMouseEnter={(e) =>
+                  (e.currentTarget.style.background = "#f1f5f9")
+                }
+                onMouseLeave={(e) =>
+                  (e.currentTarget.style.background = "none")
+                }
               >
+                {" "}
+                ``
                 {doc.label}
               </button>
             </li>
