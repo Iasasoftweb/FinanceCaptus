@@ -1,4 +1,4 @@
-import React from "react";
+
 import { safeFixed } from "../UtilsStuff";
 
  export const obtenerFactorMensual = (frecuencia) => {

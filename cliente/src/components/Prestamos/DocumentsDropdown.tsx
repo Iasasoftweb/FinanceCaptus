@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 
 const DOCUMENTOS = [
-  { key: "carta-bureau", label: "Carta al bureau" },
+  { key: "carta-bureau", label: 'Carta al bureau' },
   { key: "entrega-prestaciones", label: "Entrega de prestaciones" },
   { key: "pagare-notarial", label: "Pagaré notarial" },
   { key: "poder-especial", label: "Poder especial" },
@@ -73,6 +73,7 @@ export default function DocumentosDropdown({ prestamo }) {
             <li key={doc.key}>
               <button
                 onClick={() => handleSeleccionar(doc)}
+                className="w-100 text-start px-3 py-2 border-0 "
                 style={{
                   display: "block",
                   width: "100%",
@@ -85,14 +86,14 @@ export default function DocumentosDropdown({ prestamo }) {
                   fontSize: "13px",
                 }}
                 onMouseEnter={(e) =>
-                  (e.currentTarget.style.background = "#f1f5f9")
+                  (e.currentTarget.style.background = "#457b9d", e.currentTarget.style.color = "#fff")
                 }
                 onMouseLeave={(e) =>
-                  (e.currentTarget.style.background = "none")
+                  (e.currentTarget.style.background = "none" , e.currentTarget.style.color = "#000")
                 }
               >
                 {" "}
-                ``
+                
                 {doc.label}
               </button>
             </li>

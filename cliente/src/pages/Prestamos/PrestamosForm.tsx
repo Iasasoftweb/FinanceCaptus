@@ -102,10 +102,9 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
   const { dataUser } = useDataUsuario();
   const { dataCompany } = useCompany();
   const { dataCobrador } = useCobrador();
-  const [situacion, setSituacion] = useState("");
   const [selectedClient, setSelectedClient] = useState(null);
+  const [tasaManual, setTasaManual] = useState("");
 
-  // Parámetros de simulación en el modal (dinámicos y editables por el usuario)
 
   const { data: DataEmpresa, isLoading } = useEmpresa();
 
@@ -157,9 +156,9 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
   const TCuotas = useWatch({ control, name: "tcuota" });
   const Mcuota = useWatch({ control, name: "mcuota" });
   const MMInteres = useWatch({ control, name: "interes" });
-  const Mcomision = useWatch({ control, name: "comision" });
-  const Mgastolegal = useWatch({ control, name: "gastoslegal" });
-  const Mseguro = useWatch({ control, name: "seguro" });
+  // const Mcomision = useWatch({ control, name: "comision" });
+  // const Mgastolegal = useWatch({ control, name: "gastoslegal" });
+  // const Mseguro = useWatch({ control, name: "seguro" });
 
   const datosCreditos = calcularCreditoDinamico(
     capitalValue,
@@ -317,6 +316,93 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
     setMontoPrestar(e.target.value);
   };
 
+ 
+
+const handleTasaManualChange = (e) => {
+  const valor = parseFloat(e.target.value) || 0;
+  setTasaManual(valor);
+
+  const nuevaTasaDecimal = parseFloat(valor) / 100; // Convertimos a decimal 
+  const capital = parseFloat(capitalValue) || 0; 
+  const cuotas = parseInt(TCuotas) || 0;         
+
+  if (capital > 0 && cuotas > 0) {
+    
+    let nuevaCuota = 0;
+    if (nuevaTasaDecimal === 0) {
+      nuevaCuota = capital / cuotas;
+    } else {
+      const numerador = nuevaTasaDecimal * Math.pow(1 + nuevaTasaDecimal, cuotas);
+      const denominador = Math.pow(1 + nuevaTasaDecimal, cuotas) - 1;
+      nuevaCuota = capital * (numerador / denominador);
+    }
+const cuotaCalculada = Number(nuevaCuota.toFixed(2));
+    
+   setValue("mcuota", cuotaCalculada, { shouldValidate: true, shouldDirty: true });
+    // Actualizamos el campo de la cuota en react-hook-form de inmediato
+    // setValue("mcuota", nuevaCuota.toFixed(2));
+
+  }
+};
+
+
+  const handleTasaChange = (e) => {
+  const nuevaTasa = parseFloat(e.target.value) || 0;
+  
+  // 1. Actualizas el estado de la tasa de interés en el formulario
+  setFormInput((prev) => ({
+    ...prev,
+    tasaInteres: nuevaTasa
+  }));
+
+  // 2. Extraes los valores actuales necesarios para el cálculo
+  const capital = parseFloat(formInput.montoCapital) || 0;
+  const cuotas = parseInt(formInput.cuotas) || 0;
+
+  // 3. Calculas la nueva cuota si hay capital y cuotas válidas
+  if (capital > 0 && cuotas > 0) {
+    // Usamos tu función matemática existente
+    const nuevaCuota = calculateFrenchCuota(capital, cuotas, nuevaTasa);
+    
+    // 4. Actualizas el estado del monto de la cuota (formateado a 2 decimales)
+    setFormInput((prev) => ({
+      ...prev,
+      montoCuota: nuevaCuota.toFixed(2) 
+    }));
+  }
+};
+
+useEffect(() => {
+  // if (datosCreditos?.tasaFrecuenciaPorcentaje) {
+  //   setTasaManual(datosCreditos?.tasaFrecuenciaPorcentaje);
+  //   setValue("interes", datosCreditos?.tasaFrecuenciaPorcentaje);
+  //   
+  // }
+
+
+
+
+
+  const capital = parseFloat(capitalValue) || 0;
+  const cuotas = parseInt(TCuotas) || 0;
+    
+  if (capital > 0 && cuotas > 0) {
+
+    const resultado = calcularCreditoDinamico(
+    capitalValue,
+    DataEmpresa?.interesdefecto || 0,
+    Frecuencia,
+    TCuotas,
+  );
+    setTasaManual(resultado.tasaFrecuenciaPorcentaje);
+    setValue("interes", resultado.tasaFrecuenciaPorcentaje);
+
+    // Sincronizamos el input de la cuota con el cálculo automático
+    setValue("mcuota", resultado.montoCuota, { shouldValidate: true });
+  }
+}, [capitalValue, TCuotas]);
+
+
   useEffect(() => {
     ClienteData();
     setValue("gastoslegal", DataEmpresa.gastolegal);
@@ -365,9 +451,8 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
     amortiza,
     Frecuencia,
     capitalValue,
-    Mseguro,
-    Mcomision,
-    Mgastolegal,
+    
+    
   ]);
 
   const handleModalCuotas = () => {
@@ -1103,7 +1188,7 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
                       <NumericFormat
                         name={name}
                         getInputRef={ref}
-                        value={datosCreditos.montoCuota || ""}
+                        value={Mcuota || ""}
                         thousandSeparator={true}
                         prefix={"DOP "}
                         decimalScale={2}
@@ -1133,14 +1218,14 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
               <InputField
                 label="Tasa Interes (%)"
                 icon={Percent}
-                readOnly
                 required
                 col="col-md-3"
               >
                 <input
-                  type="text"
-                  value={datosCreditos.tasaFrecuenciaPorcentaje}
-                  {...register("interes")}
+                  type="number"
+                  step="any"
+                  value={tasaManual}
+                  {...register("interes", {onChange: handleTasaManualChange})}
                   className="form-control border-0 shadow-none bg-warning-subtle fw-bold text-dark"
                 />
               </InputField>
