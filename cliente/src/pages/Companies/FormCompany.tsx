@@ -89,7 +89,7 @@ export const FormCompany = ({ open,updateList, idCompany, ModoEdicion, handleClo
         // Para el POST (Crear nueva)
 
         console.log("Creando nueva compañía con datos:", data);
-        const respond = await axios.post(`${import.meta.env.VITE_API_URL}/Company`, data);
+        const respond = await axios.post(`${import.meta.env.VITE_API_URL}/Company/`, data);
 
         setCompanyData((prev) => [...prev, respond.data]);
 
