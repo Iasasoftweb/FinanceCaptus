@@ -1,15 +1,8 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Allcompanies } from "../../data/Companies/AllCompanies";
-import PaginationItem from "../../components/Pagination/PaginatedItems.tsx";
-import { createTheme, Pagination, ThemeProvider } from "@mui/material";
-import TitleTop from "../../components/TitleTop/TItleTop.tsx";
-import { PiMapPinArea } from "react-icons/pi";
-import { Form, InputGroup, Table } from "react-bootstrap";
-import { IoIosSearch } from "react-icons/io";
+import { createTheme } from "@mui/material";
 import Swal from "sweetalert2";
-import { TbRefresh } from "react-icons/tb";
-import { Link } from "react-router-dom";
 import { AiOutlineDelete } from "react-icons/ai";
 import { CiEdit } from "react-icons/ci";
 import { FormCompany } from "./FormCompany.tsx";
@@ -20,7 +13,7 @@ import {
   Check,
   ChevronLeft,
   ChevronRight,
-  HandCoins,
+
   RefreshCcw,
   Search,
   X,
@@ -42,14 +35,16 @@ const Company = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
-  const filtrar = Data?.filter((items) =>
-    (items?.company || "").toLowerCase()?.includes((search || "").toLowerCase()),
-  );
+  const filtrar = Array.isArray(Data) 
+  ? Data.filter((items) =>
+      (items?.company || "").toLowerCase()?.includes((search || "").toLowerCase())
+    )
+  : [];
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentZonas = filtrar.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(filtrar.length / itemsPerPage);
+  const totalPages = filtrar.length > 0 ? Math.ceil(filtrar.length / itemsPerPage) : 1;
 
   const paginate = (pageNumber) => {
     if (pageNumber >= 1 && pageNumber <= totalPages) {
