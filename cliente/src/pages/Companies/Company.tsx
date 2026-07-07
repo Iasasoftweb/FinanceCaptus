@@ -25,7 +25,6 @@ import {
   Search,
   X,
 } from "lucide-react";
-import NoDatos from "../../components/stuff/NoDatos.tsx";
 import { EmptyState } from "../../components/stuff/EmptyState.tsx";
 
 const Company = () => {
@@ -44,7 +43,7 @@ const Company = () => {
   const itemsPerPage = 5;
 
   const filtrar = Data?.filter((items) =>
-    (items?.company || "").toLowerCase().includes((search || "").toLowerCase()),
+    (items?.company || "").toLowerCase()?.includes((search || "").toLowerCase()),
   );
 
   const indexOfLastItem = currentPage * itemsPerPage;
@@ -203,7 +202,7 @@ const Company = () => {
 
           <div className="d-flex justify-content-center">
             <br />
-            {currentZonas.length > 0 ? (
+            {currentZonas?.length > 0 ? (
               <table className="table table-hover align-middle mb-0">
                 <thead style={{ backgroundColor: "#f1f4f6" }}>
                   <tr className="border-bottom text-uppercase">
