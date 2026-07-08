@@ -57,7 +57,7 @@ export const FormCompany = ({ open,updateList, idCompany, ModoEdicion, handleClo
 
   const onSubmit = async (data: FieldValues) => {
     try {
-      console.log(data);
+      
       if (ModoEdicion) {
         
         // 1. Enviamos la actualización al servidor
@@ -88,7 +88,7 @@ export const FormCompany = ({ open,updateList, idCompany, ModoEdicion, handleClo
       } else {
         // Para el POST (Crear nueva)
 
-        console.log("Creando nueva compañía con datos:", data);
+        
         const respond = await axios.post(`${import.meta.env.VITE_API_URL}/Company/`, data);
 
         setCompanyData((prev) => [...prev, respond.data]);
