@@ -15,7 +15,8 @@ import Swal from "sweetalert2";
 import { MdOutlineCancel, MdOutlineSaveAlt } from "react-icons/md";
 import { SiReacthookform } from "react-icons/si";
 import { MisColores } from "../../components/stuff/MisColores";
-import { MapPin, X } from "lucide-react";
+import { Briefcase, CircleFadingPlus, MapPin, X } from "lucide-react";
+import { InputField } from "../../components/stuff/InputField";
 
 export const FormRutas = ({
   ModoEdicion,
@@ -132,13 +133,13 @@ export const FormRutas = ({
               <MapPin size={20} />
             </div>
             <div>
-              <h2
+              <h5
                 className="fw-bold mb-0"
-                style={{ color: "#2c3e50", fontSize: "1.5rem" }}
+                style={{ color: "#2c3e50" }}
               >
                 Formulario Rutas
-              </h2>
-              <p className="text-muted mb-0 small">
+              </h5>
+              <p className="text-muted mb-0" style={{ fontSize: "0.7rem" }}>
                 Mantenimiento de Rutas{" "}
                 <strong className="text-success">
                   {ModoEdicion ? "Editando" : "Insertando"}
@@ -156,52 +157,41 @@ export const FormRutas = ({
 
         <br />
         <form onSubmit={handleSubmit(onSubmit)}>
-          <TextField
-            InputProps={{
-              sx: {
-                fontSize: "12px",
-              },
-            }}
-            label="Nombre de Ruta"
-            fullWidth
-            margin="normal"
-            {...register("nombrerutas", {
-              required: "Este campo es obligatorio",
-            })}
-            onChange={handleInputChange}
-            className="clFont form-control"
-          />
-          {errors.nombrerutas && (
-            <p className="text-red-500 clFont">
-              {" "}
-              {errors.nombrerutas.message}{" "}
-            </p>
-          )}
-          <br />
-
-          <FormControl fullWidth>
-            <InputLabel id="estado-label">Estado</InputLabel>
-            <Controller
-              name="estado"
-              control={control}
-              rules={{ required: true }}
-              render={({ field }) => (
-                <Select
-                  labelId="estado-label"
-                  label="Estado"
-                  {...field} // Conectar el Select con react-hook-form
-                  inputProps={{
-                    sx: {
-                      fontSize: "12px",
-                    },
-                  }}
-                >
-                  <MenuItem value="1">Activo</MenuItem>
-                  <MenuItem value="0">Inactivo</MenuItem>
-                </Select>
-              )}
+          <InputField label="Nombre de Ruta" icon={MapPin} col="col-md-12" error={errors.nombrerutas?.message}>
+             <input
+              type="text"
+              className="form-control clFont"
+              {...register("nombrerutas", {
+                required: "Este campo es obligatorio",
+              })}
+              onChange={handleInputChange}
             />
-          </FormControl>
+          </InputField>
+
+          
+             <InputField
+              label="Estado"
+              icon={CircleFadingPlus}
+              
+              required
+              col="col-md-12"
+            >
+              <select
+                name="estado"
+                className="form-select border-0 shadow-none"
+                style={{
+                  fontSize: "0.8em",
+                 
+                }}
+                {...register("estado")}
+              >
+                <option value="1">Activo </option>
+                <option value="0">Inactivo </option>
+              </select>
+            </InputField>
+          
+
+          
 
           <br />
           <br />

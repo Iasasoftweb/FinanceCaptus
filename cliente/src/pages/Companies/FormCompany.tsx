@@ -7,7 +7,7 @@ import {
 } from "@mui/material";
 import axios from "axios";
 import Swal from "sweetalert2";
-import { Briefcase, Building, HandCoins, X } from "lucide-react";
+import { Briefcase, Building, CircleFadingPlus, HandCoins, Phone, User2, X } from "lucide-react";
 import { MisColores } from "../../components/stuff/MisColores";
 import { InputField } from "../../components/stuff/InputField";
 
@@ -160,7 +160,7 @@ export const FormCompany = ({ open,updateList, idCompany, ModoEdicion, handleClo
               <p className="text-muted mb-0 small">
                 El Formulario esta en Modo :
                 <strong className="text-mute">
-                  {ModoEdicion ? "Editando" : "Insertando"}
+                  {ModoEdicion ? " Editando" : " Insertando"}
                 </strong>
               </p>
             </div>
@@ -178,62 +178,59 @@ export const FormCompany = ({ open,updateList, idCompany, ModoEdicion, handleClo
 
         <br />
         <form onSubmit={handleSubmit(onSubmit)}>
-          <TextField
-            InputProps={{
-              sx: {
-                fontSize: "12px",
-              },
-            }}
+          <InputField
             label="Nombre de Compañia"
-            fullWidth
-            margin="normal"
-            {...register("company", {
-              required: "Este campo es obligatorio",
-            })}
-            onChange={handleInputChange}
-            className="clFont form-control"
-          />
-          {errors.company && (
-            <p className="text-red-500 clFont"> {errors.company.message} </p>
-          )}
-          <br />
+            icon={Building}
+            required
+            col="col-md-12"
+            error={errors.company?.message}
+          >
 
-          <TextField
-            InputProps={{
-              sx: {
-                fontSize: "12px",
-              },
-            }}
-            label="Nombre del Contacto"
-            fullWidth
-            margin="normal"
-            {...register("nombrecontacto")}
-            onChange={handleInputChange}
-            className="clFont form-control"
-          />
+            <input
+              type="text"
+              className="form-control clFont"
+              {...register("company", {
+                required: "Este campo es obligatorio",
+              })}
+              onChange={handleInputChange}
+            />
+            
+          </InputField>
+            
+            <InputField label="Nombre del Contacto" icon={User2} col="col-md-12" >
+                 <input
+              type="text"
+              className="form-control clFont"
+              {...register("nombrecontacto", {
+                required: "Este campo es obligatorio",
+              })}
+              onChange={handleInputChange}
+            />
+            
+            </InputField>
 
-          <br />
-
-          <TextField
-            InputProps={{
-              sx: {
-                fontSize: "12px",
-              },
-            }}
+          <InputField
             label="Número de Teléfono"
-            fullWidth
-            margin="normal"
-            {...register("telefono")}
-            onChange={handleInputChange}
-            className="clFont form-control"
-          />
-
-          <br />
+            icon={Phone}
+            col="col-md-12"
+          >
+            <input
+              type="text"
+              className="form-control clFont"
+              {...register("telefono", {
+                required: "Este campo es obligatorio",
+              })}
+              onChange={handleInputChange}
+            />
+          </InputField>
+              
+            
+          
 
         
             <InputField
               label="Estado"
-              icon={Briefcase}
+              icon={CircleFadingPlus}
               required
               col="col-md-12"
             >
