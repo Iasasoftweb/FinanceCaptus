@@ -52,7 +52,7 @@ const Company = () => {
     }
   };
 
-  const URI = `${import.meta.env.VITE_API_URL}/Company/`;
+  const URI = `${import.meta.env.VITE_API_URL}/company/`;
 
   const datosCompanies = async () => {
     try {
