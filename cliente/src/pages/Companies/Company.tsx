@@ -35,12 +35,13 @@ const Company = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
+  
   const filtrar = Array.isArray(Data) 
   ? Data.filter((items) =>
       (items?.company || "").toLowerCase()?.includes((search || "").toLowerCase())
     )
   : [];
-
+  
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentZonas = filtrar.slice(indexOfFirstItem, indexOfLastItem);
