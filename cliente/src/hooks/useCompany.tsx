@@ -7,7 +7,7 @@ const useCompany = () => {
 
   const CompanyData = async () => {
     try {
-      const respuesta = await axios.get(`${import.meta.env.VITE_API_URL}/Company/`)
+      const respuesta = await axios.get(`${import.meta.env.VITE_API_URL}/company/`)
        const Data = respuesta?.data.data || respuesta.data|| [];
         setDataCompany(Data);
         console.log(Data)
