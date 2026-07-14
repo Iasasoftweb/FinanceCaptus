@@ -156,10 +156,7 @@ const PrestamosForm: React.FC<PrestamosFormProps> = ({
   const TCuotas = useWatch({ control, name: "tcuota" });
   const Mcuota = useWatch({ control, name: "mcuota" });
   const MMInteres = useWatch({ control, name: "interes" });
-  // const Mcomision = useWatch({ control, name: "comision" });
-  // const Mgastolegal = useWatch({ control, name: "gastoslegal" });
-  // const Mseguro = useWatch({ control, name: "seguro" });
-
+  
   const datosCreditos = calcularCreditoDinamico(
     capitalValue,
     DataEmpresa?.interesdefecto || 0,
@@ -373,16 +370,7 @@ const cuotaCalculada = Number(nuevaCuota.toFixed(2));
 };
 
 useEffect(() => {
-  // if (datosCreditos?.tasaFrecuenciaPorcentaje) {
-  //   setTasaManual(datosCreditos?.tasaFrecuenciaPorcentaje);
-  //   setValue("interes", datosCreditos?.tasaFrecuenciaPorcentaje);
-  //   
-  // }
-
-
-
-
-
+ 
   const capital = parseFloat(capitalValue) || 0;
   const cuotas = parseInt(TCuotas) || 0;
     

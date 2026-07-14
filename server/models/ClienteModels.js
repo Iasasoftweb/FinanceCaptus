@@ -2,6 +2,7 @@ import db from "../database/db.js";
 import { DataTypes } from "sequelize";
 import ZonasModels from "./ZonasModels.js";
 import NotarioModels from "./NotarioModels.js";
+import CompanyModels from "./CompanyModels.js";
 
 const ClientesModel = db.define("tclientes", {
   id: {
@@ -34,10 +35,11 @@ const ClientesModel = db.define("tclientes", {
   fechaingresotrabajo: { type: DataTypes.DATE },
   idrutas: { type: DataTypes.INTEGER },
   limitecredito: { type: DataTypes.DECIMAL, defaultValue: 0.0 },
+  idinstitucion: { type: DataTypes.INTEGER },
   vivienda: { type: DataTypes.STRING, defaultValue: "ALQUILER" },
-  estado: { type: DataTypes.STRING, defaultValue: 'ACTIVO' },
-  longitud: {type: DataTypes.STRING},
-  latitud: {type: DataTypes.STRING},
+  estado: { type: DataTypes.STRING, defaultValue: "ACTIVO" },
+  longitud: { type: DataTypes.STRING },
+  latitud: { type: DataTypes.STRING },
   imgDNI1: { type: DataTypes.STRING },
   imgDNI2: { type: DataTypes.STRING },
   imgFOTOS: { type: DataTypes.STRING },
@@ -55,7 +57,10 @@ const ClientesModel = db.define("tclientes", {
 
 ZonasModels.hasMany(ClientesModel, { foreignKey: "id" });
 ClientesModel.belongsTo(ZonasModels, { foreignKey: "idrutas" });
-
+NotarioModels.hasMany(ClientesModel, { foreignKey: "id" });
+ClientesModel.belongsTo(NotarioModels, { foreignKey: "idinstitucion" });
+CompanyModels.hasMany(ClientesModel, { foreignKey: "id" }); 
+ClientesModel.belongsTo(CompanyModels, { foreignKey: "idinstitucion" });
 
 //Pedido.belongsTo(Usuario, { foreignKey: 'usuario_id' });
 

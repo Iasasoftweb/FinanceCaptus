@@ -59,6 +59,7 @@ import {
 } from "lucide-react";
 import { SectionTitle } from "../../components/stuff/SectionTitle.tsx";
 import { InputField } from "../../components/stuff/InputField.tsx";
+import useCompany from "../../hooks/useCompany.tsx";
 
 type FormValues = {
   sueldo: number;
@@ -102,6 +103,7 @@ const ClienteForm = ({
   const [FechaTranajo, setFechaTrabajo] = useState("");
   const [Sueldo, setSueldo] = useState("");
   const [idRutas, setIdRutas] = useState("");
+  const [IdInstitucion, setIdInstitucion] = useState("");
   const [Viviendas, setViviendas] = useState("");
   const [Cedula, setCedula] = useState("");
   const [valorNombre, setValorNombre] = useState("");
@@ -112,6 +114,7 @@ const ClienteForm = ({
   const [longitud, setLongitud] = useState("18.45310764759655");
   const [latitud, setLatitud] = useState("-70.73452937006576");
   const [SueldoLimite, setSueldoLimite] = useState(0);
+  const { dataCompany } = useCompany();
 
   const theme = createTheme({
     components: {
@@ -321,7 +324,6 @@ const ClienteForm = ({
       setValue("nombres", newNombre);
 
       setValorApellidos(newApellidos);
-      
     } else {
       setValorNombre("");
       setValue("nombres", "");
@@ -411,7 +413,7 @@ const ClienteForm = ({
       }
 
       // Actualizamos el objeto data con el nombre real de la imagen antes de enviar a la DB
-      const datosParaEnviar = { ...data, imgFOTOS: finalFileName };
+      const datosParaEnviar = { ...data, imgFOTOS: finalFileName, idinstitucion: IdInstitucion };
 
       if (ModoEdicion) {
         // --- MODO EDICIÓN ---
@@ -496,6 +498,10 @@ const ClienteForm = ({
   const handleCiudad = (e) => {
     setCiudad(e.target.value);
   };
+  
+  const handleCompany = (e) => {
+    setIdInstitucion(e.target.value);
+  }
 
   const handleEscolaridad = (e) => {
     setEscolaridad(e.target.value);
@@ -530,7 +536,7 @@ const ClienteForm = ({
 
     try {
       const res = await axios.post(
-          `${import.meta.env.VITE_API_URL}/uploaduser/` ,
+        `${import.meta.env.VITE_API_URL}/uploaduser/`,
         formData,
         {
           headers: { "Content-Type": "multipart/form-data" },
@@ -695,9 +701,7 @@ const ClienteForm = ({
               readOnly
               required
               icon={IdCard}
-              
               col="col-md-3"
-
             >
               <select
                 className="form-control form-control-sm clFont"
@@ -952,6 +956,29 @@ const ClienteForm = ({
               <SectionTitle title="Otros Datos" />
             </div>
 
+            <InputField label="Institución" icon={Building} col="col-md-3">
+              <select
+                name="idinstitucion"
+                className="form-control border-0 shadow-none clFont"
+                style={{ fontSize: "0.8em" }}
+                 onChange={handleCompany}
+              >
+
+                 <option value="" disabled selected>
+                    Seleccione un Compañia
+                  </option>
+
+                  {Array.isArray(dataCompany)
+                    ? dataCompany.map((item) => (
+                        <option key={item.id} value={item.id}>
+                          {item.company || item.nombre}
+                        </option>
+                      ))
+                    : null}
+
+              </select>
+            </InputField>
+
             <InputField label="Ocupación" icon={TrafficCone} col="col-md-3">
               <input
                 type="text"
@@ -986,125 +1013,138 @@ const ClienteForm = ({
               />
             </InputField>
 
-
             <InputField label="Sueldo" icon={DollarSign} col="col-md-3">
-                  <Controller
-                    name="sueldo"
-                    control={control}
-                    defaultValue=""
-                    render={({
-                      field: { onChange, value, name, ref },
-                      fieldState: { error },
-                    }) => (
-                      <>
-                        <NumericFormat
-                          name={name}
-                          getInputRef={ref}
-                          value={value}
-                          thousandSeparator={true}
-                          prefix={"DOP "}
-                          decimalScale={2}
-                          fixedDecimalScale={true}
-                          className="form-control border-0 shadow-none fw-bold"
-                          placeholder="DOP 0.00"
-                          onChange={(e) => handleSueldoChange(e.target.value)}
-                          onValueChange={(values) => {
-                            // Actualiza el formulario (esto es ligero y no pierde el foco)
-                            onChange(values.floatValue || 0);
-                          }}
-                          style={{ fontSize: "0.8em" }}
-                        />
+              <Controller
+                name="sueldo"
+                control={control}
+                defaultValue=""
+                render={({
+                  field: { onChange, value, name, ref },
+                  fieldState: { error },
+                }) => (
+                  <>
+                    <NumericFormat
+                      name={name}
+                      getInputRef={ref}
+                      value={value}
+                      thousandSeparator={true}
+                      prefix={"DOP "}
+                      decimalScale={2}
+                      fixedDecimalScale={true}
+                      className="form-control border-0 shadow-none fw-bold"
+                      placeholder="DOP 0.00"
+                      onChange={(e) => handleSueldoChange(e.target.value)}
+                      onValueChange={(values) => {
+                        // Actualiza el formulario (esto es ligero y no pierde el foco)
+                        onChange(values.floatValue || 0);
+                      }}
+                      style={{ fontSize: "0.8em" }}
+                    />
 
-                        {error && (
-                          <span
-                            className="text-danger ps-2"
-                            style={{ fontSize: "0.7em" }}
-                          >
-                            {error.message}
-                          </span>
-                        )}
-                      </>
-                    )}
-                  />
-                </InputField>
-
-                <InputField label="Tipo de Vivienda" icon={House} col="col-md-3">
-                  <select
-                    className="form-control border-0 shadow-none clFont"
-                    style={{ fontSize: "0.8em" }}
-                    {...register("vivienda")}
-                    value={Viviendas}
-                    onChange={handleViviendas}
-                  >
-                    <option value="">Seleccione...</option>
-                    <option value="ALQUILADA">Alquilada</option>
-                    <option value="PROPIA">Propia </option>
-                    <option value="PRESTADA">Prestada</option>
-                  </select>
-                </InputField>
-
-                <InputField label="Rutas" icon={Route} col="col-md-3" requerido error={errors.idrutas?.message}>
-                   <select className="form-control border-0 shadow-none clFont"
-                     {...register("idrutas", { required: "Campo requerido" })}
-                     value={idRutas}
-                     onChange={handleIdRutas} 
-                    style={{ fontSize: "0.8em" }}>
-                     <option value="">Seleccione...</option>
-                      {Rutas?.map((itemruta) => (
-                      <option
-                        value={itemruta.id}
-                        key={itemruta.id}
-                        className="clFont"
+                    {error && (
+                      <span
+                        className="text-danger ps-2"
+                        style={{ fontSize: "0.7em" }}
                       >
-                        {itemruta.nombrerutas}
-                      </option>
-                    ))}
-                   </select>
-                 </InputField>
-
-
-                 <InputField label="Límite de Crédito" icon={DollarSign} col="col-md-3" requerido error={errors.limitecredito?.message}>
-                  <Controller
-                    name="limitecredito"
-                    control={control}
-                    defaultValue=""
-                    render={({
-                      field: { onChange, value, name, ref },
-                      fieldState: { error },
-                    }) => (
-                      <>
-                        <NumericFormat
-                          name={name}
-                          getInputRef={ref}
-                          value={value}
-                          thousandSeparator={true}
-                          prefix={"DOP "}
-                          decimalScale={2}
-                          fixedDecimalScale={true}
-                          className="form-control border-0 shadow-none fw-bold"
-                          placeholder="DOP 0.00"
-                          onChange={(e) => handleLimiteCreditoChange(e.target.value)}
-                          onValueChange={(values) => {
-                            // Actualiza el formulario (esto es ligero y no pierde el foco)
-                            onChange(values.floatValue || 0);
-                          }}
-                          style={{ fontSize: "0.8em" }}
-                        />
-
-                        {error && (
-                          <span
-                            className="text-danger ps-2"
-                            style={{ fontSize: "0.7em" }}
-                          >
-                            {error.message}
-                          </span>
-                        )}
-                      </>
+                        {error.message}
+                      </span>
                     )}
-                  />
-                </InputField>
+                  </>
+                )}
+              />
+            </InputField>
 
-            
+            <InputField label="Tipo de Vivienda" icon={House} col="col-md-3">
+              <select
+                className="form-control border-0 shadow-none clFont"
+                style={{ fontSize: "0.8em" }}
+                {...register("vivienda")}
+                value={Viviendas}
+                onChange={handleViviendas}
+              >
+                <option value="">Seleccione...</option>
+                <option value="ALQUILADA">Alquilada</option>
+                <option value="PROPIA">Propia </option>
+                <option value="PRESTADA">Prestada</option>
+              </select>
+            </InputField>
+
+            <InputField
+              label="Rutas"
+              icon={Route}
+              col="col-md-3"
+              requerido
+              error={errors.idrutas?.message}
+            >
+              <select
+                className="form-control border-0 shadow-none clFont"
+                {...register("idrutas", { required: "Campo requerido" })}
+                value={idRutas}
+                onChange={handleIdRutas}
+                style={{ fontSize: "0.8em" }}
+              >
+                <option value="">Seleccione...</option>
+                {Rutas?.map((itemruta) => (
+                  <option
+                    value={itemruta.id}
+                    key={itemruta.id}
+                    className="clFont"
+                  >
+                    {itemruta.nombrerutas}
+                  </option>
+                ))}
+              </select>
+            </InputField>
+
+            <InputField
+              label="Límite de Crédito"
+              icon={DollarSign}
+              col="col-md-3"
+              requerido
+              error={errors.limitecredito?.message}
+            >
+              <Controller
+                name="limitecredito"
+                control={control}
+                defaultValue=""
+                render={({
+                  field: { onChange, value, name, ref },
+                  fieldState: { error },
+                }) => (
+                  <>
+                    <NumericFormat
+                      name={name}
+                      getInputRef={ref}
+                      value={value}
+                      thousandSeparator={true}
+                      prefix={"DOP "}
+                      decimalScale={2}
+                      fixedDecimalScale={true}
+                      className="form-control border-0 shadow-none fw-bold"
+                      placeholder="DOP 0.00"
+                      onChange={(e) =>
+                        handleLimiteCreditoChange(e.target.value)
+                      }
+                      onValueChange={(values) => {
+                        // Actualiza el formulario (esto es ligero y no pierde el foco)
+                        onChange(values.floatValue || 0);
+                      }}
+                      style={{ fontSize: "0.8em" }}
+                    />
+
+                    {error && (
+                      <span
+                        className="text-danger ps-2"
+                        style={{ fontSize: "0.7em" }}
+                      >
+                        {error.message}
+                      </span>
+                    )}
+                  </>
+                )}
+              />
+            </InputField>
+
             <div className=" bg-body-secondary d-flex justify-content-center align-items-center p-3 ">
               <div className=" d-flex justify-content-end p-2">
                 <button
