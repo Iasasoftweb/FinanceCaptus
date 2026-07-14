@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 
 const DOCUMENTOS = [
+  { key: "Tabla de Amortización", label: 'Tabla de Amortización' },  
   { key: "carta-bureau", label: 'Carta al bureau' },
   { key: "entrega-prestaciones", label: "Entrega de prestaciones" },
   { key: "pagare-notarial", label: "Pagaré notarial" },
