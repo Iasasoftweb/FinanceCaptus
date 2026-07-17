@@ -3,6 +3,7 @@ import { DataTypes } from "sequelize";
 
 import ClientesModel from "./ClienteModels.js";
 import NotarioModels from "./NotarioModels.js";
+import CompanyModels from "./CompanyModels.js";
 
 const PrestaModels = db.define("tbprestamos", {
   id: {
@@ -60,5 +61,8 @@ PrestaModels.belongsTo(ClientesModel, { foreignKey: "idclientes" });
 
 NotarioModels.hasMany(PrestaModels, { foreignKey: "id" });
 PrestaModels.belongsTo(NotarioModels, { foreignKey: "idnotario" });
+
+CompanyModels.hasMany(PrestaModels, { foreignKey: "id" });
+PrestaModels.belongsTo(CompanyModels, { foreignKey: "idcompany" });
 
 export default PrestaModels;

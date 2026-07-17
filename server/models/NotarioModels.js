@@ -9,6 +9,9 @@ const NotarioModels = db.define("tbnotarios", {
   },
   nombrecompleto: { type: DataTypes.STRING },
   idcompany: { type: DataTypes.INTEGER },
+  idn: { type: DataTypes.STRING },
+  ncolegiatura: { type: DataTypes.INTEGER },
+  direccion: { type: DataTypes.STRING },
   createdAt: {
     type: DataTypes.DATE,
     timestamps: false,

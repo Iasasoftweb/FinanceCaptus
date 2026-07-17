@@ -11,9 +11,11 @@ const DOCUMENTOS = [
 ];
 
 export default function DocumentosDropdown({ prestamo }) {
-  const [open, setOpen] = useState(false);
+ const [open, setOpen]       = useState(false);
   const [menuPos, setMenuPos] = useState({ top: 0, left: 0 });
-  const btnRef = useRef(null);
+  const btnRef     = useRef(null);
+  const menuRef    = useRef(null); // 👈 ref separado para el menú
+  const UriData = `${import.meta.env.VITE_API_URL}/prestamos`;
 
   // Calcula posición del botón para colocar el menú con fixed
   const handleToggle = () => {
@@ -28,17 +30,23 @@ export default function DocumentosDropdown({ prestamo }) {
   };
 
   // Cierra al click fuera
-  useEffect(() => {
+ useEffect(() => {
     const handler = (e) => {
-      if (!btnRef.current?.contains(e.target)) setOpen(false);
+      if (
+        !btnRef.current?.contains(e.target) &&
+        !menuRef.current?.contains(e.target)  // 👈 excluye el menú
+      ) {
+        setOpen(false);
+      }
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
   const handleSeleccionar = (doc) => {
+    console.log(doc)
     setOpen(false);
-    window.open(`/api/documentos/${doc.key}/${prestamo.id}`, "_blank");
+      window.open(`${UriData}/documentos/${doc.key}/${prestamo.id}`, "_blank");
   };
 
   return (
@@ -55,6 +63,7 @@ export default function DocumentosDropdown({ prestamo }) {
 
       {open && (
         <ul
+          ref={menuRef}
           style={{
             position: "fixed", // 👈 clave: sale del flujo de la tabla
             top: menuPos.top,

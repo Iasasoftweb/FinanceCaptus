@@ -34,4 +34,5 @@ router.delete("/:id", deleteCliente);
 router.delete("/deleteimagen/imagen/:image", ImgDelete);
 
 
+
 export default router;

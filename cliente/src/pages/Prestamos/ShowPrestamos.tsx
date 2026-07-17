@@ -674,6 +674,7 @@ const ShowPrestamos = ({ situacion }) => {
     //   }
     //   return sol;
     // }));
+    console.log(prestamoSeleccionado);
 
   return (
     <div className="vh-100">
@@ -1174,7 +1175,7 @@ const ShowPrestamos = ({ situacion }) => {
                           <div className="btn-group">
 
                               {situacion === "solicitudes" && (
-                                 <DocumentosDropdown prestamo={prestamoSeleccionado} />
+                                 <DocumentosDropdown prestamo={item} />
                               // <button
                               //   className="btn btn-outline-info btn-sm border-0 rounded-3 p-1 mx-1"
                               //   title="Documentos"

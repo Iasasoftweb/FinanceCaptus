@@ -2,19 +2,6 @@ import React, { lazy, useRef } from "react";
 import { useState, useEffect } from "react";
 import "./DashStyle.css";
 import axios from "axios";
-
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-  LineChart,
-  Line,
-} from "recharts";
 import LinearProgress from "@mui/material/LinearProgress";
 import formatNumber from "../misc/formattedNumber";
 import BeatLoader from "react-spinners/BeatLoader";

@@ -127,9 +127,9 @@ const PrestamoDetail = () => {
 
   
 
-  const UriGetPrestamos = "http://localhost:8000/prestamos/";
-  const UrisImg = "http://localhost:8000/uploads/";
-  const UriCuotas = "http://localhost:8000/cuotas/";
+  const UriGetPrestamos = `${import.meta.env.VITE_API_URL}/prestamos/`;
+  const UrisImg = `${import.meta.env.VITE_API_URL}/uploads/`;
+  const UriCuotas = `${import.meta.env.VITE_API_URL}/cuotas/`;
 
   const GetAmortiza = async (id: number) => {
     try {

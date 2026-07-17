@@ -1,28 +1,16 @@
-import { react, useState, useEffect } from "react";
-import Nav from "../components/dashboard/Nav.tsx";
-import { Outlet, Link, useLocation } from "react-router-dom";
+import { useState } from "react";
+import { Outlet, Link } from "react-router-dom";
 import "./layout.css";
 import Logo from "../../src/components/Brand/Brand.tsx";
-import MenuList from "./MenuList.tsx";
-import { AiOutlineMenuUnfold } from "react-icons/ai";
-import { AiOutlineMenuFold } from "react-icons/ai";
 import NavAvatar from "../components/Menutop/NavAvatat.tsx";
 import NavNotificaciones from "../components/Menutop/NavNotificaciones.tsx";
 import NavMensajes from "../components/Menutop/NavMensajaes.tsx";
 import { SiMeteor } from "react-icons/si";
-import TextField from "@mui/material/TextField";
-import MenuItem from "@mui/material/MenuItem";
-import { VscGraph, VscGraphLine } from "react-icons/vsc";
-import { TbChartInfographic } from "react-icons/tb";
-import { MdOutlineAutoGraph } from "react-icons/md";
-import { useAppContext } from "../context/AppContext.tsx";
+
 //import 'react-pro-sidebar/dist/css/styles.css';
 
 import { Layout, Menu, Breadcrumb, theme } from "antd";
 import {
-  UserOutlined,
-  LaptopOutlined,
-  NotificationOutlined,
   UsergroupAddOutlined,
   DashboardOutlined,
   BankOutlined,

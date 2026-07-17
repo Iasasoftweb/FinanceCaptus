@@ -12,6 +12,7 @@ const EmpresasModel = db.define("tbempresas", {
   rnc: { type: DataTypes.STRING },
   direccion: { type: DataTypes.STRING },
   gerente: { type: DataTypes.STRING },
+  dni_gerente: { type: DataTypes.STRING },
   telefono1: { type: DataTypes.STRING },
   telefono2: { type: DataTypes.STRING },
   wathsapp: { type: DataTypes.STRING },
