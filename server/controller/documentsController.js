@@ -658,6 +658,10 @@ export const generarDocumento = async (req, res) => {
       ],
     });
 
+     console.log("✅ Préstamo encontrado:", prestamo?.id);       // 👈
+    console.log("✅ Cliente:", prestamo?.ClientesModel?.nombres); // 👈
+    console.log("✅ Notario:", prestamo?.NotarioModels?.nombres); // 👈
+
     if (!prestamo)
       return res.status(404).json({ message: "Préstamo no encontrado" });
 
