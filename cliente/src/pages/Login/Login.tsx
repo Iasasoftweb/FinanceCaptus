@@ -21,27 +21,32 @@ const Login = () => {
   const [pass, setPass] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [allUser, setAllUser] = useState([]);
+  const { data: dataEmpresa, isLoading } = useEmpresa();
 
-  const { data : dataEmpresa, isLoading } = useEmpresa();
-  console.log(dataEmpresa)
+  const navigate = useNavigate();
+
   const UrisImg = `${import.meta.env.VITE_API_URL}/uploads/clientes/empresa/`;
   const validarCredencial = (e) => {
     e.preventDefault();
     axios
-      .post(`${import.meta.env.VITE_API_URL}/usuarios/login/`, { usuario, pass })
+      .post(`${import.meta.env.VITE_API_URL}/usuarios/login/`, {
+        usuario,
+        pass,
+      })
       .then((res) => {
         console.log(res);
         console.log(res.data.ID);
         console.log(res.data.Role);
 
         if (res.data.token) {
-          const token = localStorage.setItem("token", res.data.token);
+          localStorage.setItem("token", res.data.token);
           localStorage.setItem("role", res.data.Role);
-
           localStorage.setItem("userID", String(res.data.ID));
-
+          // const token = localStorage.setItem("token", res.data.token);
+ 
           toast.success("Credenciales correctas");
-          window.location.replace("/");
+          window.location.href = "/";
+  //        navigate("/", { replace: true });
         } else {
           toast.error("Credenciales inválidas");
         }
@@ -90,12 +95,21 @@ const Login = () => {
                 {isLoading ? (
                   <div className="text-center w-full py-10">
                     <br />
-                    <BeatLoader color={MisColores.headerBlue} size={15} className="text-center" />
+                    <BeatLoader
+                      color={MisColores.headerBlue}
+                      size={15}
+                      className="text-center"
+                    />
                   </div>
-                ) : (<img src={`${UrisImg}${dataEmpresa?.logoempresa}`} alt="logo"  className="mt-2 img-fluid" />)}
-                
+                ) : (
+                  <img
+                    src={`${UrisImg}${dataEmpresa?.logoempresa}`}
+                    alt="logo"
+                    className="mt-2 img-fluid"
+                  />
+                )}
               </div>
-              
+
               {/* <hr className="mb-0" /> */}
 
               <form onSubmit={validarCredencial} className="p-5">
@@ -134,7 +148,7 @@ const Login = () => {
                   </button>
                 </InputField>
 
-                 <div className="d-flex justify-content-center mt-5 mb-3">
+                <div className="d-flex justify-content-center mt-5 mb-3">
                   <button
                     type="submit"
                     data-mdb-button-init

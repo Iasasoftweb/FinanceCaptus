@@ -11,6 +11,31 @@ const MYEMPRESA = await EmpresasModel.findOne({ where: { id: 1 } });
 
 const EMPRESA = MYEMPRESA?.empresa || "BRAND DOM INMOBILIARIA A&G, S.R.L.";
 const gerente = MYEMPRESA?.gerente || "MANUEL ALEJANDRO MINAYA ROCA";
+const registroMercantil = MYEMPRESA?.rmercantil || "";
+const rncEmpresa = MYEMPRESA?.rnc || "";
+
+// Fecha en letras
+const ahora = new Date();
+const dia = ahora.getDate();
+const meses = [
+  "enero",
+  "febrero",
+  "marzo",
+  "abril",
+  "mayo",
+  "junio",
+  "julio",
+  "agosto",
+  "septiembre",
+  "octubre",
+  "noviembre",
+  "diciembre",
+];
+const mes = meses[ahora.getMonth()];
+const anio = ahora.getFullYear();
+const anioLetras = "dos mil veinticinco"; // ajusta o usa librería
+const fechaLarga = `${dia} del mes de ${mes} del año ${anioLetras} (${anio})`;
+const fechaCorta = `${dia} de ${mes} de ${anio}`;
 
 const initDoc = (res, filename, size = "LETTER") => {
   const doc = new PDFDocument({ margin: 65, size }); // 👈 tamaño dinámico
@@ -32,11 +57,23 @@ const fechaEspanol = () =>
 const montoFormato = (n) =>
   `RD$${Number(n).toLocaleString("es-DO", { minimumFractionDigits: 2 })}`;
 
-const encabezado = (doc, titulo) => {
-  doc.fontSize(13).font("Helvetica-Bold").text(titulo, { align: "center" });
-  doc.moveDown(4);
+const encabezadoGenerico = (doc, titulo) => {
   doc
-    .fontSize(11)
+    .fontSize(13)
+    .font("Helvetica-Bold")
+    .text(titulo.toUpperCase(), { align: "center" });
+  doc.moveDown(3);
+};
+
+const encabezado = (doc, titulo) => {
+  doc
+    .fontSize(13)
+    .font("Helvetica-Bold")
+    .text(titulo.toUpperCase(), { align: "center" });
+  doc.moveDown(3);
+
+  doc
+    .fontSize(12)
     .font("Helvetica")
     .text(fechaEspanol())
     .text("Santo Domingo, RD");
@@ -89,10 +126,11 @@ const cartaBureau = (doc, cliente) => {
   doc
     .font("Helvetica")
     .text("Por medio de la presente, autorizo formalmente a ", {
-      continued: true, align: "justify"
+      continued: true,
+      align: "justify",
     })
     .font("Helvetica-Bold")
-    .text( EMPRESA, { continued: true, align: "justify" })
+    .text(EMPRESA, { continued: true, align: "justify" })
     .font("Helvetica")
     .text(
       " para consultar mi historial de crédito en la Base de Datos de los Buro de " +
@@ -126,8 +164,6 @@ const entregaPrestaciones = (doc, cliente, prestamo, notario, compania) => {
   const nombreNotario =
     notario?.nombrecompleto?.toUpperCase() || "NOTARIO PÚBLICO";
   const cedulaNotario = notario?.idn || "";
-  const direcionNotario =
-    notario?.direccion || "Santo Domingo, Distrito Nacional";
   const matricula = notario?.ncolegiatura || "";
   const direccionNotario =
     notario?.direccion || "Santo Domingo, Distrito Nacional";
@@ -136,30 +172,6 @@ const entregaPrestaciones = (doc, cliente, prestamo, notario, compania) => {
   const pageWidth = doc.page.width;
   const lineWidth = 200; // largo de la línea
   const centerX = pageWidth / 2;
-
-  // Fecha en letras
-  const ahora = new Date();
-  const dia = ahora.getDate();
-  const meses = [
-    "enero",
-    "febrero",
-    "marzo",
-    "abril",
-    "mayo",
-    "junio",
-    "julio",
-    "agosto",
-    "septiembre",
-    "octubre",
-    "noviembre",
-    "diciembre",
-  ];
-  const mes = meses[ahora.getMonth()];
-  const anio = ahora.getFullYear();
-  const anioLetras = "dos mil veinticinco"; // ajusta o usa librería
-  const fechaLarga = `${dia} del mes de ${mes} del año ${anioLetras} (${anio})`;
-  const fechaCorta = `${dia} de ${mes} de ${anio}`;
-
   // ── PÁGINA 1: Cuerpo del documento ───────────────────────────────────────
   doc
     .fontSize(12)
@@ -195,7 +207,7 @@ const entregaPrestaciones = (doc, cliente, prestamo, notario, compania) => {
     .text(EMPRESA, { continued: true, align: "justify" })
     .font("Helvetica")
     .text(
-      `, Sociedad de comercio organizado de acuerdo a las leyes de República Dominicana, con su domicilio y asiento social en la Calle Doctor Delgado Casi Esquina Bolívar. Suite. 2-A. Edificio Anara No. 152, Santo Domingo, Distrito Nacional, República Dominicana, con Registro Mercantil No. 195325SD RNC No. 1-32-93211-2, debidamente representada por su Gerente, el señor `,
+      `, Sociedad de comercio organizado de acuerdo a las leyes de República Dominicana, con su domicilio y asiento social en la Calle Doctor Delgado Casi Esquina Bolívar. Suite. 2-A. Edificio Anara No. 152, Santo Domingo, Distrito Nacional, República Dominicana, con Registro Mercantil No. ${registroMercantil} RNC No. ${rncEmpresa}, debidamente representada por su Gerente, el señor `,
       { continued: true, align: "justify" },
     )
     .font("Helvetica-Bold")
@@ -249,7 +261,7 @@ const entregaPrestaciones = (doc, cliente, prestamo, notario, compania) => {
     .text(EMPRESA, { continued: true, align: "justify" })
     .font("Helvetica")
     .text(
-      `, RNC No. 1-32-93211-2, como si fuere el mismo, para que pueda suscribir válidamente todas las documentaciones que pudiere requerir la empresa, `,
+      `, RNC No. ${rncEmpresa}, como si fuere el mismo, para que pueda suscribir válidamente todas las documentaciones que pudiere requerir la empresa, `,
       { continued: true, align: "justify" },
     )
     .font("Helvetica-Bold")
@@ -344,22 +356,44 @@ const entregaPrestaciones = (doc, cliente, prestamo, notario, compania) => {
   doc.text("NOTARIO(A)", { align: "center" });
 };
 
-const pagareNotarial = (doc, cliente, prestamo) => {
-  encabezado(doc, "Pagaré Notarial");
+const pagareNotarial = (doc, cliente, prestamo, notario, compania) => {
+  console.log(notario)
+  const nombreCliente =
+    cliente.nombres?.toUpperCase() + " " + cliente.apellidos?.toUpperCase();
+  const cedulaCliente = cliente?.dni;
+  const direccionCliente = cliente?.direccion || "Santo Domingo, RD";
+  const empleador = compania?.company || "";
+  const nombreNotario =
+    notario?.nombrecompleto?.toUpperCase() || "NOTARIO PÚBLICO";
+  const cedulaNotario = notario?.idn || "";
+  const matricula = notario?.ncolegiatura || "";
+  const direccionNotario =
+    notario?.direccion || "Santo Domingo, Distrito Nacional";
+  const dniGerente = MYEMPRESA?.dni_gerente || "402-3009164-3";
+
+  const pageWidth = doc.page.width;
+  const lineWidth = 200; // largo de la línea
+  const centerX = pageWidth / 2;
+  console.log(notario?.nombrecompleto)
+  encabezadoGenerico(doc, "Pagaré Notarial");
 
   doc
-    .font("Helvetica")
-    .text("Yo, ", { continued: true })
     .font("Helvetica-Bold")
-    .text(cliente.nombre?.toUpperCase(), { continued: true })
+    .text("ACTO NÚMERO __________, FOLIO _____________  ", {
+      continued: true,
+      align: "justify",
+    })
     .font("Helvetica")
     .text(
-      ", mayor de edad, de nacionalidad dominicana, portador(a) de la cédula de " +
-        "identidad y electoral número ",
-      { continued: true },
+      "en Santo Domingo, Distrito Nacional, República Dominicana, hoy día ",
+      { continued: true, align: "justify" },
     )
     .font("Helvetica-Bold")
-    .text(cliente.identificador, { continued: true })
+    .text(fechaLarga, { continued: true, align: "justify" })
+    .font("Helvetica")
+    .text(", por ante mi: ", { continued: true, align: "justify" })
+    .font("Helvetica-Bold")
+    .text(nombreNotario, { continued: true })
     .font("Helvetica")
     .text(", con domicilio en ", { continued: true })
     .font("Helvetica-Bold")
@@ -658,19 +692,20 @@ export const generarDocumento = async (req, res) => {
       ],
     });
 
-     console.log("✅ Préstamo encontrado:", prestamo?.id);       // 👈
-    console.log("✅ Cliente:", prestamo?.ClientesModel?.nombres); // 👈
-    console.log("✅ Notario:", prestamo?.NotarioModels?.nombres); // 👈
+   
+   
+    
+    console.log("✅ Préstamo encontrado:", prestamo?.id); // 👈
+    console.log("✅ Cliente:", prestamo?.tcliente?.nombres); // 👈
+    console.log("✅ Notario:", prestamo?.tbnotarios?.nombrecompleto); // 👈
 
     if (!prestamo)
       return res.status(404).json({ message: "Préstamo no encontrado" });
 
     const cliente = await ClientesModel.findByPk(prestamo.idclientes);
-    const notario = await NotarioModels.findByPk(prestamo.idnotario);
-    const compania =
-      (await CompanyModels.findByPk(cliente.idinstitucion)) || [];
-    console.log(notario);
-
+     const notario = await NotarioModels.findByPk(prestamo.idnotario);
+    const compania = (await CompanyModels.findByPk(cliente.idinstitucion)) || [];
+   
     // 👇 Define el tamaño según el tipo de documento
     const tamanos = {
       "carta-bureau": "LETTER",
@@ -695,16 +730,16 @@ export const generarDocumento = async (req, res) => {
         entregaPrestaciones(doc, cliente, prestamo, notario, compania);
         break;
       case "pagare-notarial":
-        pagareNotarial(doc, cliente, prestamo);
+        pagareNotarial(doc, cliente, prestamo, notario, compania);
         break;
       case "poder-especial":
-        poderEspecial(doc, cliente, prestamo);
+        poderEspecial(doc, cliente, prestamo, notario, compania);
         break;
       case "poder-litis":
-        poderLitis(doc, cliente, prestamo);
+        poderLitis(doc, cliente, prestamo, notario, compania);
         break;
       case "reconocimiento-deudas":
-        reconocimientoDeudas(doc, cliente, prestamo);
+        reconocimientoDeudas(doc, cliente, prestamo, notario, compania);
         break;
     }
 
